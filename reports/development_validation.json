@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-10-28T12:21:18.838625-05:00",
+  "scope": "isolated development; no access to i21315/i21314/i21313; no ML training or CUDA",
+  "source_framework_zip_sha256": "68b7ccdad52f6f0826a5ea7db6c56bc13cf8f9351bbba9c190f91965790e5211",
+  "arbol_fetched_text_sha256": "6f533d24b5865f93396ef1e54087af7c3eaef7b9a659be37c0273ddedffd721d",
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "development_dependencies": {
+    "pytest": "9.2.0",
+    "pyflakes": "4.0.1",
+    "numpy": "2.5.4",
+    "pandas": "3.1.0",
+    "pillow": "13.0.0",
+    "PyYAML": "6.0.3",
+    "matplotlib": "3.11.2",
+    "psutil": "7.2.2",
+    "optuna": "5.0.0",
+    "scikit-learn": "1.9.1"
+  },
+  "ast": {
+    "status": "PASS",
+    "python_files": 98
+  },
+  "pyflakes": {
+    "status": "PASS",
+    "scope": "src tools tests",
+    "exit_code": 0
+  },
+  "bash_syntax": {
+    "status": "PASS",
+    "command": "bash --noprofile --norc -n scripts/qa.sh",
+    "qa_executed": false
+  },
+  "powershell_parser": {
+    "status": "PASS",
+    "scripts": [
+      "Invoke-QA.ps1",
+      "Prepare-Environment.ps1"
+    ],
+    "scripts_executed": false
+  },
+  "task_xml_xsd": {
+    "status": "PASS",
+    "schema": "https://learn.microsoft.com/en-us/windows/win32/taskschd/task-scheduler-schema",
+    "schema_sha256": "b9589e166d85fcf68090e762658b86dbadf200b7f45fc17ae2070ef6d6c10ead",
+    "generation": "subprocess.run mocked; no whoami or schtasks executed",
+    "validation": "System.Xml.Schema.XmlSchemaSet",
+    "task_registered": false
+  },
+  "pytest": {
+    "tests": 99,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "status": "PASS",
+    "deselected": 1,
+    "deselected_reason": "zombie test imports unavailable ML stack",
+    "command": "python -m pytest tests/test_exchange_safety.py tests/test_orchestration.py tests/test_boxes_and_rule.py tests/test_config_hashing.py tests/test_hpo_and_selection.py -k 'not zombie' -q",
+    "xml": "reports/development_tests.xml"
+  },
+  "not_run": [
+    "integrated QA on any of the three PCs",
+    "CUDA or hardware load tests",
+    "real or synthetic model training",
+    "full existing ML suite",
+    "actual Task Scheduler registration",
+    "real dataset validation",
+    "physical transfer between PCs",
+    "actual 21:00-22:00 export"
+  ]
+}

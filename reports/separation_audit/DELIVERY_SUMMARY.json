@@ -1,0 +1,80 @@
+{
+  "source_zip_sha256": "0651ffcb14bf7e96fe86fa008293ec1bbead5a96828ba0774dbb7a2e0f643019",
+  "registered_detectors": 7,
+  "registered_classifiers": 3,
+  "models_evaluated_on_real_data": 0,
+  "original_images_available": 0,
+  "input_labels_available": 0,
+  "input_crops_available": 0,
+  "trained_checkpoints_available": 0,
+  "real_split_counts": {
+    "train": null,
+    "validation": null,
+    "test": null
+  },
+  "real_model_metrics": null,
+  "status": "implementation_and_synthetic_verification_complete; real experiment not executed",
+  "modified_files": [
+    "configs/default.yaml",
+    "README.md",
+    "src/01_validate_dataset.py",
+    "src/02_create_outer_split.py",
+    "src/03_create_inner_folds.py",
+    "src/04_build_detection_dataset.py",
+    "src/05_build_classification_crops.py",
+    "src/09_train_outer_candidate.py",
+    "src/10_evaluate_outer_validation.py",
+    "src/15_freeze_experiment.py",
+    "src/16_evaluate_test.py",
+    "src/18_export_master_results.py",
+    "src/orchestration/sync.py",
+    "src/utils/classifier_data.py",
+    "src/utils/detector_data.py",
+    "src/utils/detector_train.py",
+    "src/utils/freeze.py",
+    "src/utils/hpo_runner.py",
+    "src/utils/prepared.py",
+    "src/utils/run_common.py",
+    "src/utils/run_figures.py",
+    "src/utils/splits.py",
+    "tests/test_pipeline_and_freeze.py",
+    "tests/test_splits_folds_metrics.py"
+  ],
+  "new_code": [
+    "src/20_audit_split_evidence.py",
+    "src/utils/split_summary.py",
+    "src/utils/isolation.py",
+    "src/utils/evidence.py",
+    "src/utils/comparison.py",
+    "tests/test_split_evidence.py"
+  ],
+  "audit_report": "reports/separation_audit/AUDIT.md",
+  "usage": "SEPARACION_Y_EVIDENCIAS.md",
+  "test_runs": {
+    "final_tests": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "24",
+      "tests": "207",
+      "time": "159.630",
+      "timestamp": "2026-10-07T17:23:04.414497-03:00",
+      "hostname": "81ca774cdf41"
+    },
+    "targeted_final": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "37",
+      "time": "22.090",
+      "timestamp": "2026-10-07T17:25:30.664487-03:00",
+      "hostname": "81ca774cdf41"
+    }
+  },
+  "limits": [
+    "Real dataset and weights absent",
+    "Native ML training/inference unverified; optional dependencies absent",
+    "Image-level isolation does not prove independence by fruit/plant/session"
+  ]
+}

@@ -1,0 +1,31 @@
+# Dependencias del framework experimental COMPLETO (scripts 00-18 + orchestration).
+# Pins heredados; no se instalaron ni verificaron entrenamientos durante esta adaptacion.
+# La validacion actual utiliza Python 3.12 y dependencias de analisis ya disponibles.
+#
+# Las 3 PCs deben tener EXACTAMENTE las mismas versiones (Especificacion s2, sec. 16.6):
+#
+# 1) Cree un entorno limpio e instale PyTorch con el wheel CUDA de SU driver, la MISMA version en las 3 PCs:
+#      python -m venv .venv
+#      pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cu126
+#    (cu124 / cu128 segun el driver; lo importante es que sea identico en PC-01, PC-02 y PC-03)
+# 2) Luego:
+#      pip install -r requirements.txt
+# 3) Verifique:  python src/00_check_environment.py --pc-id PC-01 --require-gpu --require-ml --gpu-selftest
+#
+# Las versiones de abajo se conservan del framework anterior; 00_check_environment.py
+# registra todas las versiones instaladas en environment.json y aborta si difieren entre PCs.
+
+# --- base (datos, hashes, figuras) ---
+numpy==2.5.2
+pandas==3.0.6
+pillow==12.3.0
+PyYAML==6.0.3
+matplotlib==3.11.2
+psutil==7.2.2
+scikit-learn==1.9.1          # fANOVA de Optuna (importancia de hiperparametros) y contraste de metricas en tests
+
+# --- entrenamiento / HPO (torch y torchvision: ver el paso 1) ---
+ultralytics==8.4.170         # YOLOv8, YOLO26 y RT-DETR (RT-DETR-R50 con backbone ImageNet trasplantado; ver AUDIT_REPORT)
+timm==1.0.30                 # ViT-B/16 y Swin-Tiny (ResNet50 via torchvision)
+optuna==5.0.0                # TPE + MedianPruner, un estudio por arquitectura
+opencv-python-headless==5.0.0.93

@@ -1,0 +1,18 @@
+{
+  "zip_crc": "PASS",
+  "zip_sha256": "79fedfd7acbbcaa82417c2d90d9ee37ed6e460b8edf0afc136a907ed97f0a26f",
+  "zip_images": 0,
+  "zip_labels": 345,
+  "local_labels": 345,
+  "local_only_stems": [],
+  "zip_only_stems": [],
+  "different_label_bytes": [],
+  "current_source": "Local directory supplies real images; annotation bytes coincide with supplied ZIP. Dataset remains incomplete and anomalous.",
+  "zip_nonimage_files": 348,
+  "missing_zip_files": [],
+  "different_zip_files": [],
+  "extra_local_nonimage_files": [
+    "desktop.ini",
+    "images/desktop.ini"
+  ]
+}

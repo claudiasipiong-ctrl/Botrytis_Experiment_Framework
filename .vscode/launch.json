@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Botrytis: inspeccionar estado (no inicia entrenamiento)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/orchestration/launch.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "status",
+        "--config",
+        "configs/local.yaml"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+  "python.terminal.activateEnvironment": true,
+  "python.analysis.extraPaths": ["${workspaceFolder}/src"],
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["tests", "-q", "-p", "no:cacheprovider"],
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.env.windows": { "PYTHONIOENCODING": "utf-8", "YOLO_VERBOSE": "False" },
+  "files.eol": "\n",
+  "files.encoding": "utf8",
+  "files.exclude": { "**/__pycache__": true, "**/.pytest_cache": true },
+  "files.watcherExclude": { "**/runs/**": true, "**/data/**": true, "**/artifacts/**": true },
+  "search.exclude": { "**/runs": true, "**/data": true, "**/artifacts": true, "**/reports/figures": true }
+}

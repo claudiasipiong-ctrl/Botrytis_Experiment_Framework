@@ -1,0 +1,582 @@
+{
+  "scope": "Busqueda textual interpretada semanticamente; no auditoria de datos",
+  "active_coverage_label_rule_found": false,
+  "occurrences": [
+    {
+      "path": "configs/search_spaces.yaml",
+      "line": 28,
+      "text": "mosaic: {type: float, min: 0.0, max: 0.75}",
+      "classification": "HIPERPARAMETRO_AUGMENTATION_MOSAIC"
+    },
+    {
+      "path": "docs/PESOS.md",
+      "line": 22,
+      "text": "RT-DETR-L tiene HGNetv2 y no es R50. No se utiliza rtdetr-l.pt como sustituto.",
+      "classification": "DOCUMENTACION_PROHIBE_SUSTITUCION_R50"
+    },
+    {
+      "path": "reports/AUDITORIA_2026-10-28.md",
+      "line": 9,
+      "text": "**Hallazgo de datos:** el arbol enumera 324 imagenes activas y 325 labels activos. El stem b1602e5f-IMG_6569 tiene label activo y su imagen aparece en _off. El framework exige 328 imagenes. Es una discrepancia documental confirmada, no una prueba de corrupcion del ZIP real. No se modifico el conteo, no se recupero material excluido ni se cambio el split. prepare_machine y QA verificaran los archivos reales.",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/AUDITORIA_2026-10-28.md",
+      "line": 19,
+      "text": "| 04–05 | Manifiestos → detector de fruto y crops GT etiquetados | Regla estricta cobertura >0.75, sin mezcla con detecciones |",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/local_image_validation_summary.json",
+      "line": 44,
+      "text": "\"n_images\": 328,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/local_image_validation_summary.json",
+      "line": 57,
+      "text": "\"count\": 328.0,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/local_image_validation_summary.json",
+      "line": 67,
+      "text": "\"count\": 328.0,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/semantic_scan_final.json",
+      "line": 7,
+      "text": "\"text\": \"    if \\\"label_rule\\\" in cfg:\",",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/semantic_scan_final.json",
+      "line": 13,
+      "text": "\"text\": \"        errors.append(\\\"Obsolete label_rule configuration; migrate to annotation pairing\\\")\",",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/smoke_scientific_audit.json",
+      "line": 25,
+      "text": "\"name\": \"la regla 75 % solo crea etiquetas\",",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/smoke_scientific_audit.json",
+      "line": 31,
+      "text": "\"exactly_0.75_cases\": 0,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/smoke_scientific_audit.json",
+      "line": 32,
+      "text": "\"exactly_0.75_labelled_sin_signos\": null,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/smoke_scientific_audit.json",
+      "line": 36,
+      "text": "\"threshold\": 0.75,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/SMOKE_TEST_EVIDENCE.md",
+      "line": 18,
+      "text": "| 2 | la regla 75 % solo crea etiquetas | **PASS** | etiquetas recalculadas desde anotaciones crudas = manifiesto; la regla no aparece en entrenamiento/inferencia/seleccion |",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 656,
+      "text": "\"doc\": \"05 - Ground truth de clasificacion y crops GT (Especificacion s2, sec. 4, 8 y 31).\\n\\nPor cada fruto GT::\\n\\n    coverage = area(signo ∩ fruto) / area(fruto)      (maximo individual sobre los signos de la imagen)\\n    coverage > 0.75  ->  con_signos      |      en otro caso  ->  sin_signos      (0.75 exacto = sin_signos)\\n\\nLuego recorta la imagen ORIGINAL con la caja GT tal cual (sin margen, sec. 8), guarda el crop y\\nhereda ``outer_split`` e ``inner_fold_cls`` de su imagen. Nunca se di",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 671,
+      "text": "\"doc\": \"Aplica la regla GT del 75 %, genera crops y manifiesto, y verifica la ausencia de fuga.\"",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 1145,
+      "text": "\"doc\": \"10 - Evaluacion de UNA arquitectura entrenada con el 70 % sobre el validation externo 20 % (sec. 18, 20).\\n\\nDetectores (``--architecture YOLOv8n``...): mAP@0.5:0.95, mAP@0.5, mAP@0.75, precision, recall, F1 (punto de\\nF1 maximo), AP por umbral de IoU (0.50:0.05:0.95), parametros y FLOPs. La evaluacion OFICIAL es la de\\nUltralytics (la misma metrica del objetivo del HPO); se recalcula ademas de forma independiente (mAP con\\ninterpolacion COCO de 101 puntos sobre las predicciones crudas g",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 1271,
+      "text": "\"doc\": \"11 - Ajuste de parametros de INFERENCIA con el validation externo (Especificacion s2, sec. 21).\\n\\n* Detector: ``confidence threshold`` y ``NMS IoU`` (este solo si el modelo usa NMS: YOLOv8; YOLO26 y RT-DETR\\n  no lo necesitan). Se maximiza la metrica predeclarada (``inference_tuning.detector_threshold_metric``,\\n  F1) con matching uno-a-uno por IoU (``matching.threshold``) sobre el validation externo.\\n* Clasificador: ``probability_threshold`` de ``P(con_signos)`` que maximiza la metric",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 1497,
+      "text": "\"doc\": \"14 - Validacion del pipeline integrado con PREDICTED crops en el validation externo (sec. 23-25, 28).\\n\\nDetector seleccionado + clasificador seleccionado: imagen completa -> cajas predichas -> crops de la imagen\\noriginal -> ``P(con_signos)`` -> umbral. El clasificador se entreno con GT crops, pero el pipeline real\\nproduce crops desplazados/parciales: esta etapa es OBLIGATORIA antes del test (sec. 24).\\n\\n* Matching detector-GT: IoU >= ``matching.threshold``, uno-a-uno por confianza (N",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 2694,
+      "text": "\"doc\": \"Geometria de cajas (formato ``xyxy`` en pixeles) y regla de cobertura del 75 %.\\n\\nConvenciones\\n------------\\n* ``Box = (x1, y1, x2, y2)`` en pixeles, con ``x2 >= x1`` y ``y2 >= y1``.\\n* La **cobertura** (``coverage``) es ``area(signo ∩ fruto) / area(fruto)``. El denominador es\\n  SIEMPRE el area del fruto (Especificacion s2, sec. 4). No es IoU.\\n* El IoU se ofrece unicamente para el *matching* detector-GT (sec. 25); jamas para crear etiquetas.\",",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 2734,
+      "text": "\"doc\": \"Etiqueta segun la regla ``max_coverage > threshold`` (estricta).\\n\\n``0.75`` exacto pertenece a ``sin_signos``. ``tolerance`` absorbe solo el ruido de coma\\nflotante (un valor como ``0.7500000000000001`` sigue siendo ``sin_signos``).\"",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 2806,
+      "text": "\"name\": \"assert_label_rule_consistent\",",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 2808,
+      "text": "\"doc\": \"Recalcula ``label`` desde ``max_sign_coverage`` con ``> 0.75`` estricto y compara.\\n\\nDetecta usar ``>=``, area(signo) como denominador, IoU o sumar coberturas si alguien\\nreemplazara la implementacion (la etiqueta deja de coincidir con la cobertura guardada).\"",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 4371,
+      "text": "\"doc\": \"Ground truth de clasificacion: regla canonica ``intersection / fruit_area > 0.75`` (sec. 4).\\n\\nEste modulo construye la tabla por fruto a partir de las anotaciones. Es la UNICA fuente de\\nverdad de la regla: el resto del codigo debe llamar aqui y nunca reimplementarla.\",",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 4376,
+      "text": "\"doc\": \"Parametros de la regla desde ``cfg['label_rule']`` (ya validados como FIJOS).\"",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 4381,
+      "text": "\"doc\": \"Calcula cobertura y etiqueta de **cada fruto GT**.\\n\\nPara cada fruto ``Bf`` de una imagen:\\n``coverage = max_{Bs en signos de la MISMA imagen} area(Bf ∩ Bs) / area(Bf)``.\\nSin signos en la imagen => ``coverage = 0``. No se suman coberturas ni se unen signos.\\n\\nArgs:\\n    annotations: Tabla de ``utils.dataset.load_annotations`` (cajas recortadas en pixeles).\\n    cfg: Configuracion (se leen ``label_rule.*``).\\n\\nReturns:\\n    DataFrame con ``FRUIT_TABLE_COLUMNS`` ordenado por ``(image_i",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 4401,
+      "text": "\"doc\": \"Logging cientifico y trazabilidad obligatoria de TODA ejecucion.\\n\\nCada ejecucion crea ``runs/<architecture>/<trial>/`` (para los scripts que no pertenecen a una\\narquitectura: ``runs/_pipeline/<YYYYmmdd_HHMMSS>_<script>/``) con::\\n\\n    execution.log           log completo (UTF-8), incluye tracebacks completos\\n    config.yaml             configuracion efectiva (tras overrides e interpolacion)\\n    environment.json        PC, GPU, CUDA, PyTorch, versiones, git, hashes\\n    metrics.json",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 4735,
+      "text": "\"doc\": \"Metricas de la sec. 13.2/28.2 con ``con_signos`` = clase positiva (1).\\n\\nArgs:\\n    y_true: Etiquetas 0/1.\\n    y_score: ``P(con_signos)``. Necesaria para ROC-AUC y AP.\\n    threshold: Umbral de probabilidad (NO es la regla GT del 75 %; sec. 21.3).\\n    y_pred: Predicciones duras; si se omite se derivan de ``y_score >= threshold``.\"",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 4745,
+      "text": "\"doc\": \"Matching greedy one-to-one por score descendente con ``IoU >= iou_threshold``.\\n\\nLas predicciones sobrantes (duplicados o sin GT) son FP de localizacion; los GT sin pareja\\nson FN. No usa la regla del 75 % (sec. 25).\\n\\nReturns:\\n    ``{\\\"matches\\\": [(pred_idx, gt_idx, iou)], \\\"fp\\\": [pred_idx], \\\"fn\\\": [gt_idx]}``.\"",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 4795,
+      "text": "\"doc\": \"Metricas de clasificacion binaria (``con_signos`` = clase positiva) y barrido de umbral.\\n\\nLas funciones base viven en ``utils.metrics`` (sin dependencias de modelos); aqui se exponen bajo el\\nnombre de modulo de la especificacion (sec. 30) y se anade el barrido de umbral de probabilidad,\\nque es **distinto de la regla GT del 75 %** (sec. 21.3).\",",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 4826,
+      "text": "\"doc\": \"Metricas de deteccion: matching, P/R/F1, mAP y barridos de umbral (conf / NMS).\\n\\nLas funciones base viven en ``utils.metrics``; aqui se exponen bajo el nombre de modulo de la\\nespecificacion (sec. 30) y se anaden los barridos que usa ``11_tune_inference_thresholds.py``.\\n\\nEl matching usa IoU (sec. 25) y NUNCA la regla del 75 % (que solo crea etiquetas GT).\",",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 4992,
+      "text": "\"doc\": \"Evaluacion del pipeline integrado detector + clasificador (sec. 23-25, 28).\\n\\nSe usa en ``14_validate_integrated_pipeline.py`` (validation externo, PREDICTED crops) y en\\n``16_evaluate_test.py`` (test, una sola vez). Cada caja predicha se asocia a un fruto GT por IoU\\n(matching uno-a-uno por confianza; NUNCA la regla del 75 %). Errores (sec. 28):\\n\\n* ``E_det = FN / N_GT``        ``E_clas = EC / N_matched``        ``E_flujo = (FN + EC) / N_GT``\\n* detecciones sin GT valido o duplicadas ",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 5581,
+      "text": "\"doc\": \"Auditoria cientifica automatica del experimento (se ejecuta en ``18_export_master_results.py``).\\n\\nVerifica sobre los ARTEFACTOS REALES (no sobre supuestos):\\n\\n1. el clasificador se entrena con GT crops (nunca con crops de un detector);\\n2. la regla del 75 % solo crea etiquetas (no se usa en entrenamiento, inferencia, seleccion ni umbrales);\\n3. el detector solo detecta frutos (labels de una clase; las cajas de signo no son targets);\\n4. el test permanece bloqueado hasta el freeze (nin",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 5621,
+      "text": "\"doc\": \"(2) La regla del 75 % solo crea etiquetas.\"",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 5843,
+      "text": "\"doc\": \"Reparte ``n`` items entre splits por el metodo del mayor resto (aritmetica exacta).\\n\\nEl desempate entre restos iguales sigue el orden ``train > validation > test``.\\nCon ``n=328`` y 0.70/0.20/0.10 resulta ``230 / 65 / 33``.\"",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 6103,
+      "text": "\"doc\": \"Generacion de graficos reutilizables (matplotlib, backend ``Agg``; sin seaborn).\\n\\nTodas las funciones ``plot_*``:\\n\\n* reciben ``DataFrame``/estructuras simples (nunca modelos) y devuelven la ``Figure``;\\n* no guardan nada por si mismas: usar :func:`save_figure` o ``RunContext.save_figure``;\\n* toleran datos vacios dibujando un aviso \\\"sin datos\\\" en lugar de fallar.\\n\\nCatalogo (ver README):\\n\\n* Dataset: distribucion y etiquetas, balance por split, frutos por imagen, tamanos de caja,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 6153,
+      "text": "\"doc\": \"Distribucion de la cobertura maxima de signos (%), con la linea del umbral del 75 %.\"",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 6188,
+      "text": "\"doc\": \"Diagrama del flujo de creacion del ground truth de clasificacion (regla del 75 %).\"",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 6339,
+      "text": "\"doc\": \"Dataset sintetico de 328 imagenes (el numero FIJO de la metodologia).\"",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 6425,
+      "text": "\"doc\": \"Regla canonica del 75 % y geometria de cajas (sec. 4).\",",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 6808,
+      "text": "\"doc\": \"Integracion end-to-end: scripts 00-05 sobre 328 imagenes sinteticas, con verificacion INDEPENDIENTE.\\n\\nLa regla del 75 % se recalcula aqui desde los ficheros YOLO crudos con una implementacion\\nseparada (no reutiliza ``utils.boxes``) y se compara con el manifiesto generado.\",",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 6912,
+      "text": "\"line\": 328,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 7392,
+      "text": "\"doc\": \"Pipeline integrado (errores E_det/E_clas/E_flujo), umbrales, freeze/test bloqueado y regla del 75 % separada del matching.\",",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 8099,
+      "text": "\"doc\": \"Genera un dataset YOLO SINTETICO (imagenes + etiquetas) solo para PROBAR el codigo.\\n\\nNO es el dataset del proyecto: sirve para la auditoria (``tools/run_audit.py``) y los tests.\\nProduce ``<out>/images/*.jpg`` y ``<out>/labels/*.txt`` con:\\n\\n* ``--n`` imagenes (por defecto 328, el valor FIJO de la metodologia);\\n* frutos (elipses azules) y cajas de signo con coberturas variadas (incluye 0, parciales y altas);\\n* ~5 % de imagenes con orientacion EXIF (las etiquetas se escriben en el ma",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/source_inventory_original.json",
+      "line": 8139,
+      "text": "\"text\": \"ap.add_argument(\\\"--n\\\", type=int, default=328)\"",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/VALIDACION_2026-10-28.md",
+      "line": 42,
+      "text": "1. Dataset real: 324/328 y label listado sin imagen; classes.txt, conteos, CRC/SHA, integridad y particiones reales.",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/validation_summary.json",
+      "line": 85,
+      "text": "\"reason\": \"Project raw images absent; external incomplete 328-image dataset audited separately; official crops/checkpoints pending\"",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/validation_summary.json",
+      "line": 148,
+      "text": "\"n_images\": 328,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/validation_summary.json",
+      "line": 161,
+      "text": "\"count\": 328.0,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/validation_summary.json",
+      "line": 171,
+      "text": "\"count\": 328.0,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "src/10_evaluate_outer_validation.py",
+      "line": 3,
+      "text": "Detectores (``--architecture YOLOv8n``...): mAP@0.5:0.95, mAP@0.5, mAP@0.75, precision, recall, F1 (punto de",
+      "classification": "AP_IOU_CUANTIL_ESTILO_O_METRICA; NO_GENERA_ETIQUETAS"
+    },
+    {
+      "path": "tests/test_run_layout_and_figures.py",
+      "line": 170,
+      "text": "return pd.DataFrame({\"architecture\": n, \"map50_95\": [0.5, 0.6, 0.4], \"map50\": [0.8, 0.85, 0.7], \"precision\": [0.7, 0.8, 0.6], \"recall\": [0.75, 0.8, 0.6], \"f1\": [0.72, 0.8, 0.6],",
+      "classification": "FIXTURE_SINTETICO_METRICAS_O_GEOMETRIA"
+    },
+    {
+      "path": "tests/test_run_layout_and_figures.py",
+      "line": 180,
+      "text": "curves = {\"A\": {\"precision\": np.array([1.0, 0.8, 0.5]), \"recall\": np.array([0.0, 0.5, 1.0]), \"ap\": 0.75}}",
+      "classification": "FIXTURE_SINTETICO_METRICAS_O_GEOMETRIA"
+    },
+    {
+      "path": "tools/demo_figures.py",
+      "line": 50,
+      "text": "\"train_map50_95\": 0.75 * k + rng.normal(0, 0.01), \"val_map50_95\": 0.62 * k + rng.normal(0, 0.015),",
+      "classification": "ILUSTRATIVO_CLI_AISLADO_EN_ESTIMACIONES_EXPLORATORIAS"
+    },
+    {
+      "path": "tools/demo_figures.py",
+      "line": 93,
+      "text": "bvh[\"hpo_mean\"] = bvh[\"baseline\"] + rng.uniform(-0.01, 0.08, 7)",
+      "classification": "ILUSTRATIVO_CLI_AISLADO_EN_ESTIMACIONES_EXPLORATORIAS"
+    },
+    {
+      "path": "tools/make_synthetic_dataset.py",
+      "line": 45,
+      "text": "fw = rng.uniform(0.08, 0.2) * min(w, h)",
+      "classification": "GEOMETRIA_O_ESTILO; NO_GENERA_ETIQUETAS"
+    },
+    {
+      "path": "docs/historical_pre_v4/ADAPTACION_BOTRYTIS.md",
+      "line": 13,
+      "text": "La lógica de cobertura generadora de etiquetas se eliminó de funciones, asserts, configuración, pruebas, manifests, diagramas y documentación. La cobertura auxiliar permanece como estadística descriptiva. Se preservaron valores legítimos como mAP@0.75, cuantiles y augmentation.",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "docs/historical_pre_v4/ADAPTACION_BOTRYTIS.md",
+      "line": 60,
+      "text": "Además del ZIP, se encontró `../dataset-botrytis_2026-10-01/images/` con **328** archivos. El dataset completo solicitado debería descubrir **329**. La captura histórica del TXT también dice 328; no demuestra que esa carpeta esté completa. No se eliminó, renombró ni inventó ningún archivo del dataset.",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "docs/historical_pre_v4/ADAPTACION_BOTRYTIS.md",
+      "line": 64,
+      "text": "Se intentó validación de píxeles, EXIF, hashes y duplicados sobre las 328 imágenes locales. Resultado bloqueante esperado: **2 errores** (conteo 328 frente a 329 y anomalías de anotación) y **74 warnings** (54 labels vacíos, 3 duplicados con imagen, 17 labels huérfanos). No se detectaron imágenes corruptas, duplicados de contenido ni casi duplicados con el criterio dHash configurado. En estas imágenes existen 1,849 frutos clase 0, 199 sospechosos y 259 signos. Los resultados no autorizan entrena",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "docs/historical_pre_v4/ADAPTACION_BOTRYTIS.md",
+      "line": 171,
+      "text": "La búsqueda semántica final está en `reports/semantic_scan_final.json`: ninguna regla activa antigua. Las dos menciones de `label_rule` son guardias que rechazan configuraciones obsoletas. La cobertura auxiliar, mAP@0.75 y augmentation conservan sus valores legítimos.",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "docs/historical_pre_v4/AUDIT_REPORT.md",
+      "line": 8,
+      "text": "- `reports/local_dataset_crosscheck/`: auditoría de la carpeta adyacente descubierta con 328 imágenes; faltan imágenes respecto al control de 329 y hay 17 labels sin imagen.",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "docs/historical_pre_v4/GUIA_EJECUCION_3PCs.md",
+      "line": 13,
+      "text": "Coloque el dataset completo en `data/raw/images/` y `data/raw/labels/`. El framework descubre los archivos; la captura esperada contiene 329 imágenes. La carpeta local auditada en esta entrega tiene 328 y 17 labels sin imagen: debe reconciliarse antes de la ejecución oficial. No borre labels ni cambie el control para ocultar la discrepancia.",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/historical/GUIA_EJECUCION_3PCs.md",
+      "line": 79,
+      "text": "Copia las 328 imágenes y sus etiquetas YOLO (`.txt`, mismo nombre) a:",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/historical/GUIA_EJECUCION_3PCs.md",
+      "line": 81,
+      "text": "C:\\botrytis\\Botrytis_Experiment_Framework\\data\\raw\\images\\   (328 imágenes)",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/historical/GUIA_EJECUCION_3PCs.md",
+      "line": 82,
+      "text": "C:\\botrytis\\Botrytis_Experiment_Framework\\data\\raw\\labels\\   (328 .txt)",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/historical/GUIA_EJECUCION_3PCs.md",
+      "line": 106,
+      "text": "- **01**: `reports/` con el informe del dataset; debe decir 328 imágenes y **0 errores**. Si hay WARNINGS, léelos.",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/historical/GUIA_EJECUCION_3PCs.md",
+      "line": 109,
+      "text": "- **04–05**: datasets de detección (clase única `fruit`) y crops de clasificación con la regla `intersección/área_fruto > 0.75`.",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/historical/README.md",
+      "line": 13,
+      "text": "> **Qué NO contiene:** resultados científicos. El dataset real (328 imágenes) no estaba disponible; todo se verificó con un",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/historical/README.md",
+      "line": 70,
+      "text": "| **TODO BLOQUEANTE** (no se puede inferir; el código aborta) | `classes.fruit_class_id`, `classes.sign_class_id`, `outer_split.seed` | **Rellénelos usted.** El `Dataset_Botrytis.zip` del escritorio (75 imágenes, una sola clase `signo_sospechoso_botrytis`) **no** es el dataset final de 328 imágenes con 2 clases; los IDs no pueden deducirse de él. La seed del split debe predeclararse **antes** de ver resultados (Spec §5.3). |",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/historical/README.md",
+      "line": 71,
+      "text": "| **FIJO** (validado al cargar; alterarlo lanza `FixedDecisionViolation`) | regla `> 0.75` con denominador = área del fruto, split 70/20/10 por imagen, test bloqueado, 328 imágenes, clase positiva `con_signos`, 1 trabajo GPU por PC / 3 globales, `image_size` 640/224, batch 16/32, 15/20 trials, `pretrained`, fp16, seeds `[17,42,73]`, top-3, TPE + MedianPruner, `n_jobs=1` por estudio | `project.profile: official` |",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/historical/README.md",
+      "line": 83,
+      "text": "python src/01_validate_dataset.py                 # 328 imágenes + anotaciones YOLO -> dataset_hash",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/historical/README.md",
+      "line": 87,
+      "text": "python src/05_build_classification_crops.py       # regla GT intersección/área(fruto) > 0.75; crops GT; 8 figuras de dataset",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/historical/README.md",
+      "line": 203,
+      "text": "| `area(signo)` como denominador, `>= 0.75`, IoU o suma de coberturas | `config_loader` (FIJO), `assert_label_rule_consistent`, auditoría 2 (recalcula etiquetas desde anotaciones crudas) |",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/label_audit/label_audit.json",
+      "line": 465,
+      "text": "\"0.75\": 0.04941486862960141,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/label_audit/label_audit.json",
+      "line": 480,
+      "text": "\"0.75\": 1.0,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/label_audit/label_audit.json",
+      "line": 495,
+      "text": "\"0.75\": 1.0,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/label_audit/label_audit.json",
+      "line": 884,
+      "text": "\"historical_image_count\": 328,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/local_dataset_crosscheck/label_audit.json",
+      "line": 6,
+      "text": "\"images_discovered\": 328,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/local_dataset_crosscheck/label_audit.json",
+      "line": 137,
+      "text": "\"0.75\": 0.04941486862960141,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/local_dataset_crosscheck/label_audit.json",
+      "line": 152,
+      "text": "\"0.75\": 1.0,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/local_dataset_crosscheck/label_audit.json",
+      "line": 167,
+      "text": "\"0.75\": 1.0,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/local_dataset_crosscheck/label_audit.md",
+      "line": 5,
+      "text": "Imágenes: 328; labels: 345; vacíos: 54.",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/graficos_cierre/support/label_audit/label_audit.json",
+      "line": 6,
+      "text": "\"images_discovered\": 328,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/graficos_cierre/support/label_audit/label_audit.json",
+      "line": 137,
+      "text": "\"0.75\": 0.04941486862960141,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/graficos_cierre/support/label_audit/label_audit.json",
+      "line": 152,
+      "text": "\"0.75\": 1.0,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/graficos_cierre/support/label_audit/label_audit.json",
+      "line": 167,
+      "text": "\"0.75\": 1.0,",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "reports/graficos_cierre/support/label_audit/label_audit.md",
+      "line": 5,
+      "text": "Imágenes: 328; labels: 345; vacíos: 54.",
+      "classification": "HISTORICO_OBSOLETO_NO_VALIDADO"
+    },
+    {
+      "path": "src/utils/config_loader.py",
+      "line": 335,
+      "text": "if \"label_rule\" in cfg:",
+      "classification": "GUARDA_RECHAZA_CONFIG_OBSOLETA"
+    },
+    {
+      "path": "src/utils/config_loader.py",
+      "line": 336,
+      "text": "errors.append(\"Obsolete label_rule configuration; migrate to annotation pairing\")",
+      "classification": "GUARDA_RECHAZA_CONFIG_OBSOLETA"
+    },
+    {
+      "path": "src/utils/metrics.py",
+      "line": 35,
+      "text": "\"p75\": float(s.quantile(0.75)), \"max\": float(s.max()),",
+      "classification": "AP_IOU_CUANTIL_ESTILO_O_METRICA; NO_GENERA_ETIQUETAS"
+    },
+    {
+      "path": "src/utils/plots_experiment.py",
+      "line": 294,
+      "text": "ax.bar(x, summary[\"mean\"], yerr=summary[\"sd\"].fillna(0), capsize=4, color=colors, alpha=0.75)",
+      "classification": "AP_IOU_CUANTIL_ESTILO_O_METRICA; NO_GENERA_ETIQUETAS"
+    },
+    {
+      "path": "src/utils/visualization.py",
+      "line": 451,
+      "text": "ax.add_patch(FancyBboxPatch(xy, w, h, boxstyle=\"round,pad=0.02,rounding_size=0.08\", fc=fc, ec=ec, lw=1.3))",
+      "classification": "GEOMETRIA_O_ESTILO; NO_GENERA_ETIQUETAS"
+    },
+    {
+      "path": "src/utils/visualization.py",
+      "line": 772,
+      "text": "ax.plot(xs, [a[1][i] for a in axes_def], color=cmap(cn(vals[i])), alpha=0.75, lw=1.6)",
+      "classification": "AP_IOU_CUANTIL_ESTILO_O_METRICA; NO_GENERA_ETIQUETAS"
+    },
+    {
+      "path": "src/utils/visualization.py",
+      "line": 950,
+      "text": "_box(ax, (0.3, 2.3), 4.6, 0.75, \"Seleccion del detector (selection_policy.yaml)\", fc=\"#ABEBC6\", bold=True, fs=8.5)",
+      "classification": "AP_IOU_CUANTIL_ESTILO_O_METRICA; NO_GENERA_ETIQUETAS"
+    },
+    {
+      "path": "src/utils/visualization.py",
+      "line": 951,
+      "text": "_box(ax, (5.3, 2.3), 4.6, 0.75, \"Seleccion del clasificador (selection_policy.yaml)\", fc=\"#AED6F1\", bold=True, fs=8.5)",
+      "classification": "AP_IOU_CUANTIL_ESTILO_O_METRICA; NO_GENERA_ETIQUETAS"
+    },
+    {
+      "path": "src/utils/visualization.py",
+      "line": 1116,
+      "text": "ax.imshow(h.T, extent=(0, 1, 1, 0), cmap=\"Reds\", alpha=0.75, aspect=\"equal\")",
+      "classification": "AP_IOU_CUANTIL_ESTILO_O_METRICA; NO_GENERA_ETIQUETAS"
+    }
+  ]
+}

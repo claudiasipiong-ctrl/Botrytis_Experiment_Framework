@@ -1,0 +1,12 @@
+image_id,reason,class_id,ordinal
+04a501fd-IMG_6797,duplicate_box,0,5
+213f3bad-IMG_6979,no_candidate,1,0
+2d515215-IMG_6819,no_candidate,1,0
+7c5a8c55-IMG_6823,duplicate_box,1,2
+7c5a8c55-IMG_6823,multiple_suspects_claim_fruit;global_assignment_tie,1,0
+7c5a8c55-IMG_6823,unassigned_competing_suspect;multiple_suspects_claim_fruit,1,2
+a8bbe159-IMG_6969,insufficient_iou,1,0
+d928c2d0-IMG_6622,duplicate_box,0,5
+d928c2d0-IMG_6622,multiple_eligible_candidates;global_assignment_tie,1,3
+fc4ef1be-IMG_6986,duplicate_box,0,6
+fc4ef1be-IMG_6986,multiple_eligible_candidates;global_assignment_tie,1,3

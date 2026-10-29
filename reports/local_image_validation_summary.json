@@ -1,0 +1,80 @@
+{
+  "n_labels_total": 345,
+  "n_labels_empty": 54,
+  "all_label_boxes_by_class": {
+    "0": 1941,
+    "1": 225,
+    "2": 261
+  },
+  "images_without_label": [],
+  "labels_without_image": [
+    "002e28d4-IMG_6965",
+    "2a56a5fe-IMG_6950",
+    "2a8dfd16-IMG_6984",
+    "2d2cbb51-IMG_6964",
+    "2ed811e9-IMG_6895",
+    "325f32cf-IMG_6901",
+    "40d645e2-IMG_6973",
+    "62f7cc83-IMG_6933",
+    "765da3ff-IMG_6987",
+    "aee71c52-IMG_6980",
+    "c8bf6ac4-IMG_6943",
+    "ce26834e-IMG_6952",
+    "d0c640e0-IMG_6935",
+    "d115b6f3-IMG_6896",
+    "e986fc0d-IMG_6948",
+    "eba0668d-IMG_6899",
+    "fc4ef1be-IMG_6986"
+  ],
+  "pairing_valid_pairs_all_labels": 218,
+  "annotation_anomalies_all_labels": 11,
+  "n_suspicious_boxes_with_images": 199,
+  "semantic_fingerprint": "7d24470184771ede32d8c0be1369db8cb6df29f8dfe5108d73a52d3884e9ac4b",
+  "passed": false,
+  "n_errors": 2,
+  "n_warnings": 74,
+  "issues_by_code": {
+    "ERROR:unexpected_image_count": 1,
+    "WARNING:no_annotations": 54,
+    "WARNING:duplicate_box": 3,
+    "WARNING:orphan_label": 17,
+    "ERROR:annotation_anomalies": 1
+  },
+  "dataset_hash": "a10d9a1c4df6c17be706b685c773f56aa28abd1b8fe0a14c93769a3c8a3652f3",
+  "n_images": 328,
+  "n_images_expected": 329,
+  "n_fruit_boxes": 1849,
+  "n_sign_boxes": 259,
+  "images_with_exif_rotation": 0,
+  "n_near_duplicate_pairs": 0,
+  "class_ids": {
+    "fruit": [
+      0
+    ],
+    "sign": 2
+  },
+  "fruits_per_image": {
+    "count": 328.0,
+    "mean": 5.637195121951219,
+    "std": 4.664861889821352,
+    "min": 0.0,
+    "p25": 2.0,
+    "median": 5.0,
+    "p75": 8.0,
+    "max": 27.0
+  },
+  "signs_per_image": {
+    "count": 328.0,
+    "mean": 0.7896341463414634,
+    "std": 1.482295884425025,
+    "min": 0.0,
+    "p25": 0.0,
+    "median": 0.0,
+    "p75": 1.0,
+    "max": 7.0
+  },
+  "images_dir": "C:\\Users\\Erick Obradovich\\OneDrive\\Documentos\\ULima\\2026-2\\SEMINARIO DE INVESTIGACIÓN II\\Código\\dataset-botrytis_2026-10-01\\images",
+  "labels_dir": "C:\\Users\\Erick Obradovich\\OneDrive\\Documentos\\ULima\\2026-2\\SEMINARIO DE INVESTIGACIÓN II\\Código\\dataset-botrytis_2026-10-01\\labels",
+  "generated_at": "2026-10-04T01:52:23.843858+00:00",
+  "pc_id": "PC-01"
+}

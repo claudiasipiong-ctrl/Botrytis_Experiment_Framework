@@ -1,0 +1,34 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+desktop.ini
+Thumbs.db
+
+# Salidas de ejecucion (se sincronizan por ZIP de resultados, no por git)
+runs/*
+!runs/.gitkeep
+reports/figures/*
+!reports/figures/.gitkeep
+tmp*/
+
+# Datos: nunca al repositorio (imagenes originales, datasets derivados, crops, checkpoints)
+data/*
+!data/.gitkeep
+data/raw/images/*
+data/raw/labels/*
+*.pt
+*.pth
+*.onnx
+
+# artifacts/ SI se versiona: manifiestos, hashes y folds son pequenos y parte de la trazabilidad.
+artifacts/superseded/
+# ...pero NO los artefactos pesados o mutables de la ejecucion (viajan en los ZIP de resultados, no por git):
+artifacts/optuna/
+artifacts/queue/
+artifacts/checkpoints/
+artifacts/pretrained/
+reports/tables/*
+!reports/tables/.gitkeep
+.venv/
+venv/

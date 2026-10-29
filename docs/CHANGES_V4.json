@@ -1,0 +1,835 @@
+[
+  {
+    "path": "ADAPTACION_BOTRYTIS.md",
+    "action": "MODIFICADO",
+    "before_sha256": "5309dea370c08507477d9ca9c2292ea898a4f0a9643a85a4344f8623e7166bc3",
+    "after_sha256": "c1443c9d5e42708f9be1675028d1f744dc5f76bd910b5cc067585aec0750d527",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "arbol_dataset.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "6f533d24b5865f93396ef1e54087af7c3eaef7b9a659be37c0273ddedffd721d",
+    "purpose": "metodologia/manifiestos"
+  },
+  {
+    "path": "AUDIT_REPORT.md",
+    "action": "MODIFICADO",
+    "before_sha256": "647f846d5c446474a415419c64feaef0e986c910175ae81b96113862f819886d",
+    "after_sha256": "c1443c9d5e42708f9be1675028d1f744dc5f76bd910b5cc067585aec0750d527",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "GUIA_EJECUCION_3PCs.md",
+    "action": "MODIFICADO",
+    "before_sha256": "237fc168815fd0bc911542c7c7cf28035722ee817b9e404daee7e197c4cc1b1f",
+    "after_sha256": "c1443c9d5e42708f9be1675028d1f744dc5f76bd910b5cc067585aec0750d527",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "README.md",
+    "action": "MODIFICADO",
+    "before_sha256": "8f1eb3cd27565c33762e037f1664d96c8f50fcbe3f904b78907078178cf3e891",
+    "after_sha256": "e2ade040b748b2758a47ad32b9de5d4b91e8be64efc8aabed92e1ebef29d93bb",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "SEPARACION_Y_EVIDENCIAS.md",
+    "action": "MODIFICADO",
+    "before_sha256": "244a21141dc0a5786dc08dd6f5cd239add3a800a635748269e69fd240bf4f0dd",
+    "after_sha256": "c1443c9d5e42708f9be1675028d1f744dc5f76bd910b5cc067585aec0750d527",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "configs/adaptado.yaml",
+    "action": "MODIFICADO",
+    "before_sha256": "9645479dac1680d5e0bd979272f5ede675cc89d830ab57f3260c41cf08319fcd",
+    "after_sha256": "5b4f74235887beac5360ad5992b0aa1bf726961379c6098a84fda1cfcd49bb05",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "configs/default.yaml",
+    "action": "MODIFICADO",
+    "before_sha256": "6b6de95a8e4bbf06dda0ed38f0b119c0db83b80e57c6f5f0b5ecb81b5096c4f0",
+    "after_sha256": "a2cce38afef9626aab2d4fdd03f6a702d6524a7b326209834aaf106997580653",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "configs/figure_catalog.json",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "914bb3818bb7b2ac81acdc0c04e436d09fc5a44b88d8bc570453243f19e56cce",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "configs/fleet_mapping.json",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "5fd4cbff23e21431854e5d7b7e8689fa3037704bf0186c9167faced416bafc7e",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "configs/operations.yaml",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "b840dd347a7c8602f9e30ccd0d6ae234f31a074721b28acec295e195fb38c28f",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "configs/weights_registry.json",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "a0cd49911ae1f2f9161e13e6ecae6fc1afa2be60f083b3d0f3d199af2db80b67",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "configs/workflow.json",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "744031348e1c2f48c25614617ac399f24d066df9ad63718182a1a8f4da978fa7",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "dev_tests/test_revision.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "2094fac99b4852ff10364bf1f3db70ebb8d5ac1abb69af933530c167a0b10db6",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/FIGURAS.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "0a8e89145e309ce1439fe9ec400f071c31850ea6fbec460aae83503edcfe12a5",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/FLUJO_COMPLETO_BOTRYTIS_HORIZONTAL.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "7b62973365461696b3c27e3ab32ea80e679b5c66d2aae8641a47bd79135c6775",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/GUIA_EJECUCION_3PCs_ACTUALIZADA.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "b7dd997978d8919c623c97d30de0401ac877df59f4e485b392e9e408fb467d9d",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/HIPERPARAMETROS.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "f08652e4197e2bdca0cdd700aeb0c1dfb6424877abe841252b2ab8052bf0af9a",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/HISTORICAL_ARTIFACTS.json",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "4048969f8bfb6cfda8f0866aeee7fa3a6775ff005493e4123c4831d34931ec06",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/LOGGING.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "717f1cf687112b5bd1f13785e3c71ffb233c7910e47efab03d265411c4e62729",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/LOGGING_ENTRYPOINTS.json",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "a24dc34913e348a45e7008cc0bd9bf5a0a832a7b7654c7bb8db5292375f9d97d",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/METODOLOGIA.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "99c0a3e9d68a153f9fb1cb67d66435fde82c7f05c63a59345961024cef1db02a",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/PESOS.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "18b02d2ff6913e15fbfa923e76735957300376c951018f4e3e733e6f964b3bf4",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/SEMANTIC_SCAN_FINAL.json",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "967288a8d964c3e38a9c71afe7acaf3a7ccdd581775b54aa9fe83355e547b0a1",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/SOURCE_METADATA.json",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "a65d736626b47e0a58f7fd0b1673ac632a0af2625b85543fe6f6987833f49e86",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/TRAZABILIDAD.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "5b2131bba98e3af175bf13e7ba60c0db5c6c29a91d0751c9728a052ca89a9ad1",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "scripts/Invoke-Botrytis.ps1",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "7705cfa3fcd0a7ba6094d9ce4c38799c9616cece69a638c448c0cf6f6455ae68",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "scripts/Invoke-QA.ps1",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "154a042b54f1a52f846fa260da9147085807c56c73984ab016d33dd6cc86c3bb",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "scripts/Prepare-Environment.ps1",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "966104e809f45905e4fd73cae5df5d139bfb145e744b9816271811af9b7e086d",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "scripts/qa.sh",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "d5bb4a3ad8de9bdeb45b8c805d44c20bfec21daf2f356d6b49340f13fef32ba9",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "src/00_check_environment.py",
+    "action": "MODIFICADO",
+    "before_sha256": "38bca9a87ef72f07bc745e6f89537e93dfe26dd01e27538d6d50dedc3793a3cd",
+    "after_sha256": "2f8ee625eb783ef81b41757499903d065d4979a5f037e5cdd6e27f804d2a44d8",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/01_validate_dataset.py",
+    "action": "MODIFICADO",
+    "before_sha256": "ce31d051bbd36808dcae70105eaf7d42d459319c60dabbddc7f8f776f0e602f0",
+    "after_sha256": "376f0aa60e6b217eff719bba09b8ebe861bbd40d3d7212c18415677b838e6ff0",
+    "purpose": "metodologia/manifiestos"
+  },
+  {
+    "path": "src/02_create_outer_split.py",
+    "action": "MODIFICADO",
+    "before_sha256": "de2d71b541a2ce695b6764f256135ac85c474a763eb50a90f79865dc16c8f8d7",
+    "after_sha256": "56afd6d9dea6328b07bef175ff5870d50f3350abf04b647c2535a54fb1235cbb",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/03_create_inner_folds.py",
+    "action": "MODIFICADO",
+    "before_sha256": "edeb0f2cc6db4625ac9423513570a916662e26bb71aad209b38dbc7d18be5df8",
+    "after_sha256": "17cfaecebb564d6e23824318c9f0f7bbd2c2732435c384bed851807e09686f25",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/04_build_detection_dataset.py",
+    "action": "MODIFICADO",
+    "before_sha256": "9ae37fa9fec37fd1c2a88120248c636e5fa997c7d40624708f2869f1ef7ae703",
+    "after_sha256": "e4e8eebda03dc1de1d64075fb36f0f88bd0b059501112e84642a352884d6b685",
+    "purpose": "metodologia/manifiestos"
+  },
+  {
+    "path": "src/05_build_classification_crops.py",
+    "action": "MODIFICADO",
+    "before_sha256": "29b058fb022cc2c8936349f99773dae3278cbb966e0aba1b4343baa44ea27791",
+    "after_sha256": "393aebdb9d6f26024ac57e3f7da5bf8a26e79ce07d22fc1db81738b53459d879",
+    "purpose": "metodologia/manifiestos"
+  },
+  {
+    "path": "src/06_run_baseline.py",
+    "action": "MODIFICADO",
+    "before_sha256": "0f2d59178f00a149cf0a60d47412c2908b2d2d60658da2ddf28c22e5d07dd95b",
+    "after_sha256": "3af07e5a3dc29703cc77852006327b20515c4c9eb2fb017045785d19be3e36ac",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/07_run_hpo_study.py",
+    "action": "MODIFICADO",
+    "before_sha256": "ffbc9a3a6ffd36234885e21f926434756a4e5543b0626c78d59253437a914bfc",
+    "after_sha256": "b3298565f28d96a341dc147049cd3764d75f1b9ae2bca32586cff64349641911",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "src/08_repeat_top_configs.py",
+    "action": "MODIFICADO",
+    "before_sha256": "6233ea884df6c411b7034afb8719a3e6d623cd0980d2cf5b714ab190c41268e5",
+    "after_sha256": "808c3011bd5533c86f8cd527758582c066e49824e0dbf53b4d9bbab4304e69f6",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/09_train_outer_candidate.py",
+    "action": "MODIFICADO",
+    "before_sha256": "5b293d8a2b2ba6c5f77b70274c662b8d3c82399ab0dcc1099dbcde1c42be22cd",
+    "after_sha256": "4fda5c13417c397fd1c23e5742221161b394295dd0c2ac924d4fa802fb79c491",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/10_evaluate_outer_validation.py",
+    "action": "MODIFICADO",
+    "before_sha256": "3df0a31b947b95c1279b2b80690793cb09b772a56269b4d7e5c708907dbef602",
+    "after_sha256": "3d69a6d0c3a12c0460731cee946529a531d753ae6ee2ecca4756831fc1de71d0",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/11_tune_inference_thresholds.py",
+    "action": "MODIFICADO",
+    "before_sha256": "93d26e608f2d8df7045352ecb6223d284b01dd6e132d063298e26b53061fa63b",
+    "after_sha256": "759974042eb27835b9e8ccaf8ab40308fb4ddf447b191c0e909e6bd212e09c27",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/12_select_detector.py",
+    "action": "MODIFICADO",
+    "before_sha256": "090659e3e9225c15a4b2246c7dbe984b6b1e61a97a0c084789243a24e95ae8a2",
+    "after_sha256": "bab3dcba3a65d809972899dcf830d5bcce5d60e894d1b7bea7cc5a88abc9201c",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "src/13_select_classifier.py",
+    "action": "MODIFICADO",
+    "before_sha256": "325ad7a1b15cf6675b244fd46b4030aadc31e52a325e4ecb088ef82742baac1f",
+    "after_sha256": "7be86c8eb462f2c4abcef11b4c311fa6f01231495735933ca6e4be5f919d5113",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "src/14_validate_integrated_pipeline.py",
+    "action": "MODIFICADO",
+    "before_sha256": "7b63e945ea31ea09a4c8d2d258d6d55f98798e46922c8ebe6e77ff712e30d7b9",
+    "after_sha256": "5a7c9d61c0d123d15b145a1c2670268ce15f7dadac398597dd1e26b4fa44f6fe",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/15_freeze_experiment.py",
+    "action": "MODIFICADO",
+    "before_sha256": "af772803725fe4e47f14eed72096aef21fbdb36c93893767cca18a895e0e2be7",
+    "after_sha256": "4d61b35c878033e7dd848454f76fe77f0e131fb43126c3f22f933ef902bf0103",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/16_evaluate_test.py",
+    "action": "MODIFICADO",
+    "before_sha256": "d409c3fab4aba029a782825e638a82d9535f517f571944344384950324c00a76",
+    "after_sha256": "224d7dc79abbb06ef404dcdc6e0b0e28723155c24b4b854f88e5492f3f3059de",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/17_benchmark_latency.py",
+    "action": "MODIFICADO",
+    "before_sha256": "851a03d150fafb02b8d4d483e2c5943097b8dacd94686d6eaa3d1fceb4ec1d3b",
+    "after_sha256": "a51487749ab504d67e6b4477d383912615f50881345119f2eb295f769af79889",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/18_export_master_results.py",
+    "action": "MODIFICADO",
+    "before_sha256": "4bbfe6764519b93beb836586ddbfe80395bb1be295181b0267f5cdc49dad80f7",
+    "after_sha256": "c6f266703eb848e7fe1c2ba07065221174d7fca73a203f33594869c195dc4ae4",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/19_audit_labels.py",
+    "action": "MODIFICADO",
+    "before_sha256": "cefdbcd54b5fbebe207d9cf4f6137ae58e842de2dd8db675c0d7ab00c8eda7d8",
+    "after_sha256": "83b3b37e8f8c33e79584111e5e0fc4ab8af326cd526087186202d74a15746992",
+    "purpose": "metodologia/manifiestos"
+  },
+  {
+    "path": "src/20_audit_split_evidence.py",
+    "action": "MODIFICADO",
+    "before_sha256": "a5c01ec8b30424ab226f7eaebdcd82e2924e1fade9a7ce0d2d1ca7f1f2c603ac",
+    "after_sha256": "4c0f794e0193ff55192a11f44ec9e0b0b46fbe4db1616b8119fad65f3c02fb98",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tests/conftest.py",
+    "action": "MODIFICADO",
+    "before_sha256": "5fc4cc11e32a6ff8181c02ba3e427a621c34f5732c2515dac0db374635609981",
+    "after_sha256": "51f01404ee31e1cbaad0a42fb757ecff7ad2e401994f9103bf7c7ef104b0529a",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tests/test_classifier_training.py",
+    "action": "MODIFICADO",
+    "before_sha256": "75ed301fb01cafebc531f2db2bba132103c5d432e346921a36c95288be199e8c",
+    "after_sha256": "995ba986cbbee4d6c614ae3495d7be19a59c7e07ae7bfd8f00e99140144c7c7f",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "tests/test_config_hashing.py",
+    "action": "MODIFICADO",
+    "before_sha256": "6e46b7ed8b2177368e53706ecff421f794c054690a520fff3bb93da80e758660",
+    "after_sha256": "19db39aeda3f355f3dec9ada497d590ed519631e907509c97051388059d3832a",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tests/test_e2e_pipeline.py",
+    "action": "MODIFICADO",
+    "before_sha256": "08cdfafcb296c76929098bd73bfd1be6b56a5cde533563f75f193621e6eeb094",
+    "after_sha256": "c670a3cedbcd71272a682044334bb554d129975140e2e1b870d0a623c67bc2bd",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tests/test_exchange_safety.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "3d55563f243ef0fc710ce4df467c2586091d30921b5a969fbcfbcc08f22d9d94",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tests/test_external_graphics.py",
+    "action": "MODIFICADO",
+    "before_sha256": "48b6af3f59c8766852a8ad1841461e87bd832017dbf017fc99859d9fcd485074",
+    "after_sha256": "892b5d1fbaebe3dff70938bc7ded361931f251490b25f4b3d6fd04ff95c78cbc",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tests/test_hpo_and_selection.py",
+    "action": "MODIFICADO",
+    "before_sha256": "b2acecc9ac1d9fe60e0520f9aee6c3a8784f5fb87bb3e1a371eff201cde756ed",
+    "after_sha256": "201d965625f39e9a8a95954528c95893fffa6b6e91debbb7b798219e0f7bf7bf",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "tests/test_semantic_pairing.py",
+    "action": "MODIFICADO",
+    "before_sha256": "15cc63e08299c8dea2f1c2179363a02e5d2b2576dd06aba886fd892d59bd99e9",
+    "after_sha256": "7797b6a969e8e3a1518d3c2158fff7030298927c8c17f2b44e91ed835de976a3",
+    "purpose": "metodologia/manifiestos"
+  },
+  {
+    "path": "tests/test_training_components.py",
+    "action": "MODIFICADO",
+    "before_sha256": "92f10729251e06eaa5afbffe1b5117fb98517e6a9afd155cebe8b06b3b47477b",
+    "after_sha256": "ffac2db31d18c8426702973dd9a3d3ad2c6ad34abf0fabbdbfaa7d78995ec3ee",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/audit.py",
+    "action": "MODIFICADO",
+    "before_sha256": "9b126349b0df0042eb364b43a6e4570644c6e8fb8f0c8d89fb5d3c8569ff9c6d",
+    "after_sha256": "2ee72809392204352a67303a47e757a1fa6693fb403963871f6184bad92b808c",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/configure_safety.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "c74521ddc7eb4db3e6c17d830f51e318567d44e62723c620e12c8ae5099fc547",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/demo_figures.py",
+    "action": "MODIFICADO",
+    "before_sha256": "fc3fa3874614bc4b1441a4b0b7c313356f788eff5db3333bd8727febd798c60d",
+    "after_sha256": "594ec20618eaa2f14be34d008d1a246ffd395007653f86fdee6676c9cad69444",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/extract_stage_features.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "36c317443f594d0a12e7c165f9640fc976740f9b79c9c773e23722dea9194ef8",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/generate_all_figures.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "52151a37ea5161f32ae2c5b60873c63552a9f31154f9e8ed6791237dc3ec1f40",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/inspect_model_graph.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "4f6447d1338a541eb77348bd8bd5895f2fa97e5abaafb52a68c8175b964c831e",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/make_synthetic_dataset.py",
+    "action": "MODIFICADO",
+    "before_sha256": "732614a674b4c5afa9bc7b6a26d7fb2dc8c6886471edb0326db1589e3b46537c",
+    "after_sha256": "2ddbf1c7ff23e3b188e0f718a63afb4e40dead222c4e113e2db45524dd67ecbe",
+    "purpose": "metodologia/manifiestos"
+  },
+  {
+    "path": "tools/make_zip.py",
+    "action": "MODIFICADO",
+    "before_sha256": "b81e785347a58c47a8cbd7f690e56a47919586cd99cc778fbc4ea194b3a39679",
+    "after_sha256": "e05ebe1bb1052c56289dd78b2915d178c7a243cc8f9f66432345092f9a734d92",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/manage_weights.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "4a507957d93723de1aa9953488a82f5f60f143361373f88e38870980e292581d",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "tools/manual_gates.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "9f94a9d0a2c499563ad5e23f151be27501da0c9bebbb1c38fb3768a9992ccfbd",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "tools/normalize_text.py",
+    "action": "MODIFICADO",
+    "before_sha256": "46d492c554029bd7be08544e21e2fafaab8ba0fa0017bce07f33927ab34d1d1b",
+    "after_sha256": "8e7c2bad629e497dd237819630d8d4badbb5b5e98a3b7fd760566f3a02d03602",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/prepare_figure_sources.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "9558382fb48b3e17d7f7b866d3a045ab5b0f3b8fb05c1c2ce3b147ea1b6e39ae",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/prepare_machine.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "36097fc7ca0acdac02f90bef9be136b57524618decf71cdab4a80edbff6c874b",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/qa.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "7782adc9269df24ef1c542d54a1a1a903a04051bb86ac5a76f83be5c67527f2b",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/qa_checks.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "3a487f4f5188f8a85622a15c25d16797e1580a213ea7155f1210dff549e429fc",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/qa_training_smoke.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "287531c8c9c3a89932d37030c4e78efee81a6562bd5c427702d6edca5911c7e9",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/resume_local.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "ddff584decb4854ef9322c026b76fc3222e0a118aa81afdf7e6fb8ee8c9a1bab",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "tools/smoke_test.py",
+    "action": "MODIFICADO",
+    "before_sha256": "d1fe93b9f849dde13c007b99f1746b605a0b5ae6e638849f1db53b8e2c5eb025",
+    "after_sha256": "d56f18270e00af9aedadea7e83cbe94cbb6cdf17d6f840b74de3ce34a1cedb5b",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "tools/verify_delivery.py",
+    "action": "MODIFICADO",
+    "before_sha256": "a8037120b925c0acef9bed02529f2f1f4cabb407e2cae7b8cad1605aa0e1a71b",
+    "after_sha256": "e5f1024976b854794e938e5d442f1b0222f92ae756502facf52a820ea5764f9f",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/historical_pre_v4/ADAPTACION_BOTRYTIS.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "5309dea370c08507477d9ca9c2292ea898a4f0a9643a85a4344f8623e7166bc3",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/historical_pre_v4/AUDIT_REPORT.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "647f846d5c446474a415419c64feaef0e986c910175ae81b96113862f819886d",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/historical_pre_v4/GUIA_EJECUCION_3PCs.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "237fc168815fd0bc911542c7c7cf28035722ee817b9e404daee7e197c4cc1b1f",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/historical_pre_v4/README.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "8f1eb3cd27565c33762e037f1664d96c8f50fcbe3f904b78907078178cf3e891",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/historical_pre_v4/SEPARACION_Y_EVIDENCIAS.md",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "244a21141dc0a5786dc08dd6f5cd239add3a800a635748269e69fd240bf4f0dd",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "docs/historical_pre_v4/test_external_graphics.py.txt",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "48b6af3f59c8766852a8ad1841461e87bd832017dbf017fc99859d9fcd485074",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/orchestration/exchange.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "cc3bb45e0a9c778ce9fd1ecf44d5a99aaf067d785ce2fff7d4706ba7afc13ca8",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "src/orchestration/launch.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "958c14b79467d7254ff1fc45fc9bfcd24b873e76636e900f6f8307c936819817",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "src/orchestration/machine.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "e8d36ad2fc1b68c032011a75d6de3169e2c224f388204fb841465d501bf6a202",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "src/orchestration/pc_registry.py",
+    "action": "MODIFICADO",
+    "before_sha256": "c35016e7d48536a68577a5d7cd9739c8c4aa346db4c9cad7de0189d22582ec87",
+    "after_sha256": "b0b105a16cc65a1aeaf368123a44ffcdeea26251a95d3ca8a99cb2374bd3e044",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "src/orchestration/sync.py",
+    "action": "MODIFICADO",
+    "before_sha256": "b947de68e2cf7e20afaaf2aa9053bba4d197b28267c380942b5659cd58e2f3ee",
+    "after_sha256": "dcdfce8afefd9cb4b6247aeb748a9e56897411ee07f1761e9305008f506e2fbc",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "src/orchestration/worker.py",
+    "action": "MODIFICADO",
+    "before_sha256": "8729d3c8d6fb835fec281508bac6b0b0d44385bbe3f8eefbc638fa31bc3671f3",
+    "after_sha256": "aa104fb553096bb86f70a5ff47ba1f81f1934048bada09bbd0de898e7b31317e",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "src/utils/bootstrap.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "dbe2c511cd2017f0ee71cae17fef07f6ea8f942d94ee70d7ef10697ac089755b",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "src/utils/boxes.py",
+    "action": "MODIFICADO",
+    "before_sha256": "4def7fbf3e00d18a8c6a5c79b668e172c5e9bfeb8bd085f635e0d33d10dde368",
+    "after_sha256": "499d31dc359af7a5582e7e10adf2e645d2bec2c54d1b77a0646688febc64f6e7",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/utils/classifier_models.py",
+    "action": "MODIFICADO",
+    "before_sha256": "feb7c18949b4098b70ccffc3330b9ae74ce905a1dec3c9de584088f572ce08af",
+    "after_sha256": "ca82ef053a13cecd65027c89370da94bec6b250e6fc6f8f87dff72360dfcda96",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "src/utils/classifier_train.py",
+    "action": "MODIFICADO",
+    "before_sha256": "8f4a87b9d4fa6bb896d381b8d03b20d92f7a75a47c9beba686dc90433ac02f8b",
+    "after_sha256": "4687593110319501e053dd168b3bbd70907ed70baccfd8b3adae3196b832f122",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "src/utils/config_loader.py",
+    "action": "MODIFICADO",
+    "before_sha256": "9a831a43c9e451831e577937cd77268ca810b3915d880f7c6fe206ba51b2995e",
+    "after_sha256": "f97e8bfdff49ec04c05403e172bc44de701ce81d9a938a965004c440e4ddc6c5",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/utils/detector_train.py",
+    "action": "MODIFICADO",
+    "before_sha256": "74fe2803932566d4317d7c8effcaf6ff8663b208ec67551c2388cacc124111ea",
+    "after_sha256": "72ccee60686957ba805f5dba5ef06ab1bac203262c273e64852b4540a10337e9",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "src/utils/durable.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "7ec053cd469d17c8d0b3c319982f8eac5510bef6ecba85ea32f732d73b4d8cd3",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/utils/evidence.py",
+    "action": "MODIFICADO",
+    "before_sha256": "71582dee140c41ff3aaa9b2533aaf6d84869a510065f47a8707fc21c37b8a3fd",
+    "after_sha256": "d80848e5a2acb5d3f3ec3d34f083c1c2e90f056f7d22a57843ac48070b8757f5",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/utils/figures_all.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "07005d7dbac62e771ab8c763c8702bbe9bdbb1b45476016dd92ddd8e735e0ea2",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/utils/figure_catalog.py",
+    "action": "MODIFICADO",
+    "before_sha256": "4a5143eb6e34c3a99dde723451dabaec89ce2a702af899669404efd12465913e",
+    "after_sha256": "547ee2907fc17f98f843a9ab8f55c88c7581c7a13659013ed8efacf779dc5bd5",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/utils/guards.py",
+    "action": "MODIFICADO",
+    "before_sha256": "294cdb13bd6c3b119533b7842681ee32f7641a0b56050f86f7ea775c43d9a48f",
+    "after_sha256": "cf373237e5e4016b56584537d813d2bf6617be66b2008223185903a8376cf715",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/utils/hashing.py",
+    "action": "MODIFICADO",
+    "before_sha256": "79b567cc3eed83995783af55af1f6b5845140d2be8631ca04140893062ed9e31",
+    "after_sha256": "b56ae7136bc38f4255b2dbd24faeac992fcd6ba85efd1ffcecd9d0f167b2c454",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/utils/hpo_results.py",
+    "action": "MODIFICADO",
+    "before_sha256": "05450228e46ca7a4c23b9fc5744169abb2c0305debbf6586191d8389056d0a6c",
+    "after_sha256": "77a9b2341161c6402b59cd9d7f8ed9723ace3aff13713951d5c66d178822ed17",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "src/utils/hpo_runner.py",
+    "action": "MODIFICADO",
+    "before_sha256": "1a66f9798644251781cd61530eeeb3a5bb9841336e05a8e44ad710e8e8307c1b",
+    "after_sha256": "0f3f308a70c40b92ae6a0a8340b50ec1160acfc37029ac6d9e36671bcc00cada",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "src/utils/io.py",
+    "action": "MODIFICADO",
+    "before_sha256": "015220bdd50bcedf55abf9626ec1a4ddcc4e80527b672c87c2a13bf0ac03a538",
+    "after_sha256": "f226a8d76fa79a9d082c94c874e7725e457abc706c3b36d88d540ffd44c6c995",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/utils/logging_utils.py",
+    "action": "MODIFICADO",
+    "before_sha256": "6d089528bd0838b121a1fc562158fe94f3b9fe29dbfcf33c8717200fb755e60d",
+    "after_sha256": "7b35c3e648a2d93bab787b55fefceb7d9404d76453acd0f779f54fbb215f3878",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "src/utils/manual_gates.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "566db19ea1842a0b165ab595ea7f1159c74f201a47571176be77f08e8a67267f",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "src/utils/metrics.py",
+    "action": "MODIFICADO",
+    "before_sha256": "2a0cc87920fbda1a84757ac760fdcf1a41aed179d03b15bb57808015eb2fe38c",
+    "after_sha256": "3891c38ad4dd8c58c7dc88c9dc3025eca8d4a698e950f91a43679bf928254134",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/utils/optuna_storage.py",
+    "action": "MODIFICADO",
+    "before_sha256": "e46ad8b09c346b4a66d0138f2450922f86e2340bfb28c1ae9404e571bca5bef0",
+    "after_sha256": "b2ece2cfbcd817dacaf11a16fee1f9b9d370a08a9593e849591a6c671d0ba83d",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "src/utils/pairing.py",
+    "action": "MODIFICADO",
+    "before_sha256": "d2a464eeb722ae262c35450545e637d2ee85afe697401300c939098ebd28cc17",
+    "after_sha256": "67bc3665dd578ccf52d6849799b4f01c2fedab591669b77cf7a831ec099ae5d1",
+    "purpose": "metodologia/manifiestos"
+  },
+  {
+    "path": "src/utils/pretrained.py",
+    "action": "MODIFICADO",
+    "before_sha256": "9830daf53451256339f72b1677473e3ad2d84d1eb3920e33f8666e7bb948b4e7",
+    "after_sha256": "8516553b1db1b7cea8167f98da42b856cf9ecd1f9aa39ef0e96354da445d0541",
+    "purpose": "arquitecturas/pesos/HPO"
+  },
+  {
+    "path": "src/utils/reporting.py",
+    "action": "MODIFICADO",
+    "before_sha256": "ccd694d1a1100a2677b720ccdef7ea9f496ed38156578af835b5447e6df5d3eb",
+    "after_sha256": "28ae8df4a457b744e13dc17f6106feb1e24f94ad743853373d59602bf698310c",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/utils/resume.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "fc0e79d440496e02ec4e018a815526f528d160df6bf4a8098d1656ef38be6126",
+    "purpose": "logging/operacion local"
+  },
+  {
+    "path": "src/utils/safety.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "58243cb5f0d2f99b5e540cf017c9708c87d292c33e036b421f9e828c91f79a94",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/utils/scientific_audit.py",
+    "action": "MODIFICADO",
+    "before_sha256": "01cbb0e5dc07a7acfac74c07ba453e85e95c760d36686eb34bb6bca2fdaab126",
+    "after_sha256": "ba9b05a75379787cbd9fb3dfb07eb489b08ed8eda12c1e40665bde1df3ecc555",
+    "purpose": "figuras/documentacion/tests/integridad"
+  },
+  {
+    "path": "src/utils/semantics.py",
+    "action": "MODIFICADO",
+    "before_sha256": "b32933959aa7e2a8ed9b4c9905d81947431ad4dc71f626ff999873ac497a6f0d",
+    "after_sha256": "e7c49bf784f0d6107c3832f49dbd9124908aa990b6264f7266a0f4e6648c6e6e",
+    "purpose": "metodologia/manifiestos"
+  },
+  {
+    "path": "src/utils/splits.py",
+    "action": "MODIFICADO",
+    "before_sha256": "a81993480b8ae2eb34d2406c5795d271ab8bee6278b2da545a002b4d6fb46f4e",
+    "after_sha256": "7bd483beb0cc493862005d086112fa8c586efd8325d1f2f2dc0c173f07e4f0b3",
+    "purpose": "metodologia/manifiestos"
+  },
+  {
+    "path": "src/utils/weights.py",
+    "action": "AGREGADO_O_RESTAURADO_DESDE_ZIP",
+    "before_sha256": null,
+    "after_sha256": "c9ccfd3ede12927d357be68315c8db3087b664db01bde923f21f4f7b7349902b",
+    "purpose": "arquitecturas/pesos/HPO"
+  }
+]

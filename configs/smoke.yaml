@@ -1,0 +1,56 @@
+# =============================================================================
+# configs/smoke.yaml -- PERFIL DE PRUEBA DE HUMO (NO cientifico).
+# Se aplica como override sobre default.yaml (--config configs/smoke.yaml) para verificar que TODA la
+# cadena 00-18 funciona de extremo a extremo con presupuestos diminutos y un dataset sintetico.
+# Las decisiones FIJAS de la metodologia (semantica de pairing, split 70/20/10, test bloqueado, 1 trabajo GPU por PC,
+# un estudio por arquitectura, TPE + MedianPruner...) NO se relajan: solo presupuestos y tamanos.
+# Los resultados de este perfil quedan marcados (project.profile: smoke) en cada run y en el freeze_manifest.
+# =============================================================================
+project:
+  profile: smoke
+
+dataset:
+  enforce_expected_count: false
+
+detector:
+  image_size: 320
+  batch_size: 8
+  nominal_batch_size: 8
+  max_epochs: 3
+  early_stopping_patience: 2
+  trials_per_architecture: 3
+  workers: 0
+  baseline: {epochs: 3, patience: 2}
+
+classifier:
+  batch_size: 16
+  max_epochs: 3
+  early_stopping_patience: 2
+  trials_per_architecture: 3
+  workers: 0
+  baseline: {epochs: 3}
+
+robustness:
+  top_k_configs: 2
+  seeds: [17, 42]
+
+reproducibility:
+  final_seeds: [17, 42]
+
+optuna:
+  sampler: {name: TPE, multivariate: true, group: true, startup_trials: 1}
+  pruner: {name: MedianPruner, startup_trials: 2, warmup_epochs: 1, interval_steps: 1}   # los 2 primeros trials no se podan: garantiza top_k=2 COMPLETE
+
+inference_tuning:
+  detector_conf_grid: [0.01, 0.05, 0.25]
+  detector_nms_iou_grid: [0.5, 0.7]
+  classifier_threshold_grid_points: 21
+
+benchmark:
+  warmup_iterations: 2
+  measured_iterations: 10
+
+figures:
+  gradcam_examples: 4
+  tp_fp_fn_examples: 3
+  gt_examples: 3

@@ -1,0 +1,8 @@
+# Override comun; no contiene limites de hardware inventados.
+operations:
+  safety_policy_file: artifacts/v4/safety_policy.json
+  max_job_attempts: 3
+  expected_utc_offset_minutes: -300
+  export_hour: 21
+  deadline_hour: 22
+  max_export_attempts: 3

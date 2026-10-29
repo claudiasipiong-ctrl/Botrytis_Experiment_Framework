@@ -1,0 +1,126 @@
+{
+  "ultralytics_assets": {
+    "tag": "v8.4.0",
+    "published_at": "2026-01-13T22:56:46Z",
+    "assets": [
+      {
+        "name": "yolo26l.pt",
+        "size": 53211173,
+        "digest": "sha256:9fe3c544f2b19bebad7ea41e76d7ad3d88b7c2f10d11d24430c5311f6b32db26",
+        "url": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26l.pt"
+      },
+      {
+        "name": "yolo26n.pt",
+        "size": 5544453,
+        "digest": "sha256:9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+        "url": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n.pt"
+      },
+      {
+        "name": "yolo26s.pt",
+        "size": 20422725,
+        "digest": "sha256:646f8bc3fe0a656803d95c294f7852321748cb29d13466a1af8862e2db384a1b",
+        "url": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26s.pt"
+      },
+      {
+        "name": "yolov8l.pt",
+        "size": 87792836,
+        "digest": "sha256:64c9115303f6a25575f82200d1b22ec409fa6bd7d08d0313884fc20d919478cd",
+        "url": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolov8l.pt"
+      },
+      {
+        "name": "yolov8m.pt",
+        "size": 52136884,
+        "digest": "sha256:5d4a90cdc7a21786cc59cd19778e9eafff836df9e2da32524737c7ee6efe4fe5",
+        "url": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolov8m.pt"
+      },
+      {
+        "name": "yolov8n.pt",
+        "size": 6549796,
+        "digest": "sha256:f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36",
+        "url": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolov8n.pt"
+      }
+    ]
+  },
+  "vit": {
+    "sha": "2ec9fb3d7bb664aac471ac44582c94d18de33780",
+    "siblings": [
+      {
+        "rfilename": "config.json",
+        "blobId": "e856ed3f192c220c3b97ab768c86a7fd4e75186e",
+        "size": 586
+      },
+      {
+        "rfilename": "model.safetensors",
+        "blobId": "3c35009a3702a37ea7418fe3b31c9281c95f79b0",
+        "size": 346284714,
+        "lfs": {
+          "sha256": "c401d219603ac3e20b6373c7b198c78d3a733f80b755d148bda3bc320ae69800",
+          "size": 346284714,
+          "pointerSize": 134
+        }
+      },
+      {
+        "rfilename": "pytorch_model.bin",
+        "blobId": "085fa7bd55cc7ce15014bbb382bf9d005ece5d77",
+        "size": 346325485,
+        "lfs": {
+          "sha256": "d4d98fa05e0c8c50095f79df633dc2862ca52cb8128deeaa616c7f698fc6cf59",
+          "size": 346325485,
+          "pointerSize": 134
+        }
+      }
+    ]
+  },
+  "swin": {
+    "sha": "4cc3a7275b50b53a7bec45f32c236ebe64227cff",
+    "siblings": [
+      {
+        "rfilename": "config.json",
+        "blobId": "13c3eb26f41f64052a308ff3b6d4777e453fd279",
+        "size": 637
+      },
+      {
+        "rfilename": "model.safetensors",
+        "blobId": "6d697725812abfe07914a704560229f1624d8423",
+        "size": 114286722,
+        "lfs": {
+          "sha256": "fb01861f793143135fa0d6cd97b1631e4b33eaa3ee162bbea9e62de1c76ebac1",
+          "size": 114286722,
+          "pointerSize": 134
+        }
+      },
+      {
+        "rfilename": "pytorch_model.bin",
+        "blobId": "d54a619c30a1640b0997b70eb7ed95a5ca5203f9",
+        "size": 114336965,
+        "lfs": {
+          "sha256": "4d7d61fb43a9093e1deb6b9d6216000677ae8920e6fe4d42bfdde546d93aa833",
+          "size": 114336965,
+          "pointerSize": 134
+        }
+      }
+    ]
+  },
+  "rtdetr": {
+    "tag": "v0.1",
+    "published_at": "2023-08-10T07:32:43Z",
+    "assets": [
+      {
+        "name": "rtdetr_r50vd_6x_coco_from_paddle.pth",
+        "size": 172373587,
+        "digest": null,
+        "url": "https://github.com/lyuwenyu/storage/releases/download/v0.1/rtdetr_r50vd_6x_coco_from_paddle.pth"
+      }
+    ]
+  },
+  "ultralytics_commit": {
+    "ref": "refs/tags/v8.4.170",
+    "node_id": "REF_kwDOH-jzvbJyZWZzL3RhZ3MvdjguNC4xNzA",
+    "url": "https://api.github.com/repos/ultralytics/ultralytics/git/refs/tags/v8.4.170",
+    "object": {
+      "sha": "14abcd2860a235d9e3fa2a300144481bf8a4d874",
+      "type": "tag",
+      "url": "https://api.github.com/repos/ultralytics/ultralytics/git/tags/14abcd2860a235d9e3fa2a300144481bf8a4d874"
+    }
+  }
+}

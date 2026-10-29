@@ -1,0 +1,1131 @@
+{
+  "schema": 1,
+  "state": "QA_MANUAL_PENDIENTE; EXPERIMENTO_PENDIENTE",
+  "files": {
+    ".gitignore": "370f93b27b55adf9d0e529844e18250ab34709d52b7ecd7b461a2d0674069d70",
+    ".vscode/extensions.json": "d5022608f50a30e08bf822d83a0be3855aeb620e87ca9be124ca9f1f40e39035",
+    ".vscode/launch.json": "f9dcd7a424a5e066e8f16affbc137b3beab422cffce2f20314d56b0b0094b9d4",
+    ".vscode/settings.json": "6011cb23b87222d6108070a15c5bc023de263366f580ac2efadedbabc2202c07",
+    ".vscode/tasks.json": "853382f0b5cb907c2d722ea4ee4173a8ea4ced445fd65360b0798788fc538cd5",
+    "ADAPTACION_BOTRYTIS.md": "c1443c9d5e42708f9be1675028d1f744dc5f76bd910b5cc067585aec0750d527",
+    "arbol_dataset.md": "6f533d24b5865f93396ef1e54087af7c3eaef7b9a659be37c0273ddedffd721d",
+    "artifacts/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "AUDIT_REPORT.md": "c1443c9d5e42708f9be1675028d1f744dc5f76bd910b5cc067585aec0750d527",
+    "configs/adaptado.yaml": "5b4f74235887beac5360ad5992b0aa1bf726961379c6098a84fda1cfcd49bb05",
+    "configs/default.yaml": "a2cce38afef9626aab2d4fdd03f6a702d6524a7b326209834aaf106997580653",
+    "configs/figure_catalog.json": "914bb3818bb7b2ac81acdc0c04e436d09fc5a44b88d8bc570453243f19e56cce",
+    "configs/fleet_mapping.json": "5fd4cbff23e21431854e5d7b7e8689fa3037704bf0186c9167faced416bafc7e",
+    "configs/operations.yaml": "b840dd347a7c8602f9e30ccd0d6ae234f31a074721b28acec295e195fb38c28f",
+    "configs/search_spaces.yaml": "ea3695c798f90056e188b7f46d997cd543254925a148732fac73fccbe814be1e",
+    "configs/smoke.yaml": "8053ae086e9672814acb41ec9543980382a5c83c263fc2bd87f56d06e7689950",
+    "configs/weights_registry.json": "a0cd49911ae1f2f9161e13e6ecae6fc1afa2be60f083b3d0f3d199af2db80b67",
+    "configs/workflow.json": "744031348e1c2f48c25614617ac399f24d066df9ad63718182a1a8f4da978fa7",
+    "data/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/raw/images/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/raw/labels/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dev_tests/test_revision.py": "2094fac99b4852ff10364bf1f3db70ebb8d5ac1abb69af933530c167a0b10db6",
+    "docs/AUDITORIA_FINAL_V4.md": "62bd33c24d0bcc3699209aff1b9288c595d6abfbb961e37705f470457e526e12",
+    "docs/CHANGES_V4.json": "4b6ba2ea51fd8fdf8f63ec15089550b84355dad88d7486f5527af2f100be17c5",
+    "docs/FIGURAS.md": "0a8e89145e309ce1439fe9ec400f071c31850ea6fbec460aae83503edcfe12a5",
+    "docs/FLUJO_COMPLETO_BOTRYTIS_HORIZONTAL.md": "7b62973365461696b3c27e3ab32ea80e679b5c66d2aae8641a47bd79135c6775",
+    "docs/GUIA_EJECUCION_3PCs_ACTUALIZADA.md": "b7dd997978d8919c623c97d30de0401ac877df59f4e485b392e9e408fb467d9d",
+    "docs/HIPERPARAMETROS.md": "f08652e4197e2bdca0cdd700aeb0c1dfb6424877abe841252b2ab8052bf0af9a",
+    "docs/HISTORICAL_ARTIFACTS.json": "4048969f8bfb6cfda8f0866aeee7fa3a6775ff005493e4123c4831d34931ec06",
+    "docs/historical_pre_v4/ADAPTACION_BOTRYTIS.md": "5309dea370c08507477d9ca9c2292ea898a4f0a9643a85a4344f8623e7166bc3",
+    "docs/historical_pre_v4/AUDIT_REPORT.md": "647f846d5c446474a415419c64feaef0e986c910175ae81b96113862f819886d",
+    "docs/historical_pre_v4/GUIA_EJECUCION_3PCs.md": "237fc168815fd0bc911542c7c7cf28035722ee817b9e404daee7e197c4cc1b1f",
+    "docs/historical_pre_v4/README.md": "8f1eb3cd27565c33762e037f1664d96c8f50fcbe3f904b78907078178cf3e891",
+    "docs/historical_pre_v4/SEPARACION_Y_EVIDENCIAS.md": "244a21141dc0a5786dc08dd6f5cd239add3a800a635748269e69fd240bf4f0dd",
+    "docs/historical_pre_v4/test_external_graphics.py.txt": "48b6af3f59c8766852a8ad1841461e87bd832017dbf017fc99859d9fcd485074",
+    "docs/LOGGING.md": "717f1cf687112b5bd1f13785e3c71ffb233c7910e47efab03d265411c4e62729",
+    "docs/LOGGING_ENTRYPOINTS.json": "a24dc34913e348a45e7008cc0bd9bf5a0a832a7b7654c7bb8db5292375f9d97d",
+    "docs/METODOLOGIA.md": "99c0a3e9d68a153f9fb1cb67d66435fde82c7f05c63a59345961024cef1db02a",
+    "docs/PESOS.md": "18b02d2ff6913e15fbfa923e76735957300376c951018f4e3e733e6f964b3bf4",
+    "docs/SEMANTIC_SCAN_FINAL.json": "967288a8d964c3e38a9c71afe7acaf3a7ccdd581775b54aa9fe83355e547b0a1",
+    "docs/SOURCE_METADATA.json": "a65d736626b47e0a58f7fd0b1673ac632a0af2625b85543fe6f6987833f49e86",
+    "docs/TRAZABILIDAD.md": "5b2131bba98e3af175bf13e7ba60c0db5c6c29a91d0751c9728a052ca89a9ad1",
+    "GUIA_EJECUCION_3PCs.md": "c1443c9d5e42708f9be1675028d1f744dc5f76bd910b5cc067585aec0750d527",
+    "pytest.ini": "6eec3be45fc88ad2910efec42bd24a2c8c5b509e53dd6b86297887769ce0aa84",
+    "README.md": "e2ade040b748b2758a47ad32b9de5d4b91e8be64efc8aabed92e1ebef29d93bb",
+    "reports/audit_report.md": "14e08b26d829f438f4e33bb447e40ac4559e2de5c41970e6909d19c7198a3752",
+    "reports/AUDITORIA_2026-10-28.md": "7a5c21315d0863cc4080ebc70fd1a14b8d5894378121f8fc3e305254c320cddf",
+    "reports/CAMBIOS_POR_ARCHIVO.md": "6c3ae88a667c7321c609c312f62b478ec70d17e2e3e9468c082190a73fe3a7f1",
+    "reports/CHANGE_MANIFEST.json": "908cb87162fa13b44df44266c3c9bd035c87ebe93273ee4546e4e5fd914903e8",
+    "reports/dataset_source_crosscheck.json": "15cb0bc83f3f3d159afbf2539b281c869213ce09b4866a9d3819370f011b10aa",
+    "reports/development_tests.xml": "007743727b26358926ce510b4e96e2a510873228d2aee96dbd9674df06385e3b",
+    "reports/development_validation.json": "5d9125b10741a12a020c58280de4bbd6fa8919c3b272e40bd8191062be36fbd2",
+    "reports/figures/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reports/framework_code_changes.patch": "3ee2cf1ad54d9b5e46a6456611d775e91633ccd0f1c634617bfa0f78a9a30120",
+    "reports/graficos_cierre/data/anomalias.csv": "027dfff3aa2345803a573a7d7b444322d8ec1af32eea2b0d69402aeed14150ee",
+    "reports/graficos_cierre/data/crops_posibles_label_only.csv": "13654aad93171d904d62d2b009b82aee2404b826d7b825de0603bc57937a576c",
+    "reports/graficos_cierre/data/distribucion_anotaciones.csv": "09c7a203a122eb86635e962ef5ba37d06e98a1ec4beebfce857c8079ccae2ced",
+    "reports/graficos_cierre/data/figura_dataset.csv": "2e79dcfc38a6b3b6323dc55cb79fc7e5327452076abbd5f6b9e0eb13ea81afbd",
+    "reports/graficos_cierre/data/fuentes_descubiertas.csv": "fde8031b9524e389589a47ee142389e750990bc1b23dad97a4b9ce6fdf764d19",
+    "reports/graficos_cierre/data/hiperparametros_iniciales.csv": "e707fb5846b56b44f5dc9b510dbf0f18fcfc06df2dfe542ef4fa16c3fc38f572",
+    "reports/graficos_cierre/data/iou_emparejamiento.csv": "257b9b6212ccf25fc3d9112a34e925f26f9668aca4921e1beb755074d8f4a7ad",
+    "reports/graficos_cierre/data/iou_todos_candidatos.csv": "4f7dacac1fe1c51bf0bbba3dbb7aae43e0519f02d0921ed86fad079c068a4d89",
+    "reports/graficos_cierre/inventario.csv": "24935a38cb6c60ded55070e6df9624c7322912be374419dbba351ec381e0142c",
+    "reports/graficos_cierre/INVENTARIO.md": "4902a76cc280b555241dc71c985580946ff555cf55cac27ee8ad098fa8fc539d",
+    "reports/graficos_cierre/support/label_audit/boxes.csv": "d0c11b0de9818176f9ad81d9ac201ac076d101df422b2249ed6f96d67a467efd",
+    "reports/graficos_cierre/support/label_audit/label_anomalies.csv": "83304abe183e90e7544be32f56c28b820f8059eef4aee8c3cf6ddda740987352",
+    "reports/graficos_cierre/support/label_audit/label_audit.json": "ae22a7b8aa0526b2a67677b13e5a0c6232b4fa33e89e590dbf890399e1a9e32b",
+    "reports/graficos_cierre/support/label_audit/label_audit.md": "8cf051d96724a6537a3d5da8db0c15bb0d79fd19c811a09e39b1382c38fd4d7f",
+    "reports/graficos_cierre/support/label_audit/label_per_image.csv": "80995700dd6a95cc6c1c6af608efada5a5bade3eaf834fda8a6744aa0972c660",
+    "reports/graficos_cierre/support/label_audit/pairing_audit.csv": "9c5ef11d4fef2799fbfd3dce82e4b17fe08eeba8c7af77d43853575cf68f7c87",
+    "reports/graficos_cierre/support/label_audit/pairing_candidates.csv": "a08b527025cdf394c3f6dd7c5245171ed3cc5b24e66fa5edad7c18e16227f4a2",
+    "reports/graficos_cierre.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reports/historical/GUIA_EJECUCION_3PCs.md": "9d26e858ef87622ba4ff5132817a9a68e4fb622ab6947fa0765400f48fb03cc5",
+    "reports/historical/README.md": "e87cf5f9b0f481b097c766411f71a5dbac08695d90129d4b5f70fc74535204eb",
+    "reports/label_audit/boxes.csv": "d0c11b0de9818176f9ad81d9ac201ac076d101df422b2249ed6f96d67a467efd",
+    "reports/label_audit/label_anomalies.csv": "83304abe183e90e7544be32f56c28b820f8059eef4aee8c3cf6ddda740987352",
+    "reports/label_audit/label_audit.json": "bdb3e7ff0859e127784db2e4226a316b0d8d108519a4ef4a3288957a262d5124",
+    "reports/label_audit/label_audit.md": "8f66bb0cbc2654c70a08284a34082c516a50318dac1a00be7472e4f2eb503fd4",
+    "reports/label_audit/label_per_image.csv": "80995700dd6a95cc6c1c6af608efada5a5bade3eaf834fda8a6744aa0972c660",
+    "reports/label_audit/pairing_audit.csv": "9c5ef11d4fef2799fbfd3dce82e4b17fe08eeba8c7af77d43853575cf68f7c87",
+    "reports/label_audit/pairing_candidates.csv": "a08b527025cdf394c3f6dd7c5245171ed3cc5b24e66fa5edad7c18e16227f4a2",
+    "reports/local_dataset_crosscheck/boxes.csv": "d0c11b0de9818176f9ad81d9ac201ac076d101df422b2249ed6f96d67a467efd",
+    "reports/local_dataset_crosscheck/label_anomalies.csv": "83304abe183e90e7544be32f56c28b820f8059eef4aee8c3cf6ddda740987352",
+    "reports/local_dataset_crosscheck/label_audit.json": "ae22a7b8aa0526b2a67677b13e5a0c6232b4fa33e89e590dbf890399e1a9e32b",
+    "reports/local_dataset_crosscheck/label_audit.md": "8cf051d96724a6537a3d5da8db0c15bb0d79fd19c811a09e39b1382c38fd4d7f",
+    "reports/local_dataset_crosscheck/label_per_image.csv": "80995700dd6a95cc6c1c6af608efada5a5bade3eaf834fda8a6744aa0972c660",
+    "reports/local_dataset_crosscheck/pairing_audit.csv": "9c5ef11d4fef2799fbfd3dce82e4b17fe08eeba8c7af77d43853575cf68f7c87",
+    "reports/local_dataset_crosscheck/pairing_candidates.csv": "a08b527025cdf394c3f6dd7c5245171ed3cc5b24e66fa5edad7c18e16227f4a2",
+    "reports/local_image_validation.log": "0c8a7d1296cc6f3ce053657a86ddb799367e124a0f92cb1d7006d57491da6b45",
+    "reports/local_image_validation_summary.json": "acf3aa6e6dc52553694f329ca3387a494044ab8116045ac65d18577cb4fb49db",
+    "reports/pyflakes.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reports/semantic_scan_final.json": "9ab5dc132a8cb311cb129918595de7c68255b74c378b4d7100318b5bb08b8e95",
+    "reports/separation_audit/AUDIT.md": "25524c7d23a6fbc8671d359eea181e78ef9b08d565f2e44c5e301486abc42a27",
+    "reports/separation_audit/changed_files.json": "aa85fcdaeaebec54bdb02e4fda0592a19889b5047793ea2d267d285ae8756ae1",
+    "reports/separation_audit/changes.diff": "15a74815b3a58fdf9cf12c34f8e0773c16dfd2175b61ef63a0c290609a4932a8",
+    "reports/separation_audit/DELIVERY_SUMMARY.json": "dfbdb1163abd8eec9de453a011b98e622e95fcd871e3816efa6871d79b8c9fff",
+    "reports/separation_audit/evidence_final.log": "32ab0912733fa1617aafeb01835f582d8b704a62f2fdfad9bbd977c83193e913",
+    "reports/separation_audit/evidence_final.xml": "f8cab6bb519339b15633ec3984f05560e8f4e28e28d224182ad5cc55344de332",
+    "reports/separation_audit/final_tests.log": "9a01c075893344c97f9fe94a69eb9bb1d709168ec9859ba440b2fbb6d63eb0b4",
+    "reports/separation_audit/final_tests.xml": "5c61e17136e2b2e84c476047da39dacc23cbaaafc32dbede344fd00ec1da2984",
+    "reports/separation_audit/new_tests.log": "d09f0ad06d6e59b908037317d6c044f7ababd3466cb46d5b901cf6f0855baf04",
+    "reports/separation_audit/new_tests.xml": "fbdcf94f27a5f117d511a6e029ab91f6b139b42322d101a42bf40f06cd130595",
+    "reports/separation_audit/targeted_final.log": "3b21ba72d092a475261c50cba4dc171776a0a772afc6e98c8453bf5386bf830f",
+    "reports/separation_audit/targeted_final.xml": "d5b7e9abe78647b610ff4725916cfc5ec7f4267ecc7e550dc772be1f32641146",
+    "reports/separation_audit/tests.log": "ec0c21d93ff4e2bb75af69d50d72fe740614c4dd15cc49f151ea41e27457d424",
+    "reports/separation_audit/tests.xml": "d6b294b1f67d45027aa436475ce8cd4f8169ae4a952cd4754f9617388622645d",
+    "reports/smoke_scientific_audit.json": "7954a04a2c98177b8f876b28453746dcae3855e44ef4387f17269c05d48cd3c1",
+    "reports/SMOKE_TEST_EVIDENCE.md": "ee63dd804f3687b82617efa7739e4a50f8e0db3bdf0bf5e0447ce7f3b80fb34a",
+    "reports/source_inventory_original.json": "1dc7cccd13ae5f17dc66befd3f02fcca86120423ad6970b6960041488cc72ca0",
+    "reports/static_audit.log": "5a1ca2d0e9d76c98d6a97de1958f089671b5673948f2826a48e327591708f01b",
+    "reports/tables/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reports/tests.log": "c89f65422170ab918c4d8460842b791ddd9f445975351617152c4fbf989be301",
+    "reports/tests.xml": "3f1e26aa0b63a0346f3635b85c4afd40e9b422750e9f5378a6b5d7dc3139cbc9",
+    "reports/tests_final_cierre.log": "5be72379e855a25031c8ebc1ff4237fad4bd6a176be4a2102d839c06032059a9",
+    "reports/tests_final_cierre.xml": "98b5aa0abdaadc7af5dac9d055aaaa44c6bedc0dd069ee9bbcbede6a8818bdd8",
+    "reports/tests_graphics_final_cierre.log": "1a846c7136c487031c2b6079521f3258c6b6478ce540e13fa7b0d6cba828776f",
+    "reports/tests_graphics_final_cierre.xml": "e34179174084a0701c3d092e3d363a7507c796fe65bcc71f915e3e5eb101204e",
+    "reports/tests_targeted_cierre.log": "63567cc579e98776415c037eb7dadbbf1dc3a1a120b3124996b3b1095f284713",
+    "reports/tests_targeted_cierre.xml": "f0cc1418d78a900a585daa10cd9440672288647cb8d8ad45d67ca9d1edbe4ef8",
+    "reports/VALIDACION_2026-10-28.md": "f3e67601c99ca762f2431054e162f265fa729514cb7d9129c065929c209498c3",
+    "reports/validation_summary.json": "332bc1a29700399228e2c0399f79cf66f6aa0fb4f98cf06c00c134a42c6dd5ed",
+    "requirements-dev.txt": "c792950c650370dceea17ad5144497bedce553e7c75c3b93f2b500596095a02b",
+    "requirements.txt": "dd0735f01d99254f90110de3a3fa2b339b64e2751d0ab2e50284adfa1e39efeb",
+    "runs/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "scripts/Invoke-Botrytis.ps1": "7705cfa3fcd0a7ba6094d9ce4c38799c9616cece69a638c448c0cf6f6455ae68",
+    "scripts/Invoke-QA.ps1": "154a042b54f1a52f846fa260da9147085807c56c73984ab016d33dd6cc86c3bb",
+    "scripts/Prepare-Environment.ps1": "966104e809f45905e4fd73cae5df5d139bfb145e744b9816271811af9b7e086d",
+    "scripts/qa.sh": "d5bb4a3ad8de9bdeb45b8c805d44c20bfec21daf2f356d6b49340f13fef32ba9",
+    "SEPARACION_Y_EVIDENCIAS.md": "c1443c9d5e42708f9be1675028d1f744dc5f76bd910b5cc067585aec0750d527",
+    "src/00_check_environment.py": "2f8ee625eb783ef81b41757499903d065d4979a5f037e5cdd6e27f804d2a44d8",
+    "src/01_validate_dataset.py": "376f0aa60e6b217eff719bba09b8ebe861bbd40d3d7212c18415677b838e6ff0",
+    "src/02_create_outer_split.py": "56afd6d9dea6328b07bef175ff5870d50f3350abf04b647c2535a54fb1235cbb",
+    "src/03_create_inner_folds.py": "17cfaecebb564d6e23824318c9f0f7bbd2c2732435c384bed851807e09686f25",
+    "src/04_build_detection_dataset.py": "e4e8eebda03dc1de1d64075fb36f0f88bd0b059501112e84642a352884d6b685",
+    "src/05_build_classification_crops.py": "393aebdb9d6f26024ac57e3f7da5bf8a26e79ce07d22fc1db81738b53459d879",
+    "src/06_run_baseline.py": "3af07e5a3dc29703cc77852006327b20515c4c9eb2fb017045785d19be3e36ac",
+    "src/07_run_hpo_study.py": "b3298565f28d96a341dc147049cd3764d75f1b9ae2bca32586cff64349641911",
+    "src/08_repeat_top_configs.py": "808c3011bd5533c86f8cd527758582c066e49824e0dbf53b4d9bbab4304e69f6",
+    "src/09_train_outer_candidate.py": "4fda5c13417c397fd1c23e5742221161b394295dd0c2ac924d4fa802fb79c491",
+    "src/10_evaluate_outer_validation.py": "3d69a6d0c3a12c0460731cee946529a531d753ae6ee2ecca4756831fc1de71d0",
+    "src/11_tune_inference_thresholds.py": "759974042eb27835b9e8ccaf8ab40308fb4ddf447b191c0e909e6bd212e09c27",
+    "src/12_select_detector.py": "bab3dcba3a65d809972899dcf830d5bcce5d60e894d1b7bea7cc5a88abc9201c",
+    "src/13_select_classifier.py": "7be86c8eb462f2c4abcef11b4c311fa6f01231495735933ca6e4be5f919d5113",
+    "src/14_validate_integrated_pipeline.py": "5a7c9d61c0d123d15b145a1c2670268ce15f7dadac398597dd1e26b4fa44f6fe",
+    "src/15_freeze_experiment.py": "4d61b35c878033e7dd848454f76fe77f0e131fb43126c3f22f933ef902bf0103",
+    "src/16_evaluate_test.py": "224d7dc79abbb06ef404dcdc6e0b0e28723155c24b4b854f88e5492f3f3059de",
+    "src/17_benchmark_latency.py": "a51487749ab504d67e6b4477d383912615f50881345119f2eb295f769af79889",
+    "src/18_export_master_results.py": "c6f266703eb848e7fe1c2ba07065221174d7fca73a203f33594869c195dc4ae4",
+    "src/19_audit_labels.py": "83b3b37e8f8c33e79584111e5e0fc4ab8af326cd526087186202d74a15746992",
+    "src/20_audit_split_evidence.py": "4c0f794e0193ff55192a11f44ec9e0b0b46fbe4db1616b8119fad65f3c02fb98",
+    "src/orchestration/__init__.py": "f15477f47052af3aea862963c0875aaaed055e7f7c529fa11afdb5e734c557f3",
+    "src/orchestration/exchange.py": "cc3bb45e0a9c778ce9fd1ecf44d5a99aaf067d785ce2fff7d4706ba7afc13ca8",
+    "src/orchestration/launch.py": "958c14b79467d7254ff1fc45fc9bfcd24b873e76636e900f6f8307c936819817",
+    "src/orchestration/machine.py": "e8d36ad2fc1b68c032011a75d6de3169e2c224f388204fb841465d501bf6a202",
+    "src/orchestration/pc_registry.py": "b0b105a16cc65a1aeaf368123a44ffcdeea26251a95d3ca8a99cb2374bd3e044",
+    "src/orchestration/study_queue.py": "bac7fc0aa49fc3b3ca83c0c63544196544f8536f82c149a4dc5428ecf47f77c3",
+    "src/orchestration/sync.py": "dcdfce8afefd9cb4b6247aeb748a9e56897411ee07f1761e9305008f506e2fbc",
+    "src/orchestration/worker.py": "aa104fb553096bb86f70a5ff47ba1f81f1934048bada09bbd0de898e7b31317e",
+    "src/utils/__init__.py": "fb195fe42eaad88fe5e8d824039c507deabe6d72348a93eb4e6a7e714c6b25a6",
+    "src/utils/architectures.py": "5d83049976a12c5e8e9b69caaa1273388e0dcdc8c4d2098728ccd429060230c6",
+    "src/utils/bootstrap.py": "dbe2c511cd2017f0ee71cae17fef07f6ea8f942d94ee70d7ef10697ac089755b",
+    "src/utils/boxes.py": "499d31dc359af7a5582e7e10adf2e645d2bec2c54d1b77a0646688febc64f6e7",
+    "src/utils/checks.py": "9bffceef1e15c7859b9ed23fb8381db6406d47da3092c45afeb311d98c416388",
+    "src/utils/classifier_data.py": "25f5ce2972d7f2795bc5c6cd3dc7b6182c7da995b00903c2f88b3d48f416c685",
+    "src/utils/classifier_models.py": "ca82ef053a13cecd65027c89370da94bec6b250e6fc6f8f87dff72360dfcda96",
+    "src/utils/classifier_train.py": "4687593110319501e053dd168b3bbd70907ed70baccfd8b3adae3196b832f122",
+    "src/utils/comparison.py": "10222032b9d8befebff09dfe8782a95d86373436649305e72b1261d45a23e441",
+    "src/utils/config_loader.py": "f97e8bfdff49ec04c05403e172bc44de701ce81d9a938a965004c440e4ddc6c5",
+    "src/utils/dataset.py": "370ea42a7ae59bb58fc4f1e5df30a5b4c43bcf57bf71cdfed19c239bc6d21a29",
+    "src/utils/detector_data.py": "4cbd1bdf119166f2f4776789e98ad823fc715e9c4a6be4a3e273010efd4ad16e",
+    "src/utils/detector_train.py": "72ccee60686957ba805f5dba5ef06ab1bac203262c273e64852b4540a10337e9",
+    "src/utils/durable.py": "7ec053cd469d17c8d0b3c319982f8eac5510bef6ecba85ea32f732d73b4d8cd3",
+    "src/utils/evidence.py": "d80848e5a2acb5d3f3ec3d34f083c1c2e90f056f7d22a57843ac48070b8757f5",
+    "src/utils/figure_catalog.py": "547ee2907fc17f98f843a9ab8f55c88c7581c7a13659013ed8efacf779dc5bd5",
+    "src/utils/figures_all.py": "07005d7dbac62e771ab8c763c8702bbe9bdbb1b45476016dd92ddd8e735e0ea2",
+    "src/utils/folds.py": "98a51227ef070c385266086b628bd244f108b1220d370303bb463f2d3e07c8ee",
+    "src/utils/freeze.py": "e268cba4075559b2fdc06c7386a8cecf25551ccfccbcae017a33eeb6b0bfb701",
+    "src/utils/gradcam.py": "39aa4fb0793041b405da5672542fec35a4ea36ad214c952cca2aaf0aead25e23",
+    "src/utils/guards.py": "cf373237e5e4016b56584537d813d2bf6617be66b2008223185903a8376cf715",
+    "src/utils/hashing.py": "b56ae7136bc38f4255b2dbd24faeac992fcd6ba85efd1ffcecd9d0f167b2c454",
+    "src/utils/hpo_results.py": "77a9b2341161c6402b59cd9d7f8ed9723ace3aff13713951d5c66d178822ed17",
+    "src/utils/hpo_runner.py": "0f3f308a70c40b92ae6a0a8340b50ec1160acfc37029ac6d9e36671bcc00cada",
+    "src/utils/inference.py": "9c7c6c3160cdf0d8c4a02b04b450b120723be1a2addcd5c8ee7df61192b02f04",
+    "src/utils/io.py": "f226a8d76fa79a9d082c94c874e7725e457abc706c3b36d88d540ffd44c6c995",
+    "src/utils/isolation.py": "2a7f3f1af7f2502b3f871a93953bd53f73c0d354bdada2f4d8b9b2242ad782c2",
+    "src/utils/label_audit.py": "9b242b391366f8f3f35d207633d7f301da11427ac40a67811dfe7980a86a9604",
+    "src/utils/labels.py": "2ca2afa36f46d9ebbbf8c3135a1d2f65ec8d683d72c649a1b006215d7b7a191f",
+    "src/utils/logging_utils.py": "7b35c3e648a2d93bab787b55fefceb7d9404d76453acd0f779f54fbb215f3878",
+    "src/utils/manual_gates.py": "566db19ea1842a0b165ab595ea7f1159c74f201a47571176be77f08e8a67267f",
+    "src/utils/metrics.py": "3891c38ad4dd8c58c7dc88c9dc3025eca8d4a698e950f91a43679bf928254134",
+    "src/utils/metrics_classification.py": "02d413481c297f9d3344c2210b86846c2422aeea4c3b84b66687f2fdd194eb10",
+    "src/utils/metrics_detection.py": "f3ba44709ca146d0c8a21eb22561372afcf2647633b2ca604a4d6fbbc7bcc61d",
+    "src/utils/model_stats.py": "e73e04da6d749154eb65ea918cb82d6d1845d7cd53cb4af964b053a6a1b5d6cf",
+    "src/utils/optuna_storage.py": "b2ece2cfbcd817dacaf11a16fee1f9b9d370a08a9593e849591a6c671d0ba83d",
+    "src/utils/pairing.py": "67bc3665dd578ccf52d6849799b4f01c2fedab591669b77cf7a831ec099ae5d1",
+    "src/utils/pipeline_eval.py": "cc7007bea18ca7373914ed4b14eda8b6589f3ef6f9ebb928dd2a72fe9b4f1966",
+    "src/utils/plots_experiment.py": "0641b7aa679a5c55559dccd66c9f7d067e7ff5e5c7a73365c51600df17316fda",
+    "src/utils/prepared.py": "96d39209e543f598dcfd8e84bce9d475d5ff9f1bbe3036d04b7b1a7d11073b4a",
+    "src/utils/pretrained.py": "8516553b1db1b7cea8167f98da42b856cf9ecd1f9aa39ef0e96354da445d0541",
+    "src/utils/reporting.py": "28ae8df4a457b744e13dc17f6106feb1e24f94ad743853373d59602bf698310c",
+    "src/utils/reproducibility.py": "865bd36b78be017d61d26f0bb386a75068bd071b05488652e41f0b3b6525f831",
+    "src/utils/resume.py": "fc0e79d440496e02ec4e018a815526f528d160df6bf4a8098d1656ef38be6126",
+    "src/utils/run_common.py": "b35a32d70df70f83ccd0c154dac4f5147ecd2fc3a56a10246af09e9b6c609d3f",
+    "src/utils/run_figures.py": "c8ee7d972c3a28d3bc41b16152d24175044fafee9afaf85cfadc3a0bf79321de",
+    "src/utils/safety.py": "58243cb5f0d2f99b5e540cf017c9708c87d292c33e036b421f9e828c91f79a94",
+    "src/utils/scientific_audit.py": "ba9b05a75379787cbd9fb3dfb07eb489b08ed8eda12c1e40665bde1df3ecc555",
+    "src/utils/search_spaces.py": "4a18e6f87fbe722d27b0e81bf82c5913a5dde2b84cf4ad426a853874b92ea80c",
+    "src/utils/selection.py": "c687a80f9787496bcb6840cd81c54d17ff60c59e91c947b9c76b357b07d9eeb5",
+    "src/utils/semantics.py": "e7c49bf784f0d6107c3832f49dbd9124908aa990b6264f7266a0f4e6648c6e6e",
+    "src/utils/spatial_audit.py": "9cc22799cdee395f34070e1b8968096b464d96127671306e19cf3d383a55f2fa",
+    "src/utils/split_summary.py": "e258834d458bcfe45e9e844170bc2761af362fbe4141139e4e7d646e55b0356a",
+    "src/utils/splits.py": "7bd483beb0cc493862005d086112fa8c586efd8325d1f2f2dc0c173f07e4f0b3",
+    "src/utils/timing.py": "4824ede6c895c8a5fd24292761aa5ec9b1950b7d074f516a7b33b0b2bd0f47de",
+    "src/utils/training_common.py": "acff5ad6ece9676d1ca7907caf29c8beb8f86aaa61cafcf4aaece80f672dac05",
+    "src/utils/visualization.py": "0ed0b5df3c8bccefdf9d84d6e2ebf449ce2ec04a74aa341c38f688e76d5b5a2f",
+    "src/utils/weights.py": "c9ccfd3ede12927d357be68315c8db3087b664db01bde923f21f4f7b7349902b",
+    "tests/conftest.py": "51f01404ee31e1cbaad0a42fb757ecff7ad2e401994f9103bf7c7ef104b0529a",
+    "tests/test_audit_status.py": "57ebb6e8458bc3f13ad5accb897d186e87bcda3378b95035ef901c039810354e",
+    "tests/test_boxes_and_rule.py": "f5d6c6eacce636536d698c56f0bf5814bf67e2dd28672106c34f80fb78367b03",
+    "tests/test_classifier_training.py": "995ba986cbbee4d6c614ae3495d7be19a59c7e07ae7bfd8f00e99140144c7c7f",
+    "tests/test_config_hashing.py": "19db39aeda3f355f3dec9ada497d590ed519631e907509c97051388059d3832a",
+    "tests/test_derived_inputs_and_audit.py": "036b819b41c2686dc8831f3655b5bf0fcdad2cd62aa3e0bbc1daf24aa2613262",
+    "tests/test_e2e_pipeline.py": "c670a3cedbcd71272a682044334bb554d129975140e2e1b870d0a623c67bc2bd",
+    "tests/test_exchange_safety.py": "3d55563f243ef0fc710ce4df467c2586091d30921b5a969fbcfbcc08f22d9d94",
+    "tests/test_external_graphics.py": "892b5d1fbaebe3dff70938bc7ded361931f251490b25f4b3d6fd04ff95c78cbc",
+    "tests/test_hpo_and_selection.py": "201d965625f39e9a8a95954528c95893fffa6b6e91debbb7b798219e0f7bf7bf",
+    "tests/test_logging_traceability.py": "35a8ba2ab2b147c4b719f69716cb85fd6447c75c32f8d0a2a10bbe005a10e9c7",
+    "tests/test_orchestration.py": "52f84ca091c102f428298341ebb366e3af45e6fbd9d052e475c7cf3778fccc3e",
+    "tests/test_pipeline_and_freeze.py": "39b423267a8d34c673304542aa1fad8c7a6c9e17cd7563c7cf647cd119c5aa14",
+    "tests/test_run_layout_and_figures.py": "9465372b58f8e7cdd33e09d91cf2b8eea98c103e3eef0943c9121981cb6c6fc4",
+    "tests/test_semantic_pairing.py": "7797b6a969e8e3a1518d3c2158fff7030298927c8c17f2b44e91ed835de976a3",
+    "tests/test_split_evidence.py": "2b94168f479f0c01501abd156a39733766b0571e480a1b0ef2552a0b6b608536",
+    "tests/test_splits_folds_metrics.py": "f56d1594b1a0a207aa6869c95c4c9b740701868b82beacfedea64d3ca45617ad",
+    "tests/test_training_components.py": "ffac2db31d18c8426702973dd9a3d3ad2c6ad34abf0fabbdbfaa7d78995ec3ee",
+    "tests/test_visualization.py": "61cd2a6fd8b046a1d5eabf41b48ebb97c0a36d3bb8505643eb2de702388437c0",
+    "tools/audit.py": "2ee72809392204352a67303a47e757a1fa6693fb403963871f6184bad92b808c",
+    "tools/configure_safety.py": "c74521ddc7eb4db3e6c17d830f51e318567d44e62723c620e12c8ae5099fc547",
+    "tools/demo_figures.py": "594ec20618eaa2f14be34d008d1a246ffd395007653f86fdee6676c9cad69444",
+    "tools/extract_stage_features.py": "36c317443f594d0a12e7c165f9640fc976740f9b79c9c773e23722dea9194ef8",
+    "tools/generate_all_figures.py": "52151a37ea5161f32ae2c5b60873c63552a9f31154f9e8ed6791237dc3ec1f40",
+    "tools/inspect_model_graph.py": "4f6447d1338a541eb77348bd8bd5895f2fa97e5abaafb52a68c8175b964c831e",
+    "tools/make_synthetic_dataset.py": "2ddbf1c7ff23e3b188e0f718a63afb4e40dead222c4e113e2db45524dd67ecbe",
+    "tools/make_zip.py": "e05ebe1bb1052c56289dd78b2915d178c7a243cc8f9f66432345092f9a734d92",
+    "tools/manage_weights.py": "4a507957d93723de1aa9953488a82f5f60f143361373f88e38870980e292581d",
+    "tools/manual_gates.py": "9f94a9d0a2c499563ad5e23f151be27501da0c9bebbb1c38fb3768a9992ccfbd",
+    "tools/normalize_text.py": "8e7c2bad629e497dd237819630d8d4badbb5b5e98a3b7fd760566f3a02d03602",
+    "tools/prepare_figure_sources.py": "9558382fb48b3e17d7f7b866d3a045ab5b0f3b8fb05c1c2ce3b147ea1b6e39ae",
+    "tools/prepare_machine.py": "36097fc7ca0acdac02f90bef9be136b57524618decf71cdab4a80edbff6c874b",
+    "tools/qa.py": "7782adc9269df24ef1c542d54a1a1a903a04051bb86ac5a76f83be5c67527f2b",
+    "tools/qa_checks.py": "3a487f4f5188f8a85622a15c25d16797e1580a213ea7155f1210dff549e429fc",
+    "tools/qa_training_smoke.py": "287531c8c9c3a89932d37030c4e78efee81a6562bd5c427702d6edca5911c7e9",
+    "tools/resume_local.py": "ddff584decb4854ef9322c026b76fc3222e0a118aa81afdf7e6fb8ee8c9a1bab",
+    "tools/smoke_test.py": "d56f18270e00af9aedadea7e83cbe94cbb6cdf17d6f840b74de3ce34a1cedb5b",
+    "tools/verify_delivery.py": "e5f1024976b854794e938e5d442f1b0222f92ae756502facf52a820ea5764f9f",
+    "v/cache/nodeids": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "exclusions": [
+    {
+      "path": ".vscode/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "artifacts/desktop.ini",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "configs/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "data/desktop.ini",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "data/raw/desktop.ini",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "data/raw/images/desktop.ini",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "data/raw/labels/desktop.ini",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "dev_tests/__pycache__/desktop.ini",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "dev_tests/__pycache__/test_revision.cpython-312-pytest-9.2.0.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "dev_tests/__pycache__/test_revision.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "dev_tests/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "docs/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "docs/historical_pre_v4/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "reports/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "reports/figures/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "reports/graficos_cierre/data/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "reports/graficos_cierre/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "reports/graficos_cierre/support/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "reports/graficos_cierre/support/distribucion_clases.pdf",
+      "reason": "binario/dataset/pesos/cache"
+    },
+    {
+      "path": "reports/graficos_cierre/support/distribucion_iou.pdf",
+      "reason": "binario/dataset/pesos/cache"
+    },
+    {
+      "path": "reports/graficos_cierre/support/label_audit/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "reports/historical/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "reports/label_audit/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "reports/local_dataset_crosscheck/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "reports/separation_audit/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "reports/tables/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "runs/desktop.ini",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T120550.400581Z_PC_NO_DECLARADA_machine__59e4eced12fd486eb61f7a81c1738679/config.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T120550.400581Z_PC_NO_DECLARADA_machine__59e4eced12fd486eb61f7a81c1738679/desktop.ini",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T120550.400581Z_PC_NO_DECLARADA_machine__59e4eced12fd486eb61f7a81c1738679/environment.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T120550.400581Z_PC_NO_DECLARADA_machine__59e4eced12fd486eb61f7a81c1738679/events.jsonl",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T120550.400581Z_PC_NO_DECLARADA_machine__59e4eced12fd486eb61f7a81c1738679/execution.log",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T120550.400581Z_PC_NO_DECLARADA_machine__59e4eced12fd486eb61f7a81c1738679/final_status.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T120550.400581Z_PC_NO_DECLARADA_machine__59e4eced12fd486eb61f7a81c1738679/metadata.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122224.649491Z_PC_NO_DECLARADA_make_synthetic_dataset__5363bc4fb23348e785ce9f8faf7b442e/config.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122224.649491Z_PC_NO_DECLARADA_make_synthetic_dataset__5363bc4fb23348e785ce9f8faf7b442e/desktop.ini",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122224.649491Z_PC_NO_DECLARADA_make_synthetic_dataset__5363bc4fb23348e785ce9f8faf7b442e/environment.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122224.649491Z_PC_NO_DECLARADA_make_synthetic_dataset__5363bc4fb23348e785ce9f8faf7b442e/events.jsonl",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122224.649491Z_PC_NO_DECLARADA_make_synthetic_dataset__5363bc4fb23348e785ce9f8faf7b442e/execution.log",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122224.649491Z_PC_NO_DECLARADA_make_synthetic_dataset__5363bc4fb23348e785ce9f8faf7b442e/final_status.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122224.649491Z_PC_NO_DECLARADA_make_synthetic_dataset__5363bc4fb23348e785ce9f8faf7b442e/metadata.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122512.080537Z_PC_NO_DECLARADA_make_synthetic_dataset__ffc456ccdb6f4b2a888611aacee31b2b/config.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122512.080537Z_PC_NO_DECLARADA_make_synthetic_dataset__ffc456ccdb6f4b2a888611aacee31b2b/desktop.ini",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122512.080537Z_PC_NO_DECLARADA_make_synthetic_dataset__ffc456ccdb6f4b2a888611aacee31b2b/environment.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122512.080537Z_PC_NO_DECLARADA_make_synthetic_dataset__ffc456ccdb6f4b2a888611aacee31b2b/events.jsonl",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122512.080537Z_PC_NO_DECLARADA_make_synthetic_dataset__ffc456ccdb6f4b2a888611aacee31b2b/execution.log",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122512.080537Z_PC_NO_DECLARADA_make_synthetic_dataset__ffc456ccdb6f4b2a888611aacee31b2b/final_status.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122512.080537Z_PC_NO_DECLARADA_make_synthetic_dataset__ffc456ccdb6f4b2a888611aacee31b2b/metadata.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122531.428325Z_PC_NO_DECLARADA_make_synthetic_dataset__1b13e5e3bbef43c9a4129535b55ac757/config.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122531.428325Z_PC_NO_DECLARADA_make_synthetic_dataset__1b13e5e3bbef43c9a4129535b55ac757/desktop.ini",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122531.428325Z_PC_NO_DECLARADA_make_synthetic_dataset__1b13e5e3bbef43c9a4129535b55ac757/environment.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122531.428325Z_PC_NO_DECLARADA_make_synthetic_dataset__1b13e5e3bbef43c9a4129535b55ac757/events.jsonl",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122531.428325Z_PC_NO_DECLARADA_make_synthetic_dataset__1b13e5e3bbef43c9a4129535b55ac757/execution.log",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122531.428325Z_PC_NO_DECLARADA_make_synthetic_dataset__1b13e5e3bbef43c9a4129535b55ac757/final_status.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/20261029T122531.428325Z_PC_NO_DECLARADA_make_synthetic_dataset__1b13e5e3bbef43c9a4129535b55ac757/metadata.json",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/_bootstrap/desktop.ini",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "runs/v4/desktop.ini",
+      "reason": "datos/artefactos/runtime originales no empaquetados"
+    },
+    {
+      "path": "scripts/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "src/__pycache__/00_check_environment.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/01_validate_dataset.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/02_create_outer_split.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/03_create_inner_folds.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/04_build_detection_dataset.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/05_build_classification_crops.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/06_run_baseline.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/07_run_hpo_study.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/08_repeat_top_configs.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/09_train_outer_candidate.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/10_evaluate_outer_validation.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/11_tune_inference_thresholds.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/12_select_detector.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/13_select_classifier.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/14_validate_integrated_pipeline.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/15_freeze_experiment.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/16_evaluate_test.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/17_benchmark_latency.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/18_export_master_results.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/19_audit_labels.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/20_audit_split_evidence.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/__pycache__/desktop.ini",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "src/orchestration/__pycache__/__init__.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/orchestration/__pycache__/desktop.ini",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/orchestration/__pycache__/exchange.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/orchestration/__pycache__/launch.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/orchestration/__pycache__/machine.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/orchestration/__pycache__/pc_registry.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/orchestration/__pycache__/study_queue.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/orchestration/__pycache__/sync.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/orchestration/__pycache__/worker.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/orchestration/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "src/utils/__pycache__/__init__.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/architectures.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/bootstrap.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/boxes.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/checks.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/classifier_data.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/classifier_models.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/classifier_train.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/comparison.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/config_loader.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/dataset.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/desktop.ini",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/detector_data.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/detector_train.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/durable.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/evidence.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/figure_catalog.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/figures_all.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/folds.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/freeze.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/gradcam.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/guards.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/hashing.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/hpo_results.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/hpo_runner.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/inference.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/io.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/isolation.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/label_audit.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/labels.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/logging_utils.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/manual_gates.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/metrics.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/metrics_classification.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/metrics_detection.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/model_stats.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/optuna_storage.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/pairing.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/pipeline_eval.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/plots_experiment.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/prepared.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/pretrained.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/reporting.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/reproducibility.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/resume.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/run_common.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/run_figures.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/safety.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/scientific_audit.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/search_spaces.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/selection.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/semantics.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/spatial_audit.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/split_summary.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/splits.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/timing.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/training_common.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/visualization.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/__pycache__/weights.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "src/utils/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "tests/__pycache__/conftest.cpython-312-pytest-9.2.0.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/conftest.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/desktop.ini",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_audit_status.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_boxes_and_rule.cpython-312-pytest-9.2.0.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_boxes_and_rule.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_classifier_training.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_config_hashing.cpython-312-pytest-9.2.0.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_config_hashing.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_derived_inputs_and_audit.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_e2e_pipeline.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_exchange_safety.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_external_graphics.cpython-312-pytest-9.2.0.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_external_graphics.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_hpo_and_selection.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_logging_traceability.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_orchestration.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_pipeline_and_freeze.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_run_layout_and_figures.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_semantic_pairing.cpython-312-pytest-9.2.0.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_semantic_pairing.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_split_evidence.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_splits_folds_metrics.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_training_components.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/__pycache__/test_visualization.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tests/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "tools/__pycache__/audit.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/configure_safety.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/demo_figures.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/desktop.ini",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/extract_stage_features.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/generate_all_figures.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/inspect_model_graph.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/make_synthetic_dataset.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/make_zip.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/manage_weights.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/manual_gates.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/normalize_text.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/prepare_figure_sources.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/prepare_machine.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/qa.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/qa_checks.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/qa_training_smoke.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/resume_local.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/smoke_test.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/__pycache__/verify_delivery.cpython-312.pyc",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "tools/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "v/cache/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "v/desktop.ini",
+      "reason": "metadatos locales/config personal/secretos"
+    },
+    {
+      "path": "work/desktop.ini",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest-cache/.gitignore",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest-cache/CACHEDIR.TAG",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest-cache/desktop.ini",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest-cache/README.md",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest-cache/v/cache/desktop.ini",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest-cache/v/cache/lastfailed",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest-cache/v/cache/nodeids",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest-cache/v/desktop.ini",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest_cache/.gitignore",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest_cache/CACHEDIR.TAG",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest_cache/desktop.ini",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest_cache/README.md",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest_cache/v/cache/desktop.ini",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest_cache/v/cache/nodeids",
+      "reason": "cache/runtime/pesos/work"
+    },
+    {
+      "path": "work/pytest_cache/v/desktop.ini",
+      "reason": "cache/runtime/pesos/work"
+    }
+  ]
+}

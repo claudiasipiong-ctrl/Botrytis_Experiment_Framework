@@ -1,0 +1,87 @@
+{
+  "version": "2.0.0",
+  "options": {
+    "cwd": "${workspaceFolder}",
+    "env": {
+      "PYTHONIOENCODING": "utf-8"
+    }
+  },
+  "tasks": [
+    {
+      "label": "Botrytis: QA inicial sin carga",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "scripts/Invoke-QA.ps1",
+        "-Config",
+        "configs/local.yaml",
+        "-MachineId",
+        "${input:machine}"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Botrytis: iniciar sesion supervisada (verifique reloj)",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "src/orchestration/launch.py",
+        "start",
+        "--config",
+        "configs/local.yaml",
+        "--clock-verified"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Botrytis: reanudar sesion",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "src/orchestration/launch.py",
+        "resume",
+        "--config",
+        "configs/local.yaml"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Botrytis: estado exportacion",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "src/orchestration/launch.py",
+        "status",
+        "--config",
+        "configs/local.yaml"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Botrytis: exportacion manual adicional",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "src/orchestration/sync.py",
+        "pack-results",
+        "--config",
+        "configs/local.yaml"
+      ],
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "machine",
+      "type": "pickString",
+      "description": "Identificador vinculado explicitamente",
+      "options": [
+        "i21315",
+        "i21314",
+        "i21313"
+      ]
+    }
+  ]
+}

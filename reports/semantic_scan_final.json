@@ -1,0 +1,21 @@
+{
+  "active_legacy_rules": [],
+  "obsolete_config_rejection_guards": [
+    {
+      "file": "src\\utils\\config_loader.py",
+      "line": 329,
+      "text": "    if \"label_rule\" in cfg:",
+      "interpretation": "Rejects obsolete configuration; does not generate labels"
+    },
+    {
+      "file": "src\\utils\\config_loader.py",
+      "line": 330,
+      "text": "        errors.append(\"Obsolete label_rule configuration; migrate to annotation pairing\")",
+      "interpretation": "Rejects obsolete configuration; does not generate labels"
+    }
+  ],
+  "classification_label_assignments": [
+    "pd.NA if issues else cfg['classification_labels']['positive_label' if pair else 'negative_label']"
+  ],
+  "assessment": "PASS: no active coverage/class legacy rule. Descriptive coverage and legitimate metric/augmentation constants preserved."
+}

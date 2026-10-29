@@ -1,0 +1,569 @@
+{
+  "semantics_version": "botrytis-physical-fruit-pairing-v3",
+  "source": "C:\\Users\\Erick Obradovich\\OneDrive\\Documentos\\ULima\\2026-2\\SEMINARIO DE INVESTIGACIÓN II\\Código\\dataset-botrytis_2026-10-01",
+  "labels_hash": "2d82c9360735ff1ff018f021b57e7cf32b46c0ab9f1d07e9866c5f3fec06b824",
+  "label_only": false,
+  "images_discovered": 328,
+  "labels_total": 345,
+  "labels_empty": 54,
+  "empty_label_stems": [
+    "0000fff4-IMG_6859",
+    "120ededc-IMG_6564",
+    "13b7d2cb-IMG_6811",
+    "1465915d-IMG_6814",
+    "16ef294d-IMG_6549",
+    "1b9e4438-IMG_6603",
+    "291c4118-IMG_6596",
+    "2cab565f-IMG_6641",
+    "31cbfb2b-IMG_6639",
+    "395ed4f7-IMG_6636",
+    "3a65b3a4-IMG_6840",
+    "3c6237c0-IMG_6555",
+    "4455bb1c-IMG_6570",
+    "47d264ed-IMG_6554",
+    "4d896683-IMG_6548",
+    "50bc3f29-IMG_6586",
+    "5573d72d-IMG_6566",
+    "5e87155a-IMG_6604",
+    "5e9e594c-IMG_6573",
+    "5f04fb01-IMG_6719",
+    "652fcb2c-IMG_6580",
+    "687e0540-IMG_6581",
+    "6a180e57-IMG_6585",
+    "6cfddbf6-IMG_6567",
+    "72d0fe90-IMG_6836",
+    "73323585-IMG_6602",
+    "758575b5-IMG_6718",
+    "80ff8140-IMG_6547",
+    "81069b00-IMG_6568",
+    "88c38dbb-IMG_6750",
+    "91873a31-IMG_6558",
+    "9d772e63-IMG_6565",
+    "a6ddc3ce-IMG_6546",
+    "b0c23a05-IMG_6606",
+    "b1602e5f-IMG_6569",
+    "b3a4ddb3-IMG_6689",
+    "b8ffc3b8-IMG_6768",
+    "c5d74c85-IMG_6561",
+    "c97bbb41-IMG_6571",
+    "cad2fb64-IMG_6672",
+    "cb141f6e-IMG_6563",
+    "d0108e53-IMG_6640",
+    "d96f3593-IMG_6595",
+    "dca22192-IMG_6560",
+    "de9d57d3-IMG_6545",
+    "e573c586-IMG_6559",
+    "e7c3e3d9-IMG_6838",
+    "e9df6b34-IMG_6572",
+    "f011236d-IMG_6761",
+    "f48759f6-IMG_6692",
+    "f672758d-IMG_6556",
+    "f6965aa6-IMG_6552",
+    "fedc2e2b-IMG_6707",
+    "fef1f140-IMG_6562"
+  ],
+  "boxes_by_class": {
+    "0": 1941,
+    "1": 225,
+    "2": 261
+  },
+  "classes_files": {
+    "classes.txt": "arandano_a\narandano_sospechoso\nsigno_sospechoso_botrytis\n"
+  },
+  "unknown_classes": {},
+  "images_without_label": [],
+  "labels_without_image": [
+    "002e28d4-IMG_6965",
+    "2a56a5fe-IMG_6950",
+    "2a8dfd16-IMG_6984",
+    "2d2cbb51-IMG_6964",
+    "2ed811e9-IMG_6895",
+    "325f32cf-IMG_6901",
+    "40d645e2-IMG_6973",
+    "62f7cc83-IMG_6933",
+    "765da3ff-IMG_6987",
+    "aee71c52-IMG_6980",
+    "c8bf6ac4-IMG_6943",
+    "ce26834e-IMG_6952",
+    "d0c640e0-IMG_6935",
+    "d115b6f3-IMG_6896",
+    "e986fc0d-IMG_6948",
+    "eba0668d-IMG_6899",
+    "fc4ef1be-IMG_6986"
+  ],
+  "duplicate_image_stems": [],
+  "duplicate_label_stems": [],
+  "duplicate_nonempty_label_content": [],
+  "min_iou": 0.5,
+  "valid_pairs": 218,
+  "anomalies_total": 11,
+  "anomalous_images": [
+    "04a501fd-IMG_6797",
+    "213f3bad-IMG_6979",
+    "2d515215-IMG_6819",
+    "7c5a8c55-IMG_6823",
+    "a8bbe159-IMG_6969",
+    "d928c2d0-IMG_6622",
+    "fc4ef1be-IMG_6986"
+  ],
+  "anomalies_by_reason": {
+    "duplicate_box": 4,
+    "no_candidate": 2,
+    "multiple_suspects_claim_fruit": 2,
+    "global_assignment_tie": 3,
+    "unassigned_competing_suspect": 1,
+    "insufficient_iou": 1,
+    "multiple_eligible_candidates": 2
+  },
+  "crops_possible_clean_images": {
+    "con_signos": 203,
+    "sin_signos": 1696
+  },
+  "crops_generated": {
+    "con_signos": 0,
+    "sin_signos": 0
+  },
+  "quarantined_fruits": 42,
+  "iou_all_candidates": {
+    "n": 1316,
+    "min": 0.0,
+    "max": 1.0,
+    "mean": 0.1808136359660987,
+    "quantiles": {
+      "0.0": 0.0,
+      "0.05": 0.0,
+      "0.25": 0.0,
+      "0.5": 0.0,
+      "0.75": 0.04941486862960141,
+      "0.95": 1.0,
+      "1.0": 1.0
+    }
+  },
+  "iou_selected": {
+    "n": 225,
+    "min": 0.0,
+    "max": 1.0,
+    "mean": 0.9803347436422748,
+    "quantiles": {
+      "0.0": 0.0,
+      "0.05": 0.9884020084026209,
+      "0.25": 1.0,
+      "0.5": 1.0,
+      "0.75": 1.0,
+      "0.95": 1.0,
+      "1.0": 1.0
+    }
+  },
+  "iou_best_per_suspect": {
+    "n": 225,
+    "min": 0.0,
+    "max": 1.0,
+    "mean": 0.9854396198908889,
+    "quantiles": {
+      "0.0": 0.0,
+      "0.05": 0.9892681312249688,
+      "0.25": 1.0,
+      "0.5": 1.0,
+      "0.75": 1.0,
+      "0.95": 1.0,
+      "1.0": 1.0
+    }
+  },
+  "special_images": {
+    "213f3bad-IMG_6979": {
+      "summary": {
+        "image_id": "213f3bad-IMG_6979",
+        "n_fruits": 6,
+        "n_suspects": 3,
+        "n_signs": 3,
+        "valid_pairs": 2,
+        "n_anomalies": 1,
+        "positive_possible": null,
+        "negative_possible": null
+      },
+      "pairs": [
+        {
+          "image_id": "213f3bad-IMG_6979",
+          "suspect_ordinal": 0,
+          "suspect_line": 3,
+          "suspect_box": [
+            0.928591286173298,
+            0.40810817196029536,
+            0.9999999999999999,
+            0.5922722735038229
+          ],
+          "fruit_ordinal": null,
+          "fruit_box": null,
+          "iou": 0.0,
+          "status": "anomaly",
+          "reason": "no_candidate",
+          "best_fruit_ordinal": null,
+          "best_iou": 0.0
+        },
+        {
+          "image_id": "213f3bad-IMG_6979",
+          "suspect_ordinal": 1,
+          "suspect_line": 5,
+          "suspect_box": [
+            0.018578513370379357,
+            0.20117046508863917,
+            0.2589380300996626,
+            0.3666353497935802
+          ],
+          "fruit_ordinal": 4,
+          "fruit_box": [
+            0.018578513370379357,
+            0.20117046508863917,
+            0.2589380300996626,
+            0.3666353497935802
+          ],
+          "iou": 1.0,
+          "status": "valid",
+          "reason": "assigned_maximum_total_iou",
+          "best_fruit_ordinal": 4,
+          "best_iou": 1.0
+        },
+        {
+          "image_id": "213f3bad-IMG_6979",
+          "suspect_ordinal": 2,
+          "suspect_line": 6,
+          "suspect_box": [
+            0.4313533788903179,
+            0.4339297215970013,
+            0.7449310911894245,
+            0.680154474564258
+          ],
+          "fruit_ordinal": 5,
+          "fruit_box": [
+            0.4313533788903179,
+            0.4339297215970013,
+            0.7449310911894245,
+            0.680154474564258
+          ],
+          "iou": 1.0,
+          "status": "valid",
+          "reason": "assigned_maximum_total_iou",
+          "best_fruit_ordinal": 5,
+          "best_iou": 1.0
+        }
+      ],
+      "anomalies": [
+        {
+          "image_id": "213f3bad-IMG_6979",
+          "class_id": 1,
+          "ordinal": 0,
+          "reason": "no_candidate"
+        }
+      ]
+    },
+    "2d515215-IMG_6819": {
+      "summary": {
+        "image_id": "2d515215-IMG_6819",
+        "n_fruits": 8,
+        "n_suspects": 3,
+        "n_signs": 3,
+        "valid_pairs": 2,
+        "n_anomalies": 1,
+        "positive_possible": null,
+        "negative_possible": null
+      },
+      "pairs": [
+        {
+          "image_id": "2d515215-IMG_6819",
+          "suspect_ordinal": 0,
+          "suspect_line": 1,
+          "suspect_box": [
+            0.38715633983638864,
+            0.4188490127455145,
+            0.5033656086030749,
+            0.5097720054379682
+          ],
+          "fruit_ordinal": null,
+          "fruit_box": null,
+          "iou": 0.0,
+          "status": "anomaly",
+          "reason": "no_candidate",
+          "best_fruit_ordinal": null,
+          "best_iou": 0.0
+        },
+        {
+          "image_id": "2d515215-IMG_6819",
+          "suspect_ordinal": 1,
+          "suspect_line": 4,
+          "suspect_box": [
+            0.04248277803185661,
+            0.41942088129633054,
+            0.20932423357514812,
+            0.5486071472204755
+          ],
+          "fruit_ordinal": 6,
+          "fruit_box": [
+            0.04248277803185661,
+            0.41942088129633054,
+            0.20932423357514812,
+            0.5486071472204755
+          ],
+          "iou": 1.0,
+          "status": "valid",
+          "reason": "assigned_maximum_total_iou",
+          "best_fruit_ordinal": 6,
+          "best_iou": 1.0
+        },
+        {
+          "image_id": "2d515215-IMG_6819",
+          "suspect_ordinal": 2,
+          "suspect_line": 5,
+          "suspect_box": [
+            0.24557538423692515,
+            0.07540251236357891,
+            0.44109363615674013,
+            0.20676264194847138
+          ],
+          "fruit_ordinal": 7,
+          "fruit_box": [
+            0.24557538423692515,
+            0.07540251236357891,
+            0.44109363615674013,
+            0.20676264194847138
+          ],
+          "iou": 1.0,
+          "status": "valid",
+          "reason": "assigned_maximum_total_iou",
+          "best_fruit_ordinal": 7,
+          "best_iou": 1.0
+        }
+      ],
+      "anomalies": [
+        {
+          "image_id": "2d515215-IMG_6819",
+          "class_id": 1,
+          "ordinal": 0,
+          "reason": "no_candidate"
+        }
+      ]
+    },
+    "7c5a8c55-IMG_6823": {
+      "summary": {
+        "image_id": "7c5a8c55-IMG_6823",
+        "n_fruits": 4,
+        "n_suspects": 3,
+        "n_signs": 3,
+        "valid_pairs": 1,
+        "n_anomalies": 3,
+        "positive_possible": null,
+        "negative_possible": null
+      },
+      "pairs": [
+        {
+          "image_id": "7c5a8c55-IMG_6823",
+          "suspect_ordinal": 0,
+          "suspect_line": 6,
+          "suspect_box": [
+            0.46993551998733957,
+            0.38754552684958476,
+            0.6766914380088256,
+            0.5318578265017387
+          ],
+          "fruit_ordinal": 2,
+          "fruit_box": [
+            0.46993551998733957,
+            0.38754552684958476,
+            0.6766914380088256,
+            0.5318578265017387
+          ],
+          "iou": 1.0,
+          "status": "anomaly",
+          "reason": "multiple_suspects_claim_fruit;global_assignment_tie",
+          "best_fruit_ordinal": 2,
+          "best_iou": 1.0
+        },
+        {
+          "image_id": "7c5a8c55-IMG_6823",
+          "suspect_ordinal": 1,
+          "suspect_line": 7,
+          "suspect_box": [
+            0.7673644637966031,
+            0.488892645546027,
+            0.959877135577548,
+            0.6453651543540275
+          ],
+          "fruit_ordinal": 3,
+          "fruit_box": [
+            0.7673644637966031,
+            0.488892645546027,
+            0.959877135577548,
+            0.6453651543540275
+          ],
+          "iou": 1.0,
+          "status": "valid",
+          "reason": "assigned_maximum_total_iou",
+          "best_fruit_ordinal": 3,
+          "best_iou": 1.0
+        },
+        {
+          "image_id": "7c5a8c55-IMG_6823",
+          "suspect_ordinal": 2,
+          "suspect_line": 9,
+          "suspect_box": [
+            0.46993551998733957,
+            0.38754552684958476,
+            0.6766914380088256,
+            0.5318578265017387
+          ],
+          "fruit_ordinal": null,
+          "fruit_box": null,
+          "iou": 0.0,
+          "status": "anomaly",
+          "reason": "unassigned_competing_suspect;multiple_suspects_claim_fruit",
+          "best_fruit_ordinal": 2,
+          "best_iou": 1.0
+        }
+      ],
+      "anomalies": [
+        {
+          "image_id": "7c5a8c55-IMG_6823",
+          "class_id": 1,
+          "ordinal": 2,
+          "reason": "duplicate_box"
+        },
+        {
+          "image_id": "7c5a8c55-IMG_6823",
+          "class_id": 1,
+          "ordinal": 0,
+          "reason": "multiple_suspects_claim_fruit;global_assignment_tie"
+        },
+        {
+          "image_id": "7c5a8c55-IMG_6823",
+          "class_id": 1,
+          "ordinal": 2,
+          "reason": "unassigned_competing_suspect;multiple_suspects_claim_fruit"
+        }
+      ]
+    },
+    "a8bbe159-IMG_6969": {
+      "summary": {
+        "image_id": "a8bbe159-IMG_6969",
+        "n_fruits": 4,
+        "n_suspects": 4,
+        "n_signs": 6,
+        "valid_pairs": 3,
+        "n_anomalies": 1,
+        "positive_possible": null,
+        "negative_possible": null
+      },
+      "pairs": [
+        {
+          "image_id": "a8bbe159-IMG_6969",
+          "suspect_ordinal": 0,
+          "suspect_line": 2,
+          "suspect_box": [
+            0.28452909572842144,
+            0.47832999009770527,
+            0.5105650305915816,
+            0.6348023557990007
+          ],
+          "fruit_ordinal": null,
+          "fruit_box": null,
+          "iou": 0.0,
+          "status": "anomaly",
+          "reason": "insufficient_iou",
+          "best_fruit_ordinal": 1,
+          "best_iou": 0.14859715593816575
+        },
+        {
+          "image_id": "a8bbe159-IMG_6969",
+          "suspect_ordinal": 1,
+          "suspect_line": 7,
+          "suspect_box": [
+            0.1855615522830789,
+            0.563093855201123,
+            0.44445716462295914,
+            0.7688767231961903
+          ],
+          "fruit_ordinal": 1,
+          "fruit_box": [
+            0.1855615522830789,
+            0.563093855201123,
+            0.44445716462295914,
+            0.7688767231961903
+          ],
+          "iou": 1.0,
+          "status": "valid",
+          "reason": "assigned_maximum_total_iou",
+          "best_fruit_ordinal": 1,
+          "best_iou": 1.0
+        },
+        {
+          "image_id": "a8bbe159-IMG_6969",
+          "suspect_ordinal": 2,
+          "suspect_line": 8,
+          "suspect_box": [
+            0.49423465782140197,
+            0.7227431849150916,
+            0.7376487282775036,
+            0.916858203126919
+          ],
+          "fruit_ordinal": 2,
+          "fruit_box": [
+            0.49423465782140197,
+            0.7227431849150916,
+            0.7376487282775036,
+            0.916858203126919
+          ],
+          "iou": 1.0,
+          "status": "valid",
+          "reason": "assigned_maximum_total_iou",
+          "best_fruit_ordinal": 2,
+          "best_iou": 1.0
+        },
+        {
+          "image_id": "a8bbe159-IMG_6969",
+          "suspect_ordinal": 3,
+          "suspect_line": 9,
+          "suspect_box": [
+            0.39747360871945625,
+            0.92605142163359,
+            0.6727266504166517,
+            1.0000000000000004
+          ],
+          "fruit_ordinal": 3,
+          "fruit_box": [
+            0.39747360871945625,
+            0.92605142163359,
+            0.6727266504166517,
+            1.0000000000000004
+          ],
+          "iou": 1.0,
+          "status": "valid",
+          "reason": "assigned_maximum_total_iou",
+          "best_fruit_ordinal": 3,
+          "best_iou": 1.0
+        }
+      ],
+      "anomalies": [
+        {
+          "image_id": "a8bbe159-IMG_6969",
+          "class_id": 1,
+          "ordinal": 0,
+          "reason": "insufficient_iou"
+        }
+      ]
+    }
+  },
+  "full_image_validation": "pending: run 01 image validation",
+  "invalid_yolo_coordinates": 0,
+  "degenerate_boxes": 0,
+  "duplicate_boxes": 4,
+  "positive_unambiguous": 203,
+  "negative_unambiguous": 1696,
+  "unresolved_physical_fruits": 42,
+  "crops_possible_with_discovered_images": {
+    "con_signos": 181,
+    "sin_signos": 1633
+  },
+  "orphan_label_boxes_by_class": {
+    "2": 2,
+    "0": 92,
+    "1": 26
+  }
+}

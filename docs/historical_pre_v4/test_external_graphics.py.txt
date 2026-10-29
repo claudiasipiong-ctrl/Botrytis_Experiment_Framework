@@ -1,0 +1,63 @@
+"""Graphics provenance and separation of exact counts / layout previews."""
+import importlib.util
+import json
+from argparse import Namespace
+from pathlib import Path
+import pandas as pd
+import pytest
+
+ROOT=Path(__file__).resolve().parents[1]
+
+
+@pytest.fixture
+def graphics():
+    path=ROOT.parent/"generar_graficos_botrytis.py"
+    if not path.is_file():pytest.skip("External graphics deliverable must be placed next to project ZIP")
+    spec=importlib.util.spec_from_file_location("botrytis_graphics",path)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    return module
+
+
+def test_real_counts_never_mixed_with_estimated_preview(graphics,tmp_path):
+    dataset=tmp_path/"dataset";labels=dataset/"labels";labels.mkdir(parents=True)
+    (labels/"a.txt").write_text("0 .5 .5 .2 .2\n1 .5 .5 .2 .2\n")
+    output=tmp_path/"figures"
+    graphics.run(Namespace(project_root=ROOT,dataset=dataset,output=output,config=ROOT/"configs/adaptado.yaml",allow_estimates=True))
+    assert not list((output/"paper").glob("*"))
+    data=pd.read_csv(output/"data/distribucion_anotaciones.csv")
+    assert not data.is_estimated.any() and dict(zip(data.class_id,data["count"]))=={0:1,1:1}
+    preview=list((output/"estimated_preview/data").glob("*.csv"))
+    assert len(preview)==2 and all(pd.read_csv(p).is_estimated.all() for p in preview)
+    assert all({"method", "assumptions", "source"} <= set(pd.read_csv(p)) for p in preview)
+    assert not any("roc" in p.name or "confusion" in p.name or "gradcam" in p.name for p in (output/"estimated_preview").rglob("*"))
+    assert "Sin historial oficial" in (output/"INVENTARIO.md").read_text(encoding="utf-8")
+
+
+def test_cli_estimates_require_explicit_opt_in(graphics,tmp_path):
+    dataset=tmp_path/"dataset";labels=dataset/"labels";labels.mkdir(parents=True)
+    (labels/"a.txt").write_text("0 .5 .5 .2 .2\n")
+    output=tmp_path/"real"
+    assert graphics.main(["--project-root",str(ROOT),"--dataset",str(dataset),"--output",str(output)]) == 0
+    assert (output/"INVENTARIO.md").is_file()
+    assert not (output/"estimated_preview").exists()
+
+
+def test_comparable_histories_sd_and_singletons(graphics):
+    a=pd.DataFrame({"epoch":[1,2],"train_loss":[2.,1.],"replicate":["seed17","seed17"]})
+    b=pd.DataFrame({"epoch":[1],"train_loss":[4.],"replicate":["seed42"]})
+    summary,_=graphics.aggregate_history([a,b],["train_loss"])
+    assert summary.iloc[0]["mean"]==3 and summary.iloc[0]["sd"]==pytest.approx(2**.5)
+    assert pd.isna(summary.iloc[1]["sd"]) and summary.iloc[1]["n"]==1
+    with pytest.raises(ValueError,match="Repeated"):
+        graphics.aggregate_history([a,a],["train_loss"])
+
+
+def test_old_or_estimated_run_cannot_supply_paper_curves(graphics,tmp_path):
+    run=tmp_path/"runs/det";run.mkdir(parents=True)
+    (run/"metadata.json").write_text(json.dumps({"status":"COMPLETE","dataset_hash":"d","split_hash":"s","semantic_fingerprint":"old"}))
+    (run/"config.yaml").write_text("project:\n  profile: official\n")
+    (run/"history.csv").write_text("epoch,train_loss,val_loss,map50_95\n1,1,.9,.2\n")
+    assert not graphics.trusted_context(run/"history.csv",tmp_path,"new")[0]
+    meta={"status":"COMPLETE","dataset_hash":"d","split_hash":"s","semantic_fingerprint":"new","is_estimated":True}
+    (run/"metadata.json").write_text(json.dumps(meta))
+    assert not graphics.trusted_context(run/"history.csv",tmp_path,"new")[0]

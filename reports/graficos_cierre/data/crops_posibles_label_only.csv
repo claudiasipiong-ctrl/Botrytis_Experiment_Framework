@@ -1,0 +1,3 @@
+label,n_possible,n_generated,scope,is_estimated,source
+con_signos,203,0,images_without_annotation_anomalies,False,..\dataset-botrytis_2026-10-01
+sin_signos,1696,0,images_without_annotation_anomalies,False,..\dataset-botrytis_2026-10-01

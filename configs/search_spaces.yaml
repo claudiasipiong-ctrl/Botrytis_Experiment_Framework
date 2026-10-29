@@ -1,0 +1,57 @@
+# =============================================================================
+# configs/search_spaces.yaml -- Espacios de busqueda HPO (Especificacion s2, sec. 15). VERSIONADO.
+# Espacios PEQUENOS: no abrir 15-20 dimensiones con 15-20 trials.
+# Tipos: categorical | float | log_float | log_float_with_zero | conditional_log_float | fixed
+# (``fixed`` = constante NO optimizada; se registra igualmente en cada trial).
+# Este fichero forma parte del code_hash (configs/*.yaml): cambiarlo tras iniciar el HPO invalida la trazabilidad.
+# =============================================================================
+version: 1
+
+yolov8:                       # sec. 15.1
+  optimizer:     {type: categorical, values: [SGD, AdamW]}
+  lr0:           {type: log_float, min: 1.0e-5, max: 1.0e-2}
+  lrf:           {type: float, min: 0.01, max: 1.0}
+  momentum:      {type: float, min: 0.70, max: 0.98}
+  weight_decay:  {type: log_float_with_zero, min_nonzero: 1.0e-6, max: 1.0e-3}
+  warmup_epochs: {type: float, min: 0.0, max: 5.0}
+
+yolo26:                       # sec. 15.2: mismo espacio basico + freeze {0, 10}
+  optimizer:     {type: categorical, values: [AdamW, SGD]}
+  lr0:           {type: log_float, min: 1.0e-5, max: 1.0e-2}
+  lrf:           {type: float, min: 0.01, max: 1.0}
+  momentum:      {type: float, min: 0.70, max: 0.98}
+  weight_decay:  {type: log_float_with_zero, min_nonzero: 1.0e-6, max: 1.0e-3}
+  warmup_epochs: {type: float, min: 0.0, max: 5.0}
+  freeze:        {type: categorical, values: [0, 10]}
+  # solo si detector.yolo26_tune_augmentation: true (presupuesto equivalente para todos, sec. 15.2)
+  optional_augmentation:
+    mosaic: {type: float, min: 0.0, max: 0.75}
+    mixup:  {type: categorical, values: [0.0, 0.05, 0.10]}
+
+rtdetr:                       # sec. 15.3
+  optimizer:          {type: fixed, value: AdamW}
+  lr0:                {type: log_float, min: 1.0e-5, max: 1.0e-3}     # main_lr
+  backbone_lr_ratio:  {type: fixed, value: 0.1}
+  weight_decay:       {type: log_float, min: 1.0e-5, max: 1.0e-3}
+
+resnet50:                     # sec. 15.4
+  optimizer:       {type: categorical, values: [AdamW, SGD]}
+  lr:              {type: conditional_log_float, depends_on: optimizer, ranges: {AdamW: [1.0e-5, 1.0e-3], SGD: [1.0e-4, 1.0e-2]}}
+  weight_decay:    {type: log_float, min: 1.0e-5, max: 5.0e-2}
+  label_smoothing: {type: categorical, values: [0.0, 0.05, 0.10]}
+  warmup_epochs:   {type: categorical, values: [0, 2, 5]}
+
+vit:                          # sec. 15.5
+  optimizer:       {type: fixed, value: AdamW}
+  lr:              {type: log_float, min: 1.0e-6, max: 5.0e-4}
+  weight_decay:    {type: log_float, min: 1.0e-4, max: 1.0e-1}
+  warmup_epochs:   {type: categorical, values: [0, 2, 5]}
+  label_smoothing: {type: categorical, values: [0.0, 0.05, 0.10]}
+
+swin:                         # sec. 15.6
+  optimizer:       {type: fixed, value: AdamW}
+  lr:              {type: log_float, min: 1.0e-6, max: 5.0e-4}
+  weight_decay:    {type: log_float, min: 1.0e-4, max: 1.0e-1}
+  warmup_epochs:   {type: categorical, values: [0, 2, 5]}
+  label_smoothing: {type: categorical, values: [0.0, 0.05, 0.10]}
+  drop_path_rate:  {type: categorical, values: [0.0, 0.1, 0.2]}

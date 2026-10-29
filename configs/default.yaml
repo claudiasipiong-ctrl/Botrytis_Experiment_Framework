@@ -1,0 +1,373 @@
+# =============================================================================
+# configs/default.yaml  --  Configuracion consolidada (Especificacion s2, sec. 32)
+# =============================================================================
+# Convenciones (sec. 0 de la especificacion):
+#   FIJO             -> no puede cambiarse; config_loader aborta si se altera.
+#   RECOMENDADO      -> valor por defecto; cambiarlo exige documentarlo ANTES de ejecutar.
+#   ANEXO            -> TODO de la especificacion cerrado con la RECOMENDACION DERIVADA de los
+#                       anexos (sec. 41). Es una DECISION A CONFIRMAR: 15_freeze_experiment.py
+#                       exige decisions.confirmed_by_user: true antes de congelar.
+#   TODO_BLOQUEANTE  -> valor sin definir que NO se puede inferir (IDs de clase del dataset real,
+#                       seed del split). Cualquier script que lo necesite ABORTA con un mensaje
+#                       explicito hasta que se rellene aqui (o via --set).
+#   null             -> valor opcional legitimo (no bloquea).
+#
+# Sintaxis de interpolacion:
+#   ${VAR}            variable de entorno (error si no existe)
+#   ${VAR:-default}   variable de entorno con valor por defecto
+#   ${a.b.c}          referencia a otra clave de este mismo YAML
+# Todas las rutas relativas se resuelven contra la raiz del proyecto (NO contra el cwd).
+# =============================================================================
+
+project:
+  name: blueberry_botrytis_hybrid_hpo
+  # official -> experimento de la tesis | smoke -> prueba de humo con presupuestos reducidos
+  # (los resultados de un perfil smoke NO son cientificos; se marcan en el freeze_manifest).
+  profile: official
+  # AUTO -> se resuelve en tiempo de ejecucion (git rev-parse HEAD / hash de codigo).
+  git_commit: AUTO
+  code_hash: AUTO
+
+# --------------------------------------------------------------------------- #
+# Rutas (sin hardcodeo: todo relativo a la raiz o parametrizable por entorno)
+# --------------------------------------------------------------------------- #
+paths:
+  data_root: ${BOTRYTIS_DATA_ROOT:-data}
+  raw_images_dir: ${BOTRYTIS_IMAGES_DIR:-data/raw/images}          # TODO_BLOQUEANTE (sec. 38.19): ruta definitiva
+  raw_labels_dir: ${BOTRYTIS_LABELS_DIR:-data/raw/labels}          # TODO_BLOQUEANTE (sec. 38.19): ruta definitiva
+  detection_dir: ${paths.data_root}/derived_v4/detection
+  classification_dir: ${paths.data_root}/derived_v4/classification
+  results_dir: results/v4
+  artifacts_dir: artifacts/v4
+  environments_dir: artifacts/v4/environments
+  runs_dir: ${BOTRYTIS_RUNS_DIR:-runs/v4}
+  reports_dir: reports/v4
+  figures_dir: reports/v4/figures
+  optuna_dir: artifacts/v4/optuna              # un SQLite por estudio (sincronizable por ZIP)
+  queue_dir: artifacts/v4/queue                # cola de trabajos + locks de GPU
+  best_configs_dir: artifacts/v4/best_configs  # configuracion congelada por arquitectura
+  tables_dir: reports/v4/tables
+
+# --------------------------------------------------------------------------- #
+# Dataset
+# --------------------------------------------------------------------------- #
+dataset:
+  n_images_expected: 329            # control configurable; contar images/
+  enforce_expected_count: false      # abortar si el numero de imagenes difiere de n_images_expected
+  image_extensions: [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"]
+  label_extension: ".txt"           # una anotacion YOLO por imagen, mismo stem (image_id = stem)
+  dataset_hash: AUTO
+  validation:
+    coord_tolerance: 1.0e-6         # tolerancia numerica para rangos normalizados [0, 1]
+    min_box_side_px: 2.0            # cajas con lado menor se reportan como WARNING
+    min_image_side_px: 32
+    near_duplicate_hamming: 2       # dHash 64 bit; distancia <= valor => WARNING de casi-duplicado (-1 desactiva)
+    fail_on_warnings: false
+
+# --------------------------------------------------------------------------- #
+# IDs de clase YOLO
+# --------------------------------------------------------------------------- #
+# Dataset actual: solo clase 0 es fruto fisico.
+classes:
+  fruit_class_id: 0
+  suspicious_class_id: 1
+  sign_class_id: 2
+  fruit_name: arandano_a
+  suspicious_name: arandano_sospechoso
+  sign_name: signo_sospechoso_botrytis
+
+pairing:
+  min_iou: 0.50  # identidad tecnica, no criterio biologico
+  method: maximum_total_iou_ordinal
+  anomaly_policy: error  # error | quarantine_images: explicito y trazable
+
+classification_labels:
+  positive_label: con_signos
+  negative_label: sin_signos
+
+# --------------------------------------------------------------------------- #
+# Split externo 70/20/10 (sec. 5)
+# --------------------------------------------------------------------------- #
+outer_split:
+  unit: original_image              # FIJO
+  train: 0.70                       # FIJO
+  validation: 0.20                  # FIJO
+  test: 0.10                        # FIJO
+  seed: 67             # TODO BLOQUEANTE (sec. 5.3): predeclarar ANTES de ver resultados
+  # sec. 38.4: criterio de estratificacion del split externo (no definido en la metodologia).
+  #   none                -> barajado aleatorio por image_id (por defecto)
+  #   has_positive_signs  -> estratificado por "la imagen contiene algun fruto con_signos"
+  # Estratificacion por positivos emparejados; no por signos auxiliares.
+  stratify_by: has_positive_signs
+  test_locked: true                 # FIJO
+  manifest_name: split_manifest.csv
+  allow_overwrite: false            # 02 nunca re-sortea; --force mueve el manifiesto previo a artifacts/superseded/
+
+# --------------------------------------------------------------------------- #
+# Folds internos para HPO (sec. 6) -- solo dentro del 70 % train
+# --------------------------------------------------------------------------- #
+inner_hpo:
+  folds: 3                          # RECOMENDADO
+  unit: original_image              # FIJO
+  group_key: original_image_id      # FIJO: nunca folds sobre crops
+  seed: null                        # null => se usa outer_split.seed
+  classification_stratification: has_positive_signs   # RECOMENDADO (sec. 6.1)
+  classification_extra_positive_bin: false            # anadir bin del % de crops positivos por imagen
+  detection_balance: fruit_count_bins                 # RECOMENDADO (sec. 6.2)
+  detection_count_bins: 3                             # numero de bins (por cuantiles de frutos/imagen)
+
+# --------------------------------------------------------------------------- #
+# Datasets derivados
+# --------------------------------------------------------------------------- #
+detection_dataset:
+  link_mode: copy                   # copy | hardlink (hardlink cae a copy si no es posible; symlink no se usa: Windows)
+  class_names: {0: fruit}           # FIJO: detector de una sola clase (sec. 7.2)
+  split_dir_names: {train: train, validation: validation, test: test}
+
+classification_dataset:
+  crop_format: png                  # png (lossless) | jpg
+  jpg_quality: 95
+  margin_px: 0                      # FIJO con la metodologia actual (sec. 8): caja GT tal cual
+  manifest_name: manifest.csv
+
+# --------------------------------------------------------------------------- #
+# Reproducibilidad y computo
+# --------------------------------------------------------------------------- #
+reproducibility:
+  seed: 42                          # RECOMENDADO (seed global de scripts; NO es la seed del split)
+  deterministic: true
+  cudnn_deterministic: true
+  cudnn_benchmark: false
+  final_seeds: [17, 42, 73]         # RECOMENDADO (sec. 12.3)
+
+compute:
+  pc_id: ${BOTRYTIS_PC_ID:-}        # PC-01 | PC-02 | PC-03 (vacio => hostname + advertencia)
+  number_of_pcs: 3
+  pcs_are_identical: true
+  max_gpu_jobs_global: 3            # FIJO
+  max_gpu_jobs_per_pc: 1            # FIJO
+  parallelism: inter_study
+  intra_study_parallel_trials: 1
+  benchmark_pc: PC-01
+  require_gpu: false                # poner true en las PCs de entrenamiento
+  device: auto                      # auto | cpu | 0 (indice CUDA)
+  # Campos que DEBEN coincidir entre las 3 PCs (sec. 16.6) antes de lanzar HPO.
+  critical_environment_fields:
+    - python_version
+    - os_system
+    - gpu_model
+    - gpu_vram_mb
+    - nvidia_driver
+    - cuda_runtime
+    - cudnn
+    - torch
+    - torchvision
+    - timm
+    - ultralytics
+    - optuna
+    - numpy
+    - precision_mode
+    - git_commit
+    - code_hash
+    - dataset_hash
+    - split_hash
+  reference_environment: artifacts/v4/environments/environment_reference.json
+
+# Registro de PCs (Estrategia_3PCs sec. 9): reparto ESTATICO recomendado de las 10 arquitecturas.
+# La cola es LOCAL a cada PC (un SQLite por PC); por eso cada PC se lanza con
+# `worker.py --architectures <su reparto>` (ver GUIA_EJECUCION_3PCs.md).
+pc_registry:
+  pcs: [PC-01, PC-02, PC-03]
+  first_batch:
+    PC-01: [YOLOv8n, YOLOv8m, YOLO26n, YOLO26s]
+    PC-02: [YOLOv8l, YOLO26l]
+    PC-03: [RT-DETR-R50, ResNet50, ViT-B/16, Swin-Tiny]
+  stale_running_minutes: 240        # un RUNNING sin latido mas alla de este tiempo se considera huerfano
+
+# --------------------------------------------------------------------------- #
+# Optuna (sec. 10, 17).
+# --------------------------------------------------------------------------- #
+optuna:
+  storage:
+    # La especificacion s2 (sec. 17) recomienda PostgreSQL central, pero Estrategia_3PCs (sec. 12)
+    # descarta el almacenamiento central (sin NAS/servidor): se sincroniza por ZIP/Drive.
+    # Decision adoptada: SQLite local por PC, UN ARCHIVO POR ESTUDIO (un estudio = una PC a la vez).
+    # Solo SQLite local: backends de servidor estan bloqueados en este encargo.
+    backend: sqlite
+    url_env: OPTUNA_DATABASE_URL
+  study_prefix: botrytis
+  sampler: {name: TPE, multivariate: true, group: true, startup_trials: 5}
+  pruner: {name: MedianPruner, startup_trials: 5, warmup_epochs: 8, interval_steps: 1}
+  load_if_exists: true
+  max_failed_trials: 3              # si un estudio acumula mas FAILED, se aborta (evita bucles de OOM)
+
+detector:
+  architectures: [YOLOv8n, YOLOv8m, YOLOv8l, YOLO26n, YOLO26s, YOLO26l, RT-DETR-R50]
+  objective: map50_95
+  image_size: 640
+  pretrained: true
+  precision: fp16
+  batch_size: 16                    # micro-batch; el effective batch size lo fija nbs (Ultralytics)
+  nominal_batch_size: 64            # nbs de Ultralytics: effective batch size comun a todas las arquitecturas
+  max_epochs: 60
+  early_stopping_patience: 20
+  trials_per_architecture: 15
+  workers: 4
+  oom_fallback: true                # ante CUDA OOM: micro-batch/2 (effective batch se conserva por nbs)
+  yolo26_enqueue_recipe_trial: true # sec. 15.2: centro de busqueda = recipe YOLO26 (trial 0 = baseline)
+  yolo26_tune_augmentation: false   # sec. 15.2: mosaic/mixup solo si se amplia el presupuesto de TODOS
+  baseline:                         # sec. 41.2 (valores del anexo)
+    epochs: 100
+    optimizer: AdamW
+    lr0: 0.001
+    lrf: 0.01
+    momentum: 0.937
+    weight_decay: 0.0005
+    warmup_epochs: 3
+    cos_lr: true
+    patience: 20
+    seed: 42
+    freeze: 0
+    rtdetr_lr0: 1.0e-3              # anexo: lr head 1e-3; backbone 1e-4 => backbone_lr_ratio 0.1
+    rtdetr_backbone_lr_ratio: 0.1
+  baseline_overrides:               # anexo: RT-DETR weight decay 1e-4
+    RT-DETR-R50: {weight_decay: 1.0e-4}
+  augmentation:                     # sec. 41 anexo (campo real, dataset pequeno)
+    mosaic: 0.5
+    mixup: 0.0
+    copy_paste: 0.0
+    degrees: 0.0
+    translate: 0.1
+    scale: 0.5
+    fliplr: 0.5
+    flipud: 0.0
+  val_conf: 0.001                   # conf minima para calcular mAP (Ultralytics usa 0.001)
+  val_nms_iou: 0.7                  # NMS IoU por defecto de validacion
+
+classifier:
+  architectures: [ResNet50, ViT-B/16, Swin-Tiny]
+  objective: average_precision_positive
+  positive_class: con_signos
+  image_size: 224
+  pretrained: true
+  precision: fp16
+  batch_size: 32
+  max_epochs: 40
+  early_stopping_patience: 15       # ANEXO (sec. 38.5): RECOMENDACION DERIVADA, a confirmar
+  trials_per_architecture: 20
+  workers: 4
+  oom_fallback: true                # ante OOM: micro-batch/2 con acumulacion x2 (effective batch = 32)
+  baseline:                         # sec. 41.2 (anexo)
+    epochs: 50
+    optimizer: AdamW
+    lr: 1.0e-4
+    lr_transformers: 5.0e-5         # ViT-B/16 y Swin-Tiny (anexo)
+    weight_decay: 1.0e-4
+    warmup_epochs: 5
+    label_smoothing: 0.0
+    drop_path_rate: 0.0             # Swin-Tiny (neutral; HPO explora {0.0, 0.1, 0.2})
+    seed: 42
+  augmentation:                     # SOLO en train; validation/test sin aleatoriedad (sec. 35)
+    hflip: 0.5
+    rotation_deg: 10
+    color_jitter: 0.1               # "bajo"
+    rrc_scale: [0.7, 1.0]           # RandomResizedCrop conservador: el crop GT ya es el fruto
+    rrc_ratio: [0.9, 1.1]
+  imbalance:
+    # sec. 38.6 abierto. El anexo propone Weighted CE como configuracion inicial (ANEXO, a confirmar).
+    strategy: weighted_ce           # none | weighted_ce
+  sgd_momentum: 0.9
+
+robustness:
+  top_k_configs: 3
+  seeds: [17, 42, 73]
+  evaluate_across_inner_folds: true
+
+inference_tuning:
+  use_outer_validation_only: true
+  detector_conf_threshold: TUNE_ON_VALIDATION
+  detector_nms_iou: TUNE_ON_VALIDATION
+  classifier_probability_threshold: TUNE_ON_VALIDATION
+  classifier_threshold_metric: f1   # ANEXO (sec. 38.7): f1 | f2. Predeclarado; no cambiar tras ver test
+  detector_threshold_metric: f1     # criterio para conf/NMS del detector (F1 a IoU de matching)
+  detector_conf_grid: [0.01, 0.02, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.60, 0.70]
+  detector_nms_iou_grid: [0.4, 0.5, 0.6, 0.7]
+  classifier_threshold_grid_points: 101
+
+matching:                           # sec. 25 / 38.8-38.11 (ANEXO, a confirmar)
+  metric: iou
+  threshold: 0.5
+  one_to_one_rule: greedy_by_confidence
+  duplicate_policy: count_as_false_positive_localization   # los duplicados se cuentan como FP de localizacion
+
+selection:
+  detector:
+    primary_metric: map50_95
+    minimum_recall: null            # sin restriccion de recall minimo (sec. 22.1)
+    tie_margin: 0.005               # diferencia de la metrica primaria considerada empate
+    tie_breakers: [{metric: recall, direction: max}, {metric: gflops, direction: min}]
+  classifier:
+    primary_metric: average_precision_positive
+    minimum_recall_positive: null
+    tie_margin: 0.005
+    tie_breakers: [{metric: recall, direction: max}, {metric: f1, direction: max}, {metric: gflops, direction: min}]
+
+benchmark:
+  benchmark_pc: PC-01
+  warmup_iterations: 10             # ANEXO (sec. 29.3)
+  measured_iterations: 100          # ANEXO
+  cuda_synchronization: true        # ANEXO
+  include_disk_io: false            # ANEXO: imagenes pre-cargadas en RAM
+  batch_size: 1
+  require_idle_gpu: true            # aborta si otro proceso usa la GPU (sec. 35)
+
+test:
+  allowed_during_hpo: false
+  allowed_during_model_selection: false
+  allowed_during_threshold_tuning: false
+  allowed_after_pipeline_freeze: true
+  freeze_manifest: artifacts/v4/freeze_manifest.json
+
+# Decisiones del ANEXO que el investigador debe confirmar ANTES de congelar (15_freeze_experiment.py).
+decisions:
+  confirmed_by_user: false
+  adopted_from_annex:
+    - classifier.early_stopping_patience
+    - inference_tuning.classifier_threshold_metric
+    - inference_tuning.detector_threshold_metric
+    - matching.*
+    - selection.*.tie_breakers
+    - benchmark.warmup_iterations
+    - benchmark.measured_iterations
+    - benchmark.cuda_synchronization
+    - benchmark.include_disk_io
+    - classifier.imbalance.strategy
+
+# --------------------------------------------------------------------------- #
+# Logging y figuras
+# --------------------------------------------------------------------------- #
+logging:
+  level: INFO
+  console: true
+  run_subdirs: [figures]
+
+figures:
+  formats: [png, svg, pdf]                    # png | pdf | svg
+  dpi: 300
+  also_save_to_reports: true        # copia estable en reports/figures/ (ademas de runs/<run>/figures/)
+  gt_examples: 6                    # imagenes de ejemplo para el grafico de anotaciones GT
+  gradcam_examples: 8               # ejemplos Grad-CAM por clasificador
+  tp_fp_fn_examples: 6              # ejemplos cualitativos del pipeline
+
+# Decision explicita; no adquiere pesos ni transforma scratch en pretrained.
+initialization:
+  mode: pretrained
+  scratch_decision: null  # obligatorio antes de cambiar ambas modalidades a scratch
+  rtdetr_backend: ultralytics_resnet50
+  rtdetr_variant_decision: null  # variante distinta de R50-vd original; BLOQUEADA hasta decision
+weights:
+  registry: configs/weights_registry.json
+  storage_dir: weights
+manual_qa:
+  ledger_dir: artifacts/manual_qa
+  required_gate: READY_FOR_EXPERIMENT

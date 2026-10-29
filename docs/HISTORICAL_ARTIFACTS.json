@@ -1,0 +1,500 @@
+[
+  {
+    "path": "artifacts/.gitkeep",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "data/.gitkeep",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/AUDITORIA_2026-10-28.md",
+    "sha256": "7a5c21315d0863cc4080ebc70fd1a14b8d5894378121f8fc3e305254c320cddf",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/audit_report.md",
+    "sha256": "14e08b26d829f438f4e33bb447e40ac4559e2de5c41970e6909d19c7198a3752",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/CAMBIOS_POR_ARCHIVO.md",
+    "sha256": "6c3ae88a667c7321c609c312f62b478ec70d17e2e3e9468c082190a73fe3a7f1",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/CHANGE_MANIFEST.json",
+    "sha256": "908cb87162fa13b44df44266c3c9bd035c87ebe93273ee4546e4e5fd914903e8",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/dataset_source_crosscheck.json",
+    "sha256": "15cb0bc83f3f3d159afbf2539b281c869213ce09b4866a9d3819370f011b10aa",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/development_tests.xml",
+    "sha256": "007743727b26358926ce510b4e96e2a510873228d2aee96dbd9674df06385e3b",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/development_validation.json",
+    "sha256": "5d9125b10741a12a020c58280de4bbd6fa8919c3b272e40bd8191062be36fbd2",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/framework_code_changes.patch",
+    "sha256": "3ee2cf1ad54d9b5e46a6456611d775e91633ccd0f1c634617bfa0f78a9a30120",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/local_image_validation.log",
+    "sha256": "0c8a7d1296cc6f3ce053657a86ddb799367e124a0f92cb1d7006d57491da6b45",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/local_image_validation_summary.json",
+    "sha256": "acf3aa6e6dc52553694f329ca3387a494044ab8116045ac65d18577cb4fb49db",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/pyflakes.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/semantic_scan_final.json",
+    "sha256": "9ab5dc132a8cb311cb129918595de7c68255b74c378b4d7100318b5bb08b8e95",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/smoke_scientific_audit.json",
+    "sha256": "7954a04a2c98177b8f876b28453746dcae3855e44ef4387f17269c05d48cd3c1",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/SMOKE_TEST_EVIDENCE.md",
+    "sha256": "ee63dd804f3687b82617efa7739e4a50f8e0db3bdf0bf5e0447ce7f3b80fb34a",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/source_inventory_original.json",
+    "sha256": "1dc7cccd13ae5f17dc66befd3f02fcca86120423ad6970b6960041488cc72ca0",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/static_audit.log",
+    "sha256": "5a1ca2d0e9d76c98d6a97de1958f089671b5673948f2826a48e327591708f01b",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/tests.log",
+    "sha256": "c89f65422170ab918c4d8460842b791ddd9f445975351617152c4fbf989be301",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/tests.xml",
+    "sha256": "3f1e26aa0b63a0346f3635b85c4afd40e9b422750e9f5378a6b5d7dc3139cbc9",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/tests_final_cierre.log",
+    "sha256": "5be72379e855a25031c8ebc1ff4237fad4bd6a176be4a2102d839c06032059a9",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/tests_final_cierre.xml",
+    "sha256": "98b5aa0abdaadc7af5dac9d055aaaa44c6bedc0dd069ee9bbcbede6a8818bdd8",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/tests_graphics_final_cierre.log",
+    "sha256": "1a846c7136c487031c2b6079521f3258c6b6478ce540e13fa7b0d6cba828776f",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/tests_graphics_final_cierre.xml",
+    "sha256": "e34179174084a0701c3d092e3d363a7507c796fe65bcc71f915e3e5eb101204e",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/tests_targeted_cierre.log",
+    "sha256": "63567cc579e98776415c037eb7dadbbf1dc3a1a120b3124996b3b1095f284713",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/tests_targeted_cierre.xml",
+    "sha256": "f0cc1418d78a900a585daa10cd9440672288647cb8d8ad45d67ca9d1edbe4ef8",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/VALIDACION_2026-10-28.md",
+    "sha256": "f3e67601c99ca762f2431054e162f265fa729514cb7d9129c065929c209498c3",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/validation_summary.json",
+    "sha256": "332bc1a29700399228e2c0399f79cf66f6aa0fb4f98cf06c00c134a42c6dd5ed",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "runs/.gitkeep",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "data/raw/images/.gitkeep",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "data/raw/labels/.gitkeep",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/figures/.gitkeep",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/inventario.csv",
+    "sha256": "24935a38cb6c60ded55070e6df9624c7322912be374419dbba351ec381e0142c",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/INVENTARIO.md",
+    "sha256": "4902a76cc280b555241dc71c985580946ff555cf55cac27ee8ad098fa8fc539d",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/historical/GUIA_EJECUCION_3PCs.md",
+    "sha256": "9d26e858ef87622ba4ff5132817a9a68e4fb622ab6947fa0765400f48fb03cc5",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/historical/README.md",
+    "sha256": "e87cf5f9b0f481b097c766411f71a5dbac08695d90129d4b5f70fc74535204eb",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/label_audit/boxes.csv",
+    "sha256": "d0c11b0de9818176f9ad81d9ac201ac076d101df422b2249ed6f96d67a467efd",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/label_audit/label_anomalies.csv",
+    "sha256": "83304abe183e90e7544be32f56c28b820f8059eef4aee8c3cf6ddda740987352",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/label_audit/label_audit.json",
+    "sha256": "bdb3e7ff0859e127784db2e4226a316b0d8d108519a4ef4a3288957a262d5124",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/label_audit/label_audit.md",
+    "sha256": "8f66bb0cbc2654c70a08284a34082c516a50318dac1a00be7472e4f2eb503fd4",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/label_audit/label_per_image.csv",
+    "sha256": "80995700dd6a95cc6c1c6af608efada5a5bade3eaf834fda8a6744aa0972c660",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/label_audit/pairing_audit.csv",
+    "sha256": "9c5ef11d4fef2799fbfd3dce82e4b17fe08eeba8c7af77d43853575cf68f7c87",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/label_audit/pairing_candidates.csv",
+    "sha256": "a08b527025cdf394c3f6dd7c5245171ed3cc5b24e66fa5edad7c18e16227f4a2",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/local_dataset_crosscheck/boxes.csv",
+    "sha256": "d0c11b0de9818176f9ad81d9ac201ac076d101df422b2249ed6f96d67a467efd",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/local_dataset_crosscheck/label_anomalies.csv",
+    "sha256": "83304abe183e90e7544be32f56c28b820f8059eef4aee8c3cf6ddda740987352",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/local_dataset_crosscheck/label_audit.json",
+    "sha256": "ae22a7b8aa0526b2a67677b13e5a0c6232b4fa33e89e590dbf890399e1a9e32b",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/local_dataset_crosscheck/label_audit.md",
+    "sha256": "8cf051d96724a6537a3d5da8db0c15bb0d79fd19c811a09e39b1382c38fd4d7f",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/local_dataset_crosscheck/label_per_image.csv",
+    "sha256": "80995700dd6a95cc6c1c6af608efada5a5bade3eaf834fda8a6744aa0972c660",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/local_dataset_crosscheck/pairing_audit.csv",
+    "sha256": "9c5ef11d4fef2799fbfd3dce82e4b17fe08eeba8c7af77d43853575cf68f7c87",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/local_dataset_crosscheck/pairing_candidates.csv",
+    "sha256": "a08b527025cdf394c3f6dd7c5245171ed3cc5b24e66fa5edad7c18e16227f4a2",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/AUDIT.md",
+    "sha256": "25524c7d23a6fbc8671d359eea181e78ef9b08d565f2e44c5e301486abc42a27",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/changed_files.json",
+    "sha256": "aa85fcdaeaebec54bdb02e4fda0592a19889b5047793ea2d267d285ae8756ae1",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/changes.diff",
+    "sha256": "15a74815b3a58fdf9cf12c34f8e0773c16dfd2175b61ef63a0c290609a4932a8",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/DELIVERY_SUMMARY.json",
+    "sha256": "dfbdb1163abd8eec9de453a011b98e622e95fcd871e3816efa6871d79b8c9fff",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/evidence_final.log",
+    "sha256": "32ab0912733fa1617aafeb01835f582d8b704a62f2fdfad9bbd977c83193e913",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/evidence_final.xml",
+    "sha256": "f8cab6bb519339b15633ec3984f05560e8f4e28e28d224182ad5cc55344de332",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/final_tests.log",
+    "sha256": "9a01c075893344c97f9fe94a69eb9bb1d709168ec9859ba440b2fbb6d63eb0b4",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/final_tests.xml",
+    "sha256": "5c61e17136e2b2e84c476047da39dacc23cbaaafc32dbede344fd00ec1da2984",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/new_tests.log",
+    "sha256": "d09f0ad06d6e59b908037317d6c044f7ababd3466cb46d5b901cf6f0855baf04",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/new_tests.xml",
+    "sha256": "fbdcf94f27a5f117d511a6e029ab91f6b139b42322d101a42bf40f06cd130595",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/targeted_final.log",
+    "sha256": "3b21ba72d092a475261c50cba4dc171776a0a772afc6e98c8453bf5386bf830f",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/targeted_final.xml",
+    "sha256": "d5b7e9abe78647b610ff4725916cfc5ec7f4267ecc7e550dc772be1f32641146",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/tests.log",
+    "sha256": "ec0c21d93ff4e2bb75af69d50d72fe740614c4dd15cc49f151ea41e27457d424",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/separation_audit/tests.xml",
+    "sha256": "d6b294b1f67d45027aa436475ce8cd4f8169ae4a952cd4754f9617388622645d",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/tables/.gitkeep",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/data/anomalias.csv",
+    "sha256": "027dfff3aa2345803a573a7d7b444322d8ec1af32eea2b0d69402aeed14150ee",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/data/crops_posibles_label_only.csv",
+    "sha256": "13654aad93171d904d62d2b009b82aee2404b826d7b825de0603bc57937a576c",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/data/distribucion_anotaciones.csv",
+    "sha256": "09c7a203a122eb86635e962ef5ba37d06e98a1ec4beebfce857c8079ccae2ced",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/data/figura_dataset.csv",
+    "sha256": "2e79dcfc38a6b3b6323dc55cb79fc7e5327452076abbd5f6b9e0eb13ea81afbd",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/data/fuentes_descubiertas.csv",
+    "sha256": "fde8031b9524e389589a47ee142389e750990bc1b23dad97a4b9ce6fdf764d19",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/data/hiperparametros_iniciales.csv",
+    "sha256": "e707fb5846b56b44f5dc9b510dbf0f18fcfc06df2dfe542ef4fa16c3fc38f572",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/data/iou_emparejamiento.csv",
+    "sha256": "257b9b6212ccf25fc3d9112a34e925f26f9668aca4921e1beb755074d8f4a7ad",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/data/iou_todos_candidatos.csv",
+    "sha256": "4f7dacac1fe1c51bf0bbba3dbb7aae43e0519f02d0921ed86fad079c068a4d89",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/support/distribucion_clases.pdf",
+    "sha256": "bdc48075b2860c17d72b8f32d117cb605ede2fced5c3959ebc545e1b574cfa4e",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/support/distribucion_iou.pdf",
+    "sha256": "b58e03a61310266bbe035a43204cb5e2598042913fd89dc42e08a95abe574dd6",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/support/label_audit/boxes.csv",
+    "sha256": "d0c11b0de9818176f9ad81d9ac201ac076d101df422b2249ed6f96d67a467efd",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/support/label_audit/label_anomalies.csv",
+    "sha256": "83304abe183e90e7544be32f56c28b820f8059eef4aee8c3cf6ddda740987352",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/support/label_audit/label_audit.json",
+    "sha256": "ae22a7b8aa0526b2a67677b13e5a0c6232b4fa33e89e590dbf890399e1a9e32b",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/support/label_audit/label_audit.md",
+    "sha256": "8cf051d96724a6537a3d5da8db0c15bb0d79fd19c811a09e39b1382c38fd4d7f",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/support/label_audit/label_per_image.csv",
+    "sha256": "80995700dd6a95cc6c1c6af608efada5a5bade3eaf834fda8a6744aa0972c660",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/support/label_audit/pairing_audit.csv",
+    "sha256": "9c5ef11d4fef2799fbfd3dce82e4b17fe08eeba8c7af77d43853575cf68f7c87",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  },
+  {
+    "path": "reports/graficos_cierre/support/label_audit/pairing_candidates.csv",
+    "sha256": "a08b527025cdf394c3f6dd7c5245171ed3cc5b24e66fa5edad7c18e16227f4a2",
+    "state": "OBSOLETO_NO_VALIDADO",
+    "reason": "Semantica/seed/procedencia anteriores a v4; evidencia conservada; no resultado valido"
+  }
+]

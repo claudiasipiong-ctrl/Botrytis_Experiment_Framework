@@ -1,0 +1,30 @@
+..............................ss.ss..................................... [ 37%]
+...ssssssssssssss...sss................................................. [ 75%]
+...................s..........................                           [100%]
+=============================== warnings summary ===============================
+tests/test_run_layout_and_figures.py::test_every_experiment_plot_draws_with_data_and_with_empty_inputs
+  /workspace/scratch/6c98eb897911/work/Botrytis_Experiment_Framework/src/utils/plots_experiment.py:136: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`). Consider using `matplotlib.pyplot.close()`.
+    fig, ax = plt.subplots(figsize=(7.2, 4.8))
+
+tests/test_visualization.py::test_other_plots_tolerate_empty_input
+  /workspace/scratch/6c98eb897911/work/Botrytis_Experiment_Framework/src/utils/visualization.py:991: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`). Consider using `matplotlib.pyplot.close()`.
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.3), gridspec_kw={"width_ratios": [1.1, 1]})
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_classifier_training.py:9: Optional ML dependency torch unavailable; no installation or weights download
+SKIPPED [1] tests/test_training_components.py:6: Optional ML dependency torch unavailable; no installation or weights download
+SKIPPED [1] tests/test_derived_inputs_and_audit.py:26: Live classifier data imports require PyTorch
+SKIPPED [1] tests/test_derived_inputs_and_audit.py:42: Classifier data imports require PyTorch
+SKIPPED [1] tests/test_derived_inputs_and_audit.py:73: Ultralytics unavailable; its actual file reader cannot be inspected
+SKIPPED [1] tests/test_derived_inputs_and_audit.py:84: CropDataset and transforms require PyTorch
+SKIPPED [1] tests/test_external_graphics.py:21: External graphics deliverable must be placed next to project ZIP
+SKIPPED [1] tests/test_external_graphics.py:36: External graphics deliverable must be placed next to project ZIP
+SKIPPED [1] tests/test_external_graphics.py:45: External graphics deliverable must be placed next to project ZIP
+SKIPPED [1] tests/test_external_graphics.py:55: External graphics deliverable must be placed next to project ZIP
+SKIPPED [10] tests/test_hpo_and_selection.py:35: Optuna unavailable: sampling/search study test requires optional dependency
+SKIPPED [1] tests/test_hpo_and_selection.py:102: Optuna unavailable; TPE/MedianPruner checks pending
+SKIPPED [1] tests/test_hpo_and_selection.py:119: Optuna unavailable; study resume checks pending
+SKIPPED [1] tests/test_hpo_and_selection.py:142: Optuna unavailable; enqueue checks pending
+SKIPPED [1] tests/test_semantic_pairing.py:133: Project raw images absent; external incomplete 328-image dataset audited separately; official crops/checkpoints pending
+168 passed, 24 skipped, 2 warnings in 127.61s (0:02:07)

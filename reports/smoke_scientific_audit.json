@@ -1,0 +1,696 @@
+{
+  "checks": [
+    {
+      "id": 1,
+      "name": "clasificador con GT crops",
+      "status": "PASS",
+      "summary": "crops = cajas GT del fruto; entrenamiento sin predicciones del detector",
+      "evidence": {
+        "n_manifest": 857,
+        "n_gt_fruits": 857,
+        "n_joined": 857,
+        "max_box_abs_diff_px": 5.684341886080802e-14,
+        "missing_crop_files": 0,
+        "classifier_training_runs": 27,
+        "runs_without_gt_crop_evidence": [],
+        "code_checked": [
+          "classifier_train.py",
+          "classifier_data.py",
+          "classifier_models.py"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "name": "la regla 75 % solo crea etiquetas",
+      "status": "PASS",
+      "summary": "etiquetas recalculadas desde anotaciones crudas = manifiesto; la regla no aparece en entrenamiento/inferencia/seleccion",
+      "evidence": {
+        "labels_recomputed_from_raw_annotations": 857,
+        "label_mismatches": 0,
+        "exactly_0.75_cases": 0,
+        "exactly_0.75_labelled_sin_signos": null,
+        "modules_referencing_rule_functions": {},
+        "rule": {
+          "denominator": "fruit_area",
+          "threshold": 0.75,
+          "comparison": ">"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "name": "el detector solo detecta frutos",
+      "status": "PASS",
+      "summary": "todas las cajas de entrenamiento son clase 0 (fruit); nc=1",
+      "evidence": {
+        "boxes_checked": 857,
+        "fruit_boxes_in_raw_annotations": 857,
+        "sign_boxes_excluded": 396,
+        "data_yaml": {
+          "nc": 1,
+          "names": {
+            "0": "fruit"
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "name": "test bloqueado hasta el freeze",
+      "status": "PASS",
+      "summary": "solo 16_evaluate_test abrio el test, despues del freeze",
+      "evidence": {
+        "test_lock_exists": true,
+        "freeze_exists": true,
+        "frozen_at": "2026-09-30T22:50:51.015410+00:00",
+        "runs_that_accessed_test": [
+          {
+            "run": "_pipeline/20260930_175056_16_evaluate_test",
+            "script": "16_evaluate_test",
+            "stage": "final_test",
+            "started_at": "2026-09-30T17:50:56.057924-05:00"
+          }
+        ],
+        "validation_used_in_hpo_trials": []
+      }
+    },
+    {
+      "id": 5,
+      "name": "sin fuga de datos",
+      "status": "PASS",
+      "summary": "split por imagen; crops y folds heredados; sin duplicados entre splits",
+      "evidence": {
+        "images_per_split": {
+          "train": 84,
+          "validation": 24,
+          "test": 12
+        },
+        "crops_inherit_split_and_fold": true,
+        "folds_cover_outer_train_only": true,
+        "identical_images_across_splits": 0,
+        "near_duplicate_pairs_across_splits": [],
+        "n_near_duplicate_pairs_across_splits": 0
+      }
+    },
+    {
+      "id": 6,
+      "name": "metricas reproducibles",
+      "status": "PASS",
+      "summary": "11 conjuntos de metricas recalculados desde predicciones guardadas: coinciden",
+      "evidence": {
+        "recomputed": [
+          {
+            "architecture": "ResNet50",
+            "file": "C:\\botrytis_work\\smoke\\artifacts\\outer_validation\\resnet50_predictions.csv"
+          },
+          {
+            "architecture": "ViT-B/16",
+            "file": "C:\\botrytis_work\\smoke\\artifacts\\outer_validation\\vit_b16_predictions.csv"
+          },
+          {
+            "architecture": "Swin-Tiny",
+            "file": "C:\\botrytis_work\\smoke\\artifacts\\outer_validation\\swin_tiny_predictions.csv"
+          },
+          {
+            "architecture": "YOLOv8n",
+            "file": "C:\\botrytis_work\\smoke\\artifacts\\outer_validation\\yolov8n_predictions.csv",
+            "map50_95_recomputed": 0.774899891142298
+          },
+          {
+            "architecture": "YOLOv8m",
+            "file": "C:\\botrytis_work\\smoke\\artifacts\\outer_validation\\yolov8m_predictions.csv",
+            "map50_95_recomputed": 0.0004319718143955383
+          },
+          {
+            "architecture": "YOLOv8l",
+            "file": "C:\\botrytis_work\\smoke\\artifacts\\outer_validation\\yolov8l_predictions.csv",
+            "map50_95_recomputed": 6.367196205151062e-06
+          },
+          {
+            "architecture": "YOLO26n",
+            "file": "C:\\botrytis_work\\smoke\\artifacts\\outer_validation\\yolo26n_predictions.csv",
+            "map50_95_recomputed": 0.739591892325496
+          },
+          {
+            "architecture": "YOLO26s",
+            "file": "C:\\botrytis_work\\smoke\\artifacts\\outer_validation\\yolo26s_predictions.csv",
+            "map50_95_recomputed": 0.7994515503215769
+          },
+          {
+            "architecture": "YOLO26l",
+            "file": "C:\\botrytis_work\\smoke\\artifacts\\outer_validation\\yolo26l_predictions.csv",
+            "map50_95_recomputed": 0.7374026159660327
+          },
+          {
+            "architecture": "RT-DETR-R50",
+            "file": "C:\\botrytis_work\\smoke\\artifacts\\outer_validation\\rtdetr_r50_predictions.csv",
+            "map50_95_recomputed": 0.01668260332427112
+          },
+          {
+            "pipeline": "validacion",
+            "e_flujo": 0.06666666666666667
+          }
+        ],
+        "training_runs_without_seed": []
+      }
+    },
+    {
+      "id": 7,
+      "name": "graficos con datos reales",
+      "status": "PASS",
+      "summary": "44/44 figuras obligatorias OK",
+      "evidence": {
+        "required": 44,
+        "ok": 44,
+        "missing": [],
+        "table": [
+          {
+            "name": "det_map50_95_por_arquitectura",
+            "group": "deteccion",
+            "description": "mAP@0.5:0.95 vs arquitectura",
+            "produced_by": "12, 18",
+            "exists": true,
+            "n_points": 7,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "det_map50_por_arquitectura",
+            "group": "deteccion",
+            "description": "mAP@0.5 vs arquitectura",
+            "produced_by": "12, 18",
+            "exists": true,
+            "n_points": 7,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "det_recall_vs_latencia",
+            "group": "deteccion",
+            "description": "Recall vs latencia",
+            "produced_by": "18 (requiere 17)",
+            "exists": true,
+            "n_points": 7,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "det_radar_detectores",
+            "group": "deteccion",
+            "description": "Radar chart de detectores",
+            "produced_by": "12, 18",
+            "exists": true,
+            "n_points": 7,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "det_ap_vs_iou",
+            "group": "deteccion",
+            "description": "AP vs umbral de IoU",
+            "produced_by": "12, 18",
+            "exists": true,
+            "n_points": 70,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "det_map_vs_flops",
+            "group": "deteccion",
+            "description": "mAP vs FLOPs",
+            "produced_by": "12, 18",
+            "exists": true,
+            "n_points": 7,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "det_map_vs_parametros",
+            "group": "deteccion",
+            "description": "mAP vs parametros",
+            "produced_by": "12, 18",
+            "exists": true,
+            "n_points": 7,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "det_pareto_map_latencia",
+            "group": "deteccion",
+            "description": "Pareto mAP-latencia",
+            "produced_by": "18 (requiere 17)",
+            "exists": true,
+            "n_points": 7,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "det_pareto_map_vram",
+            "group": "deteccion",
+            "description": "Pareto mAP-VRAM",
+            "produced_by": "18 (requiere 17)",
+            "exists": true,
+            "n_points": 7,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "cls_curva_pr",
+            "group": "clasificacion",
+            "description": "Curva PR",
+            "produced_by": "13",
+            "exists": true,
+            "n_points": 531,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "cls_curva_roc",
+            "group": "clasificacion",
+            "description": "Curva ROC",
+            "produced_by": "13",
+            "exists": true,
+            "n_points": 531,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "cls_matriz_confusion",
+            "group": "clasificacion",
+            "description": "Matriz de confusion",
+            "produced_by": "13",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "cls_gradcam",
+            "group": "clasificacion",
+            "description": "Grad-CAM",
+            "produced_by": "13",
+            "exists": true,
+            "n_points": 12,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "cls_umbral_vs_f1",
+            "group": "clasificacion",
+            "description": "Umbral vs F1",
+            "produced_by": "13",
+            "exists": true,
+            "n_points": 63,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "cls_ap_positiva_por_arquitectura",
+            "group": "clasificacion",
+            "description": "AP de la clase positiva por arquitectura",
+            "produced_by": "13, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "pipe_arquitectura_completa_validacion",
+            "group": "pipeline",
+            "description": "Arquitectura completa del pipeline (validacion)",
+            "produced_by": "14, 16",
+            "exists": true,
+            "n_points": 1,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "pipe_errores_acumulados_validacion",
+            "group": "pipeline",
+            "description": "Errores acumulados (validacion)",
+            "produced_by": "14, 16",
+            "exists": true,
+            "n_points": 1,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "pipe_tp_fp_fn_validacion",
+            "group": "pipeline",
+            "description": "Ejemplos TP/FP/FN (validacion)",
+            "produced_by": "14, 16",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "pipe_tp_fp_fn_conteos_validacion",
+            "group": "pipeline",
+            "description": "Conteos TP/FP/FN (validacion)",
+            "produced_by": "14, 16",
+            "exists": true,
+            "n_points": 1,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "pipe_arquitectura_completa_test",
+            "group": "pipeline",
+            "description": "Arquitectura completa del pipeline (test)",
+            "produced_by": "14, 16",
+            "exists": true,
+            "n_points": 1,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "pipe_errores_acumulados_test",
+            "group": "pipeline",
+            "description": "Errores acumulados (test)",
+            "produced_by": "14, 16",
+            "exists": true,
+            "n_points": 1,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "pipe_tp_fp_fn_test",
+            "group": "pipeline",
+            "description": "Ejemplos TP/FP/FN (test)",
+            "produced_by": "14, 16",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "pipe_tp_fp_fn_conteos_test",
+            "group": "pipeline",
+            "description": "Conteos TP/FP/FN (test)",
+            "produced_by": "14, 16",
+            "exists": true,
+            "n_points": 1,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "pipe_latencia_por_etapa",
+            "group": "pipeline",
+            "description": "Latencia por etapa del pipeline congelado",
+            "produced_by": "17",
+            "exists": true,
+            "n_points": 10,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_curvas_yolov8n",
+            "group": "hpo",
+            "description": "Curvas HPO YOLOv8n",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_distribuciones_yolov8n",
+            "group": "hpo",
+            "description": "Distribuciones Optuna YOLOv8n",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_curvas_yolov8m",
+            "group": "hpo",
+            "description": "Curvas HPO YOLOv8m",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_distribuciones_yolov8m",
+            "group": "hpo",
+            "description": "Distribuciones Optuna YOLOv8m",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_curvas_yolov8l",
+            "group": "hpo",
+            "description": "Curvas HPO YOLOv8l",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_distribuciones_yolov8l",
+            "group": "hpo",
+            "description": "Distribuciones Optuna YOLOv8l",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_curvas_yolo26n",
+            "group": "hpo",
+            "description": "Curvas HPO YOLO26n",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_distribuciones_yolo26n",
+            "group": "hpo",
+            "description": "Distribuciones Optuna YOLO26n",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_curvas_yolo26s",
+            "group": "hpo",
+            "description": "Curvas HPO YOLO26s",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_distribuciones_yolo26s",
+            "group": "hpo",
+            "description": "Distribuciones Optuna YOLO26s",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_curvas_yolo26l",
+            "group": "hpo",
+            "description": "Curvas HPO YOLO26l",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_distribuciones_yolo26l",
+            "group": "hpo",
+            "description": "Distribuciones Optuna YOLO26l",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_curvas_rtdetr_r50",
+            "group": "hpo",
+            "description": "Curvas HPO RT-DETR-R50",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_distribuciones_rtdetr_r50",
+            "group": "hpo",
+            "description": "Distribuciones Optuna RT-DETR-R50",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_curvas_resnet50",
+            "group": "hpo",
+            "description": "Curvas HPO ResNet50",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_distribuciones_resnet50",
+            "group": "hpo",
+            "description": "Distribuciones Optuna ResNet50",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_curvas_vit_b16",
+            "group": "hpo",
+            "description": "Curvas HPO ViT-B/16",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_distribuciones_vit_b16",
+            "group": "hpo",
+            "description": "Distribuciones Optuna ViT-B/16",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_curvas_swin_tiny",
+            "group": "hpo",
+            "description": "Curvas HPO Swin-Tiny",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          },
+          {
+            "name": "hpo_distribuciones_swin_tiny",
+            "group": "hpo",
+            "description": "Distribuciones Optuna Swin-Tiny",
+            "produced_by": "07, 18",
+            "exists": true,
+            "n_points": 3,
+            "has_data": true,
+            "synthetic": false
+          }
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "name": "cada ejecucion deja logs y hashes",
+      "status": "PASS",
+      "summary": "158 runs con execution.log, config.yaml, environment.json, metrics.json, checkpoint_metadata.json y hashes",
+      "evidence": {
+        "runs": 158,
+        "incomplete_runs": [],
+        "missing_hashes": []
+      }
+    },
+    {
+      "id": 9,
+      "name": "protocolo HPO",
+      "status": "PASS",
+      "summary": "10 estudios independientes con el presupuesto oficial y robustez top-k x seeds predeclaradas",
+      "evidence": {
+        "studies": {
+          "YOLOv8n": {
+            "study_name": "botrytis_yolov8n",
+            "budget_used": 3,
+            "budget": 3,
+            "robustness_candidates": 2
+          },
+          "YOLOv8m": {
+            "study_name": "botrytis_yolov8m",
+            "budget_used": 3,
+            "budget": 3,
+            "robustness_candidates": 2
+          },
+          "YOLOv8l": {
+            "study_name": "botrytis_yolov8l",
+            "budget_used": 3,
+            "budget": 3,
+            "robustness_candidates": 2
+          },
+          "YOLO26n": {
+            "study_name": "botrytis_yolo26n",
+            "budget_used": 3,
+            "budget": 3,
+            "robustness_candidates": 2
+          },
+          "YOLO26s": {
+            "study_name": "botrytis_yolo26s",
+            "budget_used": 3,
+            "budget": 3,
+            "robustness_candidates": 2
+          },
+          "YOLO26l": {
+            "study_name": "botrytis_yolo26l",
+            "budget_used": 3,
+            "budget": 3,
+            "robustness_candidates": 2
+          },
+          "RT-DETR-R50": {
+            "study_name": "botrytis_rtdetr_r50",
+            "budget_used": 3,
+            "budget": 3,
+            "robustness_candidates": 2
+          },
+          "ResNet50": {
+            "study_name": "botrytis_resnet50",
+            "budget_used": 3,
+            "budget": 3,
+            "robustness_candidates": 2
+          },
+          "ViT-B/16": {
+            "study_name": "botrytis_vit_b16",
+            "budget_used": 3,
+            "budget": 3,
+            "robustness_candidates": 2
+          },
+          "Swin-Tiny": {
+            "study_name": "botrytis_swin_tiny",
+            "budget_used": 3,
+            "budget": 3,
+            "robustness_candidates": 2
+          }
+        }
+      }
+    }
+  ],
+  "dataset_hash": "9f1bd399c7ce4b61ecaa63cc01152dd41fbbf314e3fb90937bf0b8aeceb9bdd8",
+  "split_hash": "fcd07fe7ab06d2a185dced1b785bf797ad463bdcf3a2d11171460a60865f1f9d",
+  "code_hash": "7bf7440a76c2f78777d1942b83d1257ecfeabf1d337f15c33ba8338377f75a9c"
+}

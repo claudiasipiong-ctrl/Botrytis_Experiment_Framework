@@ -1,0 +1,705 @@
+--- original/configs/default.yaml
++++ auditado/configs/default.yaml
+@@ -37,6 +37,7 @@
+   raw_labels_dir: ${BOTRYTIS_LABELS_DIR:-data/raw/labels}          # TODO_BLOQUEANTE (sec. 38.19): ruta definitiva
+   detection_dir: ${paths.data_root}/detection
+   classification_dir: ${paths.data_root}/classification
++  results_dir: results
+   artifacts_dir: artifacts
+   environments_dir: artifacts/environments
+   runs_dir: ${BOTRYTIS_RUNS_DIR:-runs}
+--- original/README.md
++++ auditado/README.md
+@@ -1,3 +1,7 @@
++# Actualización: separación y evidencias por modelo
++
++Consultar [SEPARACION_Y_EVIDENCIAS.md](SEPARACION_Y_EVIDENCIAS.md) antes de ejecutar esta versión. La auditoría actual y las pruebas están en `reports/separation_audit/`. Las evidencias nuevas se guardan en `results/` y el test compara únicamente candidatos sellados antes de abrirlo.
++
+ # Botrytis Experiment Framework
+ 
+ Framework Python para comparar siete detectores y tres clasificadores, con split externo por imagen, folds internos, HPO, test bloqueado y ejecución distribuida en tres PCs.
+--- original/src/01_validate_dataset.py
++++ auditado/src/01_validate_dataset.py
+@@ -135,6 +135,8 @@
+ def main(ctx: RunContext, args: argparse.Namespace) -> None:
+     """Valida todo el dataset y escribe inventario, incidencias e informe."""
+     cfg, log = ctx.cfg, ctx.logger
++    from utils.guards import assert_not_frozen
++    assert_not_frozen(cfg, "01_validate_dataset")
+     fruit_ids, sign_id = class_ids_from_cfg(cfg)  # aborta si siguen TODO
+     images_dir, labels_dir = dataset_dirs(cfg)
+     artifacts = cfg_path(cfg, "paths.artifacts_dir")
+--- original/src/02_create_outer_split.py
++++ auditado/src/02_create_outer_split.py
+@@ -68,6 +68,8 @@
+ def main(ctx: RunContext, args: argparse.Namespace) -> None:
+     """Crea el split externo, lo sella y bloquea el test."""
+     cfg, log = ctx.cfg, ctx.logger
++    from utils.guards import assert_not_frozen
++    assert_not_frozen(cfg, "02_create_outer_split")
+     seed = require(cfg, "outer_split.seed", spec_ref="sec. 5.3 / 38.3")
+     if isinstance(seed, bool) or not isinstance(seed, int):
+         raise ValueError(f"outer_split.seed debe ser un entero, recibido {seed!r}")
+@@ -92,6 +94,9 @@
+     assignment = assign_outer_split(ids, ratios, seed, strata)
+     manifest = build_split_manifest(assignment)
+     assert_one_split_per_image(manifest)
++    from utils.isolation import audit_source
++    from utils.io import write_csv
++    write_csv(audit_source(data.images, manifest), artifacts / "split_content_audit.csv")
+ 
+     csv_path, sha_path = manifest_paths(artifacts, manifest_name)
+     if csv_path.exists():
+--- original/src/03_create_inner_folds.py
++++ auditado/src/03_create_inner_folds.py
+@@ -49,6 +49,8 @@
+ def main(ctx: RunContext, args: argparse.Namespace) -> None:
+     """Crea y sella los folds de deteccion y clasificacion."""
+     cfg, log = ctx.cfg, ctx.logger
++    from utils.guards import assert_not_frozen
++    assert_not_frozen(cfg, "03_create_inner_folds")
+     artifacts = cfg_path(cfg, "paths.artifacts_dir")
+     data = load_prepared_data(cfg, with_split=True)
+     assert data.manifest is not None
+--- original/src/04_build_detection_dataset.py
++++ auditado/src/04_build_detection_dataset.py
+@@ -58,6 +58,8 @@
+ def main(ctx: RunContext, args: argparse.Namespace) -> None:
+     """Construye el dataset de deteccion y lo verifica."""
+     cfg, log = ctx.cfg, ctx.logger
++    from utils.guards import assert_not_frozen
++    assert_not_frozen(cfg, "04_build_detection_dataset")
+     data = load_prepared_data(cfg, with_folds=True)
+     assert data.manifest is not None and data.det_folds is not None
+     ctx.set_hashes(dataset_hash=data.dataset_hash, split_hash=data.split_hash)
+@@ -129,6 +131,8 @@
+                       + yaml.safe_dump(data_yaml, sort_keys=False, allow_unicode=True))
+ 
+     from utils.semantics import write_stamp
++    from utils.isolation import seal_files
++    seal_files(out, [*expected_images, *expected_labels, man_dir / "detection_images.csv"])
+     write_stamp(out, cfg, data.dataset_hash, data.split_hash)
+     # -- verificaciones ------------------------------------------------------------------
+     n_boxes = assert_detection_labels_fruit_only(out / "labels")
+--- original/src/05_build_classification_crops.py
++++ auditado/src/05_build_classification_crops.py
+@@ -50,6 +50,8 @@
+ def main(ctx: RunContext, args: argparse.Namespace) -> None:
+     """Build crops from paired annotations and check image-level inheritance."""
+     cfg, log = ctx.cfg, ctx.logger
++    from utils.guards import assert_not_frozen
++    assert_not_frozen(cfg, "05_build_classification_crops")
+     data = load_prepared_data(cfg, with_folds=True)
+     assert data.manifest is not None and data.cls_folds is not None
+     ctx.set_hashes(dataset_hash=data.dataset_hash, split_hash=data.split_hash)
+@@ -119,7 +121,14 @@
+     log.info("manifiestos: %s | %s (sha256=%s)", man_path, art_path, sha)
+ 
+     from utils.semantics import write_stamp
+-    write_stamp(out, cfg, data.dataset_hash, data.split_hash)
++    from utils.isolation import audit_crops, seal_files
++    if not args.manifest_only:
++        content = audit_crops(manifest, out, data.manifest)
++        write_csv(content, artifacts / "crop_content_audit.csv")
++        seal_files(out, [man_path, *[out / p for p in manifest.crop_path]])
++        write_stamp(out, cfg, data.dataset_hash, data.split_hash)
++    else:
++        (out / "semantic_stamp.json").unlink(missing_ok=True)
+     # -- 4) estadisticas -----------------------------------------------------------------
+     summary = data.summary.merge(data.manifest[["image_id", "outer_split"]], on="image_id")
+     stats = classification_dataset_stats(manifest, summary, pos, neg)
+@@ -167,6 +176,7 @@
+ 
+ def _gt_samples(data: Any, manifest: pd.DataFrame, n: int, seed: int) -> list[dict[str, Any]]:
+     """Muestras para el grafico de ejemplos GT (frutos + signos de ``n`` imagenes variadas)."""
++    manifest = manifest[manifest["outer_split"] == "train"].copy()
+     ids = select_gt_examples(manifest, n, seed)
+     samples: list[dict[str, Any]] = []
+     for iid in ids:
+--- original/src/09_train_outer_candidate.py
++++ auditado/src/09_train_outer_candidate.py
+@@ -64,6 +64,9 @@
+     if ckpt.is_file() and meta_path.is_file() and not args.force:
+         meta = read_json(meta_path)
+         if meta.get("config_id") == best["config_id"] and meta.get("sha256") == sha256_file(ckpt):
++            if meta.get("dataset_hash") != data.dataset_hash or meta.get("split_hash") != data.split_hash:
++                from utils.checks import MethodologyViolation
++                raise MethodologyViolation("Checkpoint reutilizado pertenece a otros datos/split; reentrenar antes de evaluar")
+             log.info("checkpoint definitivo ya existe para %s (%s): no se reentrena (--force para repetir)", spec.name, best["config_id"])
+             ctx.set_checkpoint(ckpt, role="final", config_id=best["config_id"])
+             ctx.log_metrics(meta)
+@@ -74,7 +77,7 @@
+     log.info("entrenamiento definitivo %s: config %s, %d epocas fijas, 70 %% completo (seed %d)", spec.name, best["config_id"], epochs, seed)
+     with GpuJobLock(cfg, ctx.pc_id, job=f"outer_train:{spec.slug}"):
+         if spec.is_detector:
+-            yml = write_outer_yaml(cfg, ctx.run_dir, val_split="validation", stage="outer_train")
++            yml = write_outer_yaml(cfg, ctx.run_dir, val_split="train", stage="outer_train")
+             run = train_detector(spec, hp, cfg, data_yaml=yml, project_dir=ctx.run_dir, name="train", seed=seed, epochs=epochs, fixed_epochs=True,
+                                  log=log.info, keep_weights=True)
+             src = Path(run.weights_path) if run.weights_path else ctx.run_dir / "train" / "weights" / "last.pt"
+@@ -102,6 +105,14 @@
+     ctx.log_metrics(meta)
+     hist.to_csv(ctx.run_dir / "history.csv", index=False, lineterminator="\n")
+     save_training_figures(ctx, spec, hist, "final", ctx.run_dir / "history.csv", to_reports=False)
++    import importlib
++    evaluator = importlib.import_module("10_evaluate_outer_validation")
++    with GpuJobLock(cfg, ctx.pc_id, job=f"train_metrics:{spec.slug}"):
++        fn = evaluator.evaluate_detector if spec.is_detector else evaluator.evaluate_classifier
++        kwargs = {} if spec.is_detector else {"gradcam": False}
++        train_metrics = fn(ctx, spec, data, best, ckpt, split="train", export_evidence=False, **kwargs)
++    from utils.io import write_json as save_json
++    save_json(ctx.run_dir / "train_evaluation.json", train_metrics)
+     log.info("CHECKPOINT DEFINITIVO %s: %s (sha256=%s) | %.1f min", spec.name, ckpt, sha[:16], float(info["train_seconds"]) / 60)
+ 
+ 
+--- original/src/10_evaluate_outer_validation.py
++++ auditado/src/10_evaluate_outer_validation.py
+@@ -70,21 +70,21 @@
+     }
+ 
+ 
+-def evaluate_detector(ctx: RunContext, spec: ArchSpec, data: Any, best: dict[str, Any], ckpt: Path) -> dict[str, Any]:
++def evaluate_detector(ctx: RunContext, spec: ArchSpec, data: Any, best: dict[str, Any], ckpt: Path, *, split: str = "validation", export_evidence: bool = True) -> dict[str, Any]:
+     """Evaluacion oficial (Ultralytics) + independiente (predicciones crudas) de un detector."""
+     cfg, log = ctx.cfg, ctx.logger
+     model = load_detector(ckpt, spec)
+-    yml = write_outer_yaml(cfg, ctx.run_dir, val_split="validation", stage="outer_validation")
++    yml = write_outer_yaml(cfg, ctx.run_dir, val_split=split, stage="final_test" if split == "test" else "outer_validation")
+     d = cfg["detector"]
+     half = str(d["precision"]).lower() == "fp16" and resolve_device(cfg) != "cpu"
+     res = model.val(data=str(yml), split="val", imgsz=int(d["image_size"]), batch=int(d["batch_size"]), conf=float(d["val_conf"]), iou=float(d["val_nms_iou"]),
+-                    half=half, device=ultralytics_device(cfg), plots=False, verbose=False, project=str(ctx.run_dir), name="ultralytics_val", exist_ok=True)
++                    half=half, device=ultralytics_device(cfg), plots=False, verbose=False, project=str(ctx.run_dir), name=f"ultralytics_{split}", exist_ok=True)
+     box = res.box
+     ap_iou_official = [float(x) for x in box.all_ap[0]] if getattr(box.all_ap, "size", 0) else []
+     official = {"map50_95": float(box.map), "map50": float(box.map50), "map75": float(box.map75), "precision_at_max_f1": float(box.mp), "recall_at_max_f1": float(box.mr),
+                 "f1_at_max_f1": float(box.f1[0]) if getattr(box.f1, "size", 0) else None, "ap_per_iou": ap_iou_official}
+ 
+-    val_ids = sorted(data.manifest.loc[data.manifest["outer_split"] == "validation", "image_id"])
++    val_ids = sorted(data.manifest.loc[data.manifest["outer_split"] == split, "image_id"])
+     paths = {r.image_id: Path(r.image_path) for r in data.images.itertuples(index=False) if r.image_id in set(val_ids)}
+     gt = gt_from_fruit_table(data.fruits, val_ids)
+     preds = predict_paths(model, [paths[i] for i in val_ids], conf=float(d["val_conf"]), iou=float(d["val_nms_iou"]), cfg=cfg)
+@@ -93,16 +93,20 @@
+     ap_tab = ap_over_iou_table(preds, gts)
+     rows = [{"image_id": iid, "x1": b[0], "y1": b[1], "x2": b[2], "y2": b[3], "score": float(s)} for iid, (bx, sc) in zip(val_ids, preds) for b, s in zip(bx, sc)]
+     pred_df = pd.DataFrame(rows, columns=["image_id", "x1", "y1", "x2", "y2", "score"])
+-    write_csv(pred_df, ctx.run_dir / "det_val_predictions.csv", float_format="%.6f")
+-    shared_preds = stage_json_path(cfg, "outer_validation", spec).with_name(f"{spec.slug}_predictions.csv")
++    write_csv(pred_df, ctx.run_dir / f"det_{split}_predictions.csv", float_format="%.6f")
++    shared_preds = stage_json_path(cfg, "outer_validation", spec).with_name(f"{spec.slug}_predictions.csv") if split == "validation" else ctx.run_dir / f"{spec.slug}_{split}_predictions.csv"
+     write_csv(pred_df, shared_preds, float_format="%.6f")  # copia estable para 11/12/18 (el run puede moverse por ZIP)
+     write_csv(ap_tab.assign(architecture=spec.name), ctx.run_dir / "ap_per_iou.csv", float_format="%.8g")
+-    log.info("VALIDATION %s | Ultralytics mAP50-95=%.4f mAP50=%.4f P=%.3f R=%.3f | independiente mAP50-95=%.4f mAP50=%.4f (dif=%.4f)", spec.name,
++    log.info("%s %s | Ultralytics mAP50-95=%.4f mAP50=%.4f P=%.3f R=%.3f | independiente mAP50-95=%.4f mAP50=%.4f (dif=%.4f)", split.upper(), spec.name,
+              official["map50_95"], official["map50"], official["precision_at_max_f1"], official["recall_at_max_f1"], indep["map50_95"], indep["map50"],
+              abs(official["map50_95"] - indep["map50_95"]))
+     stats = arch_stats(spec.slug, spec.family, int(d["image_size"]))
+     ctx.save_figure(plot_ap_vs_iou(ap_tab.assign(architecture=spec.name)), f"det_ap_vs_iou_{spec.slug}", data=ap_tab, sources=[ctx.run_dir / "ap_per_iou.csv"], copy_to_reports=False)
+-    return {
++    from utils.evidence import detection_evidence, finish_evidence
++    from utils.evidence import split_dir
++    evidence = detection_evidence(cfg, spec, split, data.manifest, paths, gt, preds) if export_evidence else {"root": str(split_dir(cfg, spec, split)), "n_images": len(val_ids)}
++    components = {k: float(v) for k, v in getattr(res, "results_dict", {}).items() if "loss" in k}
++    payload = {
+         **_common_payload(ctx, spec, cfg, best, ckpt), "map50_95": official["map50_95"], "map50": official["map50"], "map75": official["map75"],
+         "precision": official["precision_at_max_f1"], "recall": official["recall_at_max_f1"], "f1": official["f1_at_max_f1"], "ap_per_iou": ap_iou_official,
+         "official_metric_source": "ultralytics_val", "independent": {"map50_95": indep["map50_95"], "map50": indep["map50"], "ap_per_iou": ap_tab["ap"].tolist(),
+@@ -110,15 +114,25 @@
+         "params_m": stats["params_m"], "gflops": stats["gflops"], "n_val_images": len(val_ids), "n_val_boxes": int(sum(len(g) for g in gts)),
+         "predictions_file": str(shared_preds), "predictions_sha256": sha256_file(shared_preds),
+     }
+-
+-
+-def evaluate_classifier(ctx: RunContext, spec: ArchSpec, data: Any, best: dict[str, Any], ckpt: Path, *, gradcam: bool) -> dict[str, Any]:
++    payload.update(split=split, evaluated_on=split, evidence=evidence, loss=sum(components.values()) if components else None, loss_components=components)
++    if split == "train":
++        payload["n_train_images"] = payload.pop("n_val_images")
++        payload["n_train_boxes"] = payload.pop("n_val_boxes")
++        payload["evaluation_role"] = "post_training_resubstitution_no_selection"
++    if split == "test":
++        payload["n_test_images"] = payload.pop("n_val_images")
++        payload["n_test_boxes"] = payload.pop("n_val_boxes")
++    finish_evidence(payload)
++    return payload
++
++
++def evaluate_classifier(ctx: RunContext, spec: ArchSpec, data: Any, best: dict[str, Any], ckpt: Path, *, gradcam: bool, split: str = "validation", export_evidence: bool = True) -> dict[str, Any]:
+     """Evaluacion de un clasificador sobre los GT crops del validation externo."""
+     cfg, log = ctx.cfg, ctx.logger
+     device = resolve_device(cfg)
+     model, meta = load_classifier(ckpt, device)
+     manifest = load_crop_manifest(cfg)
+-    va = crops_for(manifest, split="validation", stage="outer_validation", cfg=cfg)
++    va = crops_for(manifest, split=split, stage="final_test" if split == "test" else "outer_validation", cfg=cfg)
+     root = cfg_path(cfg, "paths.classification_dir")
+     norm = meta["norm"]
+     ds = CropDataset(va, root, build_transforms(cfg, norm, train=False))
+@@ -126,8 +140,8 @@
+     use_amp = device != "cpu" and str(cfg["classifier"]["precision"]).lower() == "fp16"
+     prob, ytrue, idx, loss = predict_probs(model, loader, device, use_amp)
+     preds = va.iloc[idx].assign(y_true=ytrue, p_con_signos=prob)[["crop_path", "image_id", "fruit_id", "y_true", "p_con_signos"]]
+-    write_csv(preds, ctx.run_dir / "val_predictions.csv", float_format="%.8f")
+-    shared_preds = stage_json_path(cfg, "outer_validation", spec).with_name(f"{spec.slug}_predictions.csv")
++    write_csv(preds, ctx.run_dir / f"{split}_predictions.csv", float_format="%.8f")
++    shared_preds = stage_json_path(cfg, "outer_validation", spec).with_name(f"{spec.slug}_predictions.csv") if split == "validation" else ctx.run_dir / f"{spec.slug}_{split}_predictions.csv"
+     write_csv(preds, shared_preds, float_format="%.8f")  # copia estable para 11/13/18
+     rep = binary_classification_report(ytrue, prob, threshold=0.5)
+     write_json(ctx.run_dir / "classification_report.json", rep["classification_report"])
+@@ -140,10 +154,10 @@
+     write_csv(pd.DataFrame({"precision": pcur, "recall": rcur}), ctx.run_dir / "pr_curve.csv", float_format="%.8g")
+     write_csv(pd.DataFrame({"fpr": fpr, "tpr": tpr}), ctx.run_dir / "roc_curve.csv", float_format="%.8g")
+     ap = average_precision_np(ytrue, prob)
+-    log.info("VALIDATION %s | AP(con_signos)=%s ROC-AUC=%s acc@0.5=%.3f P=%.3f R=%.3f F1=%.3f (n=%d, positivos=%d)", spec.name, f"{ap:.4f}" if ap is not None else "n/a",
++    log.info("%s %s | AP(con_signos)=%s ROC-AUC=%s acc@0.5=%.3f P=%.3f R=%.3f F1=%.3f (n=%d, positivos=%d)", split.upper(), spec.name, f"{ap:.4f}" if ap is not None else "n/a",
+              f"{rep['roc_auc']:.4f}" if rep.get("roc_auc") is not None else "n/a", rep["accuracy"], rep["precision"], rep["recall"], rep["f1"], rep["n"], rep["n_positive"])
+     prev = float(np.mean(ytrue)) if len(ytrue) else None
+-    src = [ctx.run_dir / "val_predictions.csv"]
++    src = [ctx.run_dir / f"{split}_predictions.csv"]
+     ctx.save_figure(plot_pr_curves({spec.name: {"precision": pcur, "recall": rcur, "ap": ap or 0.0}}, prev), f"cls_curva_pr_{spec.slug}",
+                     data=pd.DataFrame({"precision": pcur, "recall": rcur}), sources=src, copy_to_reports=False)
+     ctx.save_figure(plot_roc_curves({spec.name: {"fpr": fpr, "tpr": tpr, "auc": rep.get("roc_auc") or 0.0}}), f"cls_curva_roc_{spec.slug}",
+@@ -153,12 +167,27 @@
+     if gradcam and len(preds):
+         samples, picked = gradcam_samples(cfg, spec, model, meta, preds, root, int(cfg["figures"]["gradcam_examples"]))
+         ctx.save_figure(plot_gradcam_grid({spec.name: samples}, ncols=2 * max(1, len(samples))), f"cls_gradcam_{spec.slug}", data=picked, sources=src, copy_to_reports=False)
+-    return {
++    from utils.evidence import classification_evidence, finish_evidence
++    from utils.evidence import split_dir
++    evidence = classification_evidence(cfg, spec, split, data.manifest, manifest, preds, root) if export_evidence else {"root": str(split_dir(cfg, spec, split)), "n_crops": len(preds)}
++    payload = {
+         **_common_payload(ctx, spec, cfg, best, ckpt), "average_precision_positive": ap, "roc_auc": rep.get("roc_auc"), "accuracy": rep["accuracy"], "precision": rep["precision"],
+         "recall": rep["recall"], "f1": rep["f1"], "f2": rep["f2"], "confusion_matrix": rep["confusion_matrix"], "threshold_initial": 0.5, "val_loss": loss, "n_val": rep["n"],
+         "n_val_positive": rep["n_positive"], "params_m": _cls_stats(spec, meta)["params_m"], "gflops": _cls_stats(spec, meta)["gflops"],
+         "predictions_file": str(shared_preds), "predictions_sha256": sha256_file(shared_preds), "official_metric_source": "own_metrics_on_saved_predictions",
+     }
++    payload.update(split=split, evaluated_on=split, evidence=evidence, loss=loss)
++    if split == "train":
++        payload["train_eval_loss"] = payload.pop("val_loss")
++        payload["n_train"] = payload.pop("n_val")
++        payload["n_train_positive"] = payload.pop("n_val_positive")
++        payload["evaluation_role"] = "post_training_resubstitution_no_augmentation_no_selection"
++    if split == "test":
++        payload["test_loss"] = payload.pop("val_loss")
++        payload["n_test"] = payload.pop("n_val")
++        payload["n_test_positive"] = payload.pop("n_val_positive")
++    finish_evidence(payload)
++    return payload
+ 
+ 
+ def _cls_stats(spec: ArchSpec, meta: dict[str, Any]) -> dict[str, float]:
+@@ -185,6 +214,8 @@
+         payload = evaluate_detector(ctx, spec, data, best, ckpt) if spec.is_detector else evaluate_classifier(ctx, spec, data, best, ckpt, gradcam=not args.no_gradcam)
+     out = stage_json_path(cfg, "outer_validation", spec)
+     write_json(out, payload)
++    from utils.split_summary import export_split_summary
++    export_split_summary(cfg, data)
+     ctx.register_artifact(out, "metricas de validation externo")
+     ctx.log_metrics(payload)
+     ctx.set_checkpoint(ckpt, role="evaluated", config_id=best["config_id"])
+--- original/src/15_freeze_experiment.py
++++ auditado/src/15_freeze_experiment.py
+@@ -52,7 +52,9 @@
+ def main(ctx: RunContext, args: argparse.Namespace) -> None:
+     """Valida los prerrequisitos, escribe el manifiesto de congelacion y lo sella."""
+     cfg, log = ctx.cfg, ctx.logger
+-    prepare_for_inference(ctx, args)
++    data = prepare_for_inference(ctx, args)
++    from utils.split_summary import export_split_summary
++    export_split_summary(cfg, data)
+     art = cfg_path(cfg, "paths.artifacts_dir")
+     freeze_path = cfg_path(cfg, "test.freeze_manifest")
+     sd = _require(art / "selected_detector.json", "ejecute 12_select_detector.py")
+@@ -86,7 +88,10 @@
+     lock = read_json(art / "test_lock.json") if (art / "test_lock.json").is_file() else {}
+     env = ctx.env
+     from utils.semantics import semantic_fingerprint
++    from utils.comparison import freeze_candidates
++    comparison = freeze_candidates(cfg, ctx.hashes)
+     manifest = {
++        "comparison": comparison,
+         "semantic_fingerprint": semantic_fingerprint(cfg),
+         "frozen_at": datetime.now(timezone.utc).isoformat(), "pc_id": ctx.pc_id, "profile": get_nested(cfg, "project.profile", default="official"),
+         "detector": {
+--- original/src/16_evaluate_test.py
++++ auditado/src/16_evaluate_test.py
+@@ -72,20 +72,44 @@
+         raise MethodologyViolation("El test ya fue evaluado (artifacts/test_results.json). NO se reevalua ni se reajusta nada (sec. 27); use --reproduce para verificar reproducibilidad.")
+     if started_path.is_file() and not results_path.is_file() and not (args.retry_after_crash or args.reproduce):
+         raise MethodologyViolation("Una evaluacion de test anterior se interrumpio sin resultados; use --retry-after-crash (queda registrado)")
++    if args.reproduce and not results_path.is_file():
++        raise MethodologyViolation("--reproduce requiere resultados oficiales previos")
+     if not args.reproduce:
+-        write_json(started_path, {"started_at": datetime.now(timezone.utc).isoformat(), "pc_id": ctx.pc_id, "freeze_sha256": (art / "freeze_manifest.sha256").read_text(encoding="utf-8").split()[0]})
++        write_json(started_path, {"started_at": datetime.now(timezone.utc).isoformat(), "pc_id": ctx.pc_id, "freeze_sha256": cfg_path(cfg, "test.freeze_manifest").with_suffix(".sha256").read_text(encoding="utf-8").split()[0]})
+ 
+     det_spec, cls_spec = get_arch(freeze["detector"]["architecture"]), get_arch(freeze["classifier"]["architecture"])
+     m = freeze["pipeline"]["matching_rule"]
+     match_iou = float(m["threshold"])
+     ctx.note_split_access("test", "final_test")
+-    ctx.add_metadata(detector=det_spec.name, classifier=cls_spec.name, stage="final_test", reproduce=bool(args.reproduce), freeze_sha256=(art / "freeze_manifest.sha256").read_text(encoding="utf-8").split()[0])
++    ctx.add_metadata(detector=det_spec.name, classifier=cls_spec.name, stage="final_test", reproduce=bool(args.reproduce), freeze_sha256=cfg_path(cfg, "test.freeze_manifest").with_suffix(".sha256").read_text(encoding="utf-8").split()[0])
+     test_ids = sorted(data.manifest.loc[data.manifest["outer_split"] == "test", "image_id"])
+     paths = {r.image_id: Path(r.image_path) for r in data.images.itertuples(index=False) if r.image_id in set(test_ids)}
+     gt = gt_from_fruit_table(data.fruits, test_ids)
+     log.info("TEST ABIERTO: %d imagenes, %d frutos GT | detector=%s clasificador=%s (congelados)", len(test_ids), sum(len(g["boxes"]) for g in gt.values()), det_spec.name, cls_spec.name)
+ 
++    import importlib
++    from utils.run_common import nested_run
++    from utils.config_loader import resolve_path
++    evaluator = importlib.import_module("10_evaluate_outer_validation")
++    comparisons = {}
++    # Reproduction writes evidence below its own run and never overwrites official results.
++    if args.reproduce:
++        cfg = dict(cfg)
++        cfg["paths"] = dict(cfg["paths"], results_dir=str(ctx.run_dir / "reproduction_results"))
+     with GpuJobLock(cfg, ctx.pc_id, job="final_test"):
++        for candidate in freeze["comparison"]["candidates"]:
++            spec = get_arch(candidate["architecture"])
++            label = f"test_reproduction/{ctx.run_dir.name}" if args.reproduce else "final_test"
++            with nested_run(ctx, spec, label, reuse_existing=False) as child:
++                child.cfg = cfg
++                child.set_hashes(dataset_hash=data.dataset_hash, split_hash=data.split_hash)
++                child.note_split_access("test", "final_test")
++                child.add_metadata(architecture=spec.name, stage="final_test", reproduce=bool(args.reproduce))
++                fn = evaluator.evaluate_detector if spec.is_detector else evaluator.evaluate_classifier
++                kwargs = {} if spec.is_detector else {"gradcam": False}
++                payload = fn(child, spec, data, candidate["best"], Path(candidate["checkpoint"]), split="test", **kwargs)
++                child.log_metrics(payload)
++                comparisons[spec.slug] = payload
+         detector = load_detector(freeze["detector"]["checkpoint"], det_spec)
+         classifier, meta = load_classifier(freeze["classifier"]["checkpoint"], resolve_device(cfg))
+         d = cfg["detector"]
+@@ -102,9 +126,11 @@
+     detection_std = {"map50_95": float(box.map), "map50": float(box.map50), "precision_at_max_f1": float(box.mp), "recall_at_max_f1": float(box.mr),
+                      "f1_at_max_f1": float(box.f1[0]) if getattr(box.f1, "size", 0) else None, "source": "ultralytics_val"}
+     results = {
++        "comparison_models": comparisons,
++        "comparison_use": "descriptive_only; no selection or tuning from test",
+         "evaluated_at": datetime.now(timezone.utc).isoformat(), "pc_id": ctx.pc_id, "n_test_images": len(test_ids), "detector": det_spec.name, "classifier": cls_spec.name,
+         "detection_standard_metrics": detection_std, "detection_at_frozen_operating_point": res.summary["detection"], "pipeline": res.summary,
+-        "freeze_sha256": (art / "freeze_manifest.sha256").read_text(encoding="utf-8").split()[0], "dataset_hash": ctx.hashes.get("dataset_hash"),
++        "freeze_sha256": cfg_path(cfg, "test.freeze_manifest").with_suffix(".sha256").read_text(encoding="utf-8").split()[0], "dataset_hash": ctx.hashes.get("dataset_hash"),
+         "split_hash": ctx.hashes.get("split_hash"), "code_hash": ctx.hashes.get("code_hash"), "thresholds_changed_after_test": False,
+     }
+     write_csv(res.detections, ctx.run_dir / "pipeline_detections_test.csv", float_format="%.6f")
+@@ -121,9 +147,16 @@
+             a, b = _flat(official["pipeline"]), _flat(results["pipeline"])
+             check.update(identical=a == b, official=a, reproduction=b, map50_95_diff=abs(official["detection_standard_metrics"]["map50_95"] - detection_std["map50_95"]))
+             log.info("REPRODUCCION: %s", "IDENTICA" if a == b else f"DIFERENCIAS {a} vs {b}")
++        if official is not None:
++            check["comparisons_identical"] = all(
++                {k: v for k, v in payload.items() if k in ("map50_95", "map50", "accuracy", "f1", "roc_auc", "loss")} ==
++                {k: v for k, v in official["comparison_models"][slug].items() if k in ("map50_95", "map50", "accuracy", "f1", "roc_auc", "loss")}
++                for slug, payload in comparisons.items())
+         write_json(ctx.run_dir / "reproduction_check.json", check)
+         ctx.log_metrics({"reproduction_check": check})
+         return
++    from utils.split_summary import export_split_summary
++    export_split_summary(cfg, data)
+     write_json(results_path, results)
+     write_checksum_file(results_path, results_path.with_suffix(".sha256"))
+     ctx.register_artifact(results_path, "resultados FINALES de test")
+--- original/src/18_export_master_results.py
++++ auditado/src/18_export_master_results.py
+@@ -151,6 +151,9 @@
+     art, runs_dir = cfg_path(cfg, "paths.artifacts_dir"), ctx.runs_base
+     tables = cfg_path(cfg, "paths.tables_dir")
+     tables.mkdir(parents=True, exist_ok=True)
++
++    from utils.split_summary import export_split_summary
++    export_split_summary(cfg, data)
+ 
+     # -- 1) master_results.csv y tablas ----------------------------------------------------
+     master = master_table(cfg, runs_dir)
+--- original/src/orchestration/sync.py
++++ auditado/src/orchestration/sync.py
+@@ -43,7 +43,8 @@
+                   "inner_folds_classification.csv", "inner_folds_classification.sha256", "inner_folds_metadata.json", "image_manifest.csv", "dataset_validation.json",
+                   "dataset_inventory.csv", "classification_manifest.csv", "classification_manifest.sha256", "classification_stats.json",
+                   "environments/environment_reference.json", "quarantine_manifest.json",
+-                  "pairing_audit.csv", "pairing_candidates.csv", "pairing_anomalies.csv")
++                  "pairing_audit.csv", "pairing_candidates.csv", "pairing_anomalies.csv",
++                  "near_duplicate_cross_split.csv", "near_duplicate_review.json", "split_content_audit.csv", "crop_content_audit.csv")
+ RESULT_ARTIFACT_DIRS = ("optuna", "best_configs", "outer_validation", "inference_thresholds", "benchmark", "queue", "environments")
+ RESULT_ARTIFACT_FILES = ("selection_policy.yaml", "selection_policy.sha256", "selected_detector.json", "selected_classifier.json", "final_thresholds.json",
+                          "pipeline_validation.json", "pipeline_validation_detections.csv", "pipeline_validation_misses.csv", "freeze_manifest.json", "freeze_manifest.sha256",
+@@ -124,6 +125,9 @@
+     members += [(p, f"reports/figures/{p.name}") for p in sorted(fig.glob("*")) if p.is_file()] if fig.is_dir() else []
+     tbl = cfg_path(cfg, "paths.tables_dir")
+     members += [(p, f"reports/tables/{p.name}") for p in sorted(tbl.glob("*")) if p.is_file()] if tbl.is_dir() else []
++    results = cfg_path(cfg, "paths.results_dir")
++    if results.is_dir():
++        members += [(p, f"results/{p.relative_to(results).as_posix()}") for p in sorted(results.rglob("*")) if p.is_file()]
+     return _write_zip(out, members, {"kind": "results", "pc_id": pc_id, "hashes": _hashes(cfg), "with_checkpoints": with_checkpoints})
+ 
+ 
+@@ -174,6 +178,8 @@
+             arc = e["path"]
+             if arc.startswith("runs/"):
+                 target = runs_dir / arc[len("runs/"):]
++            elif arc.startswith("results/"):
++                target = cfg_path(cfg, "paths.results_dir") / arc[len("results/"):]
+             elif arc.startswith("dataset/images/"):
+                 target = cfg_path(cfg, "paths.raw_images_dir") / arc[len("dataset/images/"):]
+             elif arc.startswith("dataset/labels/"):
+--- original/src/utils/classifier_data.py
++++ auditado/src/utils/classifier_data.py
+@@ -37,7 +37,10 @@
+     root = cfg_path(cfg, "paths.classification_dir")
+     from utils.semantics import require_stamp
+     require_stamp(root, cfg)
+-    return read_csv(root / str(cfg["classification_dataset"]["manifest_name"]))
++    table = read_csv(root / str(cfg["classification_dataset"]["manifest_name"]))
++    from utils.isolation import validate_derived_manifest
++    validate_derived_manifest(cfg, table, "classification")
++    return table
+ 
+ 
+ def label_to_index(label: str, cfg: Mapping[str, Any]) -> int:
+--- original/src/utils/detector_data.py
++++ auditado/src/utils/detector_data.py
+@@ -38,7 +38,10 @@
+     path = cfg_path(cfg, "paths.detection_dir") / "manifests" / "detection_images.csv"
+     if not path.is_file():
+         raise MethodologyViolation(f"No existe {path}. Ejecute 04_build_detection_dataset.py primero.")
+-    return read_csv(path)
++    table = read_csv(path)
++    from utils.isolation import validate_derived_manifest
++    validate_derived_manifest(cfg, table, "detection")
++    return table
+ 
+ 
+ def _image_path(cfg: Mapping[str, Any], split: str, image_file: str) -> Path:
+@@ -89,6 +92,7 @@
+     """
+     assert_split_allowed("train", stage, cfg)
+     assert_split_allowed(val_split, stage, cfg)
++    detection_images_table(cfg)
+     from utils.semantics import require_stamp
+     require_stamp(cfg_path(cfg, "paths.detection_dir"), cfg)
+     names = cfg["detection_dataset"]["split_dir_names"]
+--- original/src/utils/detector_train.py
++++ auditado/src/utils/detector_train.py
+@@ -4,8 +4,8 @@
+ * Hiperparametros del espacio HPO -> argumentos de Ultralytics; ``imgsz=640``, batch 16 (micro-batch) con
+   ``nbs=64`` (mismo effective batch size para todas), AMP fp16, ``pretrained`` siempre.
+ * Callback por epoca -> Optuna (reporte + ``MedianPruner``); el score del fold es el mejor mAP@0.5:0.95.
+-* ``fixed_epochs=True``: entrenamiento definitivo con el 70 % (sin early stopping; se valida solo en la
+-  ultima epoca, por lo que no hay seleccion de epoca con el validation externo).
++* ``fixed_epochs=True``: entrenamiento definitivo con el 70 % (sin early stopping; no se valida en
++  ninguna epoca; el validation externo se evalua en el paso 10).
+ * RT-DETR-R50: ``backbone_lr_ratio`` (0.1) implementado separando los grupos de parametros del backbone.
+ """
+ 
+@@ -189,6 +189,15 @@
+             log(f"CUDA OOM: reintentando con micro-batch={micro} (effective batch {d['nominal_batch_size']} por nbs)")
+ 
+ 
++def _disable_final_validation(trainer: Any) -> None:
++    """Ultralytics can validate on final epoch even with val=False; disable both hooks.
++
++    Applied only to fixed-epoch outer training. HPO retains its usual validator.
++    """
++    trainer.validate = lambda: ({}, 0.0)
++    trainer.final_eval = lambda: None
++
++
+ def _train_once(spec: ArchSpec, hp: Mapping[str, Any], cfg: Mapping[str, Any], *, data_yaml: Path, project_dir: Path, name: str, seed: int,
+                 epochs: int, patience: int, fixed_epochs: bool, micro_batch: int, epoch_callback: EpochCallback | None, step_offset: int,
+                 log: Callable[[str], None], keep_weights: bool) -> DetectorRun:
+@@ -198,6 +207,8 @@
+     history: list[dict[str, Any]] = []
+     final: dict[str, Any] = {}
+     model.add_callback("on_fit_epoch_end", lambda tr: _collect(tr, history, final, epoch_callback, step_offset, log, fixed_epochs))
++    if fixed_epochs:
++        model.add_callback("on_train_start", _disable_final_validation)
+     if spec.family == "rtdetr":
+         model.add_callback("on_train_start", _rtdetr_backbone_lr_callback(float(hp.get("backbone_lr_ratio", 0.1))))
+     args = _train_args(spec, hp, cfg, data_yaml=data_yaml, epochs=epochs, patience=patience, seed=seed, micro_batch=micro_batch,
+@@ -217,10 +228,10 @@
+         free_cuda_memory()
+     save_dir = project_dir / name
+     best_pt, last_pt = save_dir / "weights" / "best.pt", save_dir / "weights" / "last.pt"
+-    chosen = best_pt if best_pt.is_file() else last_pt
++    chosen = last_pt if fixed_epochs else (best_pt if best_pt.is_file() else last_pt)
+     w_sha = weights_sha256(str(chosen)) if chosen.is_file() else None
+     hist = pd.DataFrame(history)
+-    if fixed_epochs:  # solo hay validacion en la ultima epoca: el historial (perdidas por epoca) sale de results.csv
++    if fixed_epochs:  # sin validacion: el historial (perdidas por epoca) sale de results.csv
+         csv = save_dir / "results.csv"
+         if csv.is_file():
+             raw = pd.read_csv(csv)
+@@ -232,7 +243,7 @@
+         score, best_epoch = float(hist.loc[bi, "map50_95"]), int(hist.loc[bi, "epoch"])
+     else:
+         score, best_epoch = float(final.get(_MAP, 0.0)), epochs
+-    if fixed_epochs:  # el modelo definitivo es el de la ultima epoca y su metrica la de la evaluacion final
++    if fixed_epochs:  # checkpoint de ultima epoca; sin metrica externa durante entrenamiento
+         score, best_epoch = float(final.get(_MAP, score)), epochs
+     stats = arch_stats(spec.slug, spec.family, int(cfg["detector"]["image_size"]))
+     if w_sha is not None and not keep_weights:
+--- original/src/utils/freeze.py
++++ auditado/src/utils/freeze.py
+@@ -46,6 +46,9 @@
+         env: ``ctx.env`` actual (versiones criticas).
+         check_code: Comparar ``code_hash`` (el benchmark/exportacion pueden desactivarlo si solo leen).
+     """
++    from utils.comparison import verify_candidates
++    if "comparison" not in freeze:
++        raise MethodologyViolation("Freeze anterior sin candidatos comparativos; completar validation y congelar con esta version antes del test")
+     errors: list[str] = []
+     if freeze.get("semantic_fingerprint") != semantic_fingerprint(cfg):
+         errors.append("semantic_fingerprint cambio o ausente")
+@@ -74,3 +77,4 @@
+             errors.append(f"version de {k} distinta a la congelada ({fz_env.get(k)} -> {env.get(k)})")
+     if errors:
+         raise MethodologyViolation("El experimento congelado fue alterado: " + "; ".join(errors))
++    verify_candidates(cfg, freeze["comparison"])
+--- original/src/utils/hpo_runner.py
++++ auditado/src/utils/hpo_runner.py
+@@ -122,6 +122,8 @@
+         vram = max([v for v in (vram, run.vram_peak_mb) if v is not None], default=None)
+         h = run.history.copy()
+         h.insert(0, "fold", fold)
++        h["outer_split"] = "train"
++        h["validation_role"] = "inner_fold_within_outer_train"
+         hists.append(h)
+         rows.append(row)
+         log("fold %d: score=%.4f best_epoch=%d epochs=%d (%.1fs)", fold, row["score"], row["best_epoch"], row["epochs_run"], row["train_seconds"])
+--- original/src/utils/prepared.py
++++ auditado/src/utils/prepared.py
+@@ -111,6 +111,9 @@
+         split_meta = read_json(artifacts / "split_metadata.json") if (artifacts / "split_metadata.json").is_file() else {}
+         if split_meta.get("dataset_hash") != dataset_hash or split_meta.get("semantic_fingerprint") != semantic_fingerprint(cfg):
+             raise SplitIntegrityError("Split incompatible with current dataset, classes, pairing or split configuration; regenerate 02-05")
++        from utils.isolation import audit_source
++        source_audit = audit_source(images, manifest)
++        write_csv(source_audit, artifacts / "split_content_audit.csv")
+         data.manifest = manifest
+ 
+     if with_folds:
+--- original/src/utils/run_common.py
++++ auditado/src/utils/run_common.py
+@@ -84,6 +84,8 @@
+     if not is_official(cfg):
+         ctx.logger.warning("PERFIL '%s': presupuestos/tamanos reducidos; los resultados NO son cientificos.", get_nested(cfg, "project.profile"))
+     data = load_prepared_data(cfg, with_folds=with_folds)
++    from utils.isolation import require_near_duplicate_review
++    require_near_duplicate_review(cfg, data)
+     ctx.set_hashes(dataset_hash=data.dataset_hash, split_hash=data.split_hash)
+     if check_derived:
+         det_csv = cfg_path(cfg, "paths.detection_dir") / "manifests" / "detection_images.csv"
+@@ -91,14 +93,25 @@
+         for p, script in ((det_csv, "04_build_detection_dataset.py"), (cls_csv, "05_build_classification_crops.py")):
+             if not Path(p).is_file():
+                 raise MethodologyViolation(f"Falta {p}: ejecute {script} primero")
++    from utils.detector_data import detection_images_table
++    from utils.classifier_data import load_crop_manifest
++    detection_images_table(cfg)
++    load_crop_manifest(cfg)
+     check_environment_matches_reference(ctx, strict=not bool(getattr(args, "skip_env_check", False)))
+     return data
+ 
+ 
+ def prepare_for_inference(ctx: RunContext, args: argparse.Namespace) -> PreparedData:
+     """Preflight ligero para etapas posteriores (evaluacion/umbrales/pipeline): datos + split, sin exigir folds."""
+-    data = load_prepared_data(ctx.cfg, with_folds=True)
++    cfg = ctx.cfg
++    data = load_prepared_data(cfg, with_folds=True)
++    from utils.isolation import require_near_duplicate_review
++    require_near_duplicate_review(cfg, data)
+     ctx.set_hashes(dataset_hash=data.dataset_hash, split_hash=data.split_hash)
++    from utils.detector_data import detection_images_table
++    from utils.classifier_data import load_crop_manifest
++    detection_images_table(cfg)
++    load_crop_manifest(cfg)
+     check_environment_matches_reference(ctx, strict=not bool(getattr(args, "skip_env_check", False)))
+     return data
+ 
+--- original/src/utils/run_figures.py
++++ auditado/src/utils/run_figures.py
+@@ -23,11 +23,20 @@
+     if history is None or history.empty:
+         ctx.logger.warning("sin historial de entrenamiento: no se generan figuras de %s", prefix)
+         return
++    from utils.evidence import training_outputs
++    training_outputs(ctx.cfg, spec, history, ctx.run_dir, prefix)
+     sources: list[Any] = [source_csv] if source_csv is not None and Path(source_csv).is_file() else []
+     hist = history.copy()
+-    if {"train_loss", "val_loss"} <= set(hist.columns) and hist["train_loss"].notna().any():
++    if "train_loss" in hist and hist["train_loss"].notna().any():
++        train_only = hist[[c for c in ("fold", "epoch", "train_loss") if c in hist]].copy()
++        train_only["val_loss"] = float("nan")
++        ctx.save_figure(plot_loss_curves(train_only, "train_loss", "val_loss", group_col="fold" if "fold" in hist.columns else None),
++                        f"{prefix}_train_loss", data=train_only, sources=sources, copy_to_reports=to_reports)
++    if "val_loss" in hist and hist["val_loss"].notna().any():
++        hist = hist.copy()
++        hist["train_loss"] = float("nan")
+         ctx.save_figure(plot_loss_curves(hist, "train_loss", "val_loss", group_col="fold" if "fold" in hist.columns else None),
+-                        f"{prefix}_loss", data=hist[[c for c in ("fold", "epoch", "train_loss", "val_loss") if c in hist.columns]], sources=sources, copy_to_reports=to_reports)
++                        f"{prefix}_inner_validation_loss", data=hist[[c for c in ("fold", "epoch", "train_loss", "val_loss") if c in hist.columns]], sources=sources, copy_to_reports=to_reports)
+     cols = DET_METRICS if spec.is_detector else CLS_METRICS
+     present = [c for c in cols if c in hist.columns and hist[c].notna().any()]
+     if present:
+--- original/src/utils/splits.py
++++ auditado/src/utils/splits.py
+@@ -232,6 +232,15 @@
+             raise TestSetLockedError(f"El split 'test' esta BLOQUEADO en la etapa '{stage}' (solo 'final_test').")
+         if not freeze.is_file():
+             raise TestSetLockedError(f"El split 'test' sigue bloqueado: no existe {freeze} (sec. 26-27).")
++        try:
++            from utils.freeze import load_freeze
++            from utils.comparison import verify_candidates
++            sealed = load_freeze(cfg)
++            if not sealed.get("comparison", {}).get("candidates"):
++                raise RuntimeError("Freeze sin candidatos sellados")
++            verify_candidates(cfg, sealed["comparison"])
++        except (RuntimeError, ValueError, KeyError, OSError) as exc:
++            raise TestSetLockedError(f"Test bloqueado: freeze invalido o alterado: {exc}") from exc
+         return
+     if split == "validation" and stage == "hpo_trial":
+         raise TestSetLockedError("El validation externo no puede usarse dentro de trials de HPO (sec. 35).")
+--- original/tests/test_pipeline_and_freeze.py
++++ auditado/tests/test_pipeline_and_freeze.py
+@@ -88,6 +88,9 @@
+         assert_split_allowed("validation", "hpo_trial", cfg)
+     assert_split_allowed("train", "hpo_trial", cfg)
+     (tmp_path / "freeze_manifest.json").write_text("{}")
++    with pytest.raises(TestSetLockedError, match="freeze invalido"):
++        assert_split_allowed("test", "final_test", cfg)
++    cfg, _, _ = _freeze(tmp_path)
+     assert_split_allowed("test", "final_test", cfg)
+     with pytest.raises(TestSetLockedError):
+         assert_split_allowed("test", "threshold_tuning", cfg)                         # el freeze no autoriza ajustar con test
+@@ -107,6 +110,18 @@
+         "data": {"dataset_hash": "D", "split_hash": "S"}, "code": {"code_hash": "C"},
+         "environment": {"python_version": "3.12.1", "torch": "2.5.0", "torchvision": "0.20", "timm": "1.0", "ultralytics": "8.4.170", "optuna": "5.0"},
+     }
++    from utils.comparison import protocol
++    from utils.hashing import sha256_json
++    derived = {}
++    for task in ("detection", "classification"):
++        folder = tmp_path / task; folder.mkdir()
++        cfg["paths"][task + "_dir"] = str(folder)
++        content = folder / "content_integrity.json"; content.write_text("{}")
++        derived[task] = sha256_file(content)
++    validation = tmp_path / "candidate_validation.json"; validation.write_text("{}")
++    manifest["comparison"] = {"protocol_sha256": sha256_json(protocol(cfg)), "derived_content_sha256": derived,
++        "candidates": [{"architecture": name, "checkpoint": str(ck), "checkpoint_sha256": sha256_file(ck),
++        "validation_file": str(validation), "validation_sha256": sha256_file(validation)} for name, ck in (("det", det), ("cls", cls))]}
+     fp = tmp_path / "freeze_manifest.json"
+     fp.write_text(json.dumps(manifest))
+     write_checksum_file(fp, fp.with_suffix(".sha256"))
+--- original/tests/test_splits_folds_metrics.py
++++ auditado/tests/test_splits_folds_metrics.py
+@@ -82,7 +82,8 @@
+             with pytest.raises(TestSetLockedError):
+                 assert_split_allowed("test", stage, cfg)
+     (tmp_path / "freeze_manifest.json").write_text("{}", encoding="utf-8")
+-    assert_split_allowed("test", "final_test", cfg)
++    with pytest.raises(TestSetLockedError, match="freeze invalido"):
++        assert_split_allowed("test", "final_test", cfg)
+     assert_split_allowed("validation", "threshold_tuning", cfg)
+     with pytest.raises(TestSetLockedError):
+         assert_split_allowed("validation", "hpo_trial", cfg)
