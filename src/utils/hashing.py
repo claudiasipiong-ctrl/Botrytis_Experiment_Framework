@@ -148,4 +148,9 @@ def hamming_distance(a: int, b: int) -> int:
 def scientific_config_hash(cfg):
     """Scientific protocol identity, portable between manually operated PCs."""
     from utils.semantics import semantic_fingerprint
-    return sha256_json({"semantics":semantic_fingerprint(cfg), **{k:cfg.get(k) for k in ("detector","classifier","robustness","inference_tuning","matching","selection","initialization","benchmark")}})
+    import copy
+    sections={k:copy.deepcopy(cfg.get(k)) for k in ('detector','classifier','robustness','inference_tuning','matching','selection','initialization','benchmark','optuna','reproducibility')}
+    for section in ('detector','classifier'):
+        for key in ('resume_checkpoint','resume_output','_resume_context'):
+            if isinstance(sections[section],dict):sections[section].pop(key,None)
+    return sha256_json({'semantics':semantic_fingerprint(cfg),**sections})

@@ -70,13 +70,13 @@ def test_three_independent_queues_have_disjoint_ownership(tmp_path):
         allocated.append(set(jobs))
     assert set.union(*allocated) == set(PCRegistry(config_at(tmp_path)).ownership())
     assert all(not (a & b) for i, a in enumerate(allocated) for b in allocated[i + 1:])
-    assert list(map(len, allocated)) == [2, 2, 4]
+    assert list(map(len, allocated)) == [3, 2, 2]
 
 def test_disabled_architectures_cannot_be_reenabled():
-    for architecture in ("YOLOv8m", "YOLO26s"):
+    for architecture in ("YOLOv8m", "YOLO26n", "YOLO26s"):
         with pytest.raises(FixedDecisionViolation):
             load_config(None, [f"detector.architectures=[{architecture}]"])
-    assert PCRegistry(load_config()).owner("YOLO26n") == "PC-01"
+    assert PCRegistry(load_config()).owner("YOLO26l") == "PC-02"
     with pytest.raises(FixedDecisionViolation, match="microbatch"):
         load_config(None, ["classifier.oom_fallback=true"])
 
@@ -302,7 +302,8 @@ def test_checkpoint_provenance_and_complete_candidates_are_required(tmp_path):
         checkpoint = final_checkpoint(cfg, spec)
         checkpoint.write_bytes(b"SYNTHETIC-NOT-A-TORCH-CHECKPOINT")
         atomic_json(checkpoint.with_name("final_meta.json"), {**H, "config_id": "fixture", "sha256": sha256_file(checkpoint)})
-        atomic_json(best_config_path(cfg, spec), {"config_id": "fixture"})
+        from utils.semantics import semantic_fingerprint
+        atomic_json(best_config_path(cfg, spec), {"config_id": "fixture", "semantic_fingerprint":semantic_fingerprint(cfg)})
         atomic_json(stage_json_path(cfg, "outer_validation", spec), {**H, "checkpoint_sha256": sha256_file(checkpoint)})
         atomic_json(stage_json_path(cfg, "inference_thresholds", spec),
                     {**H, "checkpoint_sha256": sha256_file(checkpoint), "recall": 0.5, "test_used": False})
@@ -319,16 +320,14 @@ def test_freeze_detects_effective_config_change_without_importing_ml(tmp_path):
     from utils.freeze import verify_freeze
     from utils.hashing import scientific_config_hash, sha256_file
     from utils.checks import MethodologyViolation
-    cfg = config_at(tmp_path)
-    checkpoint = tmp_path / "synthetic_weights.pt"
-    checkpoint.write_bytes(b"synthetic")
-    entry = {"checkpoint": str(checkpoint), "checkpoint_hash": sha256_file(checkpoint)}
-    frozen = {"science_hash": scientific_config_hash(cfg), "code": {"code_hash": H["code_hash"]},
-              "data": H, "detector": entry, "classifier": entry, "environment": {}}
-    verify_freeze(cfg, frozen, H, {})
-    cfg["matching"]["threshold"] = 0.6
-    with pytest.raises(MethodologyViolation, match="science_hash"):
-        verify_freeze(cfg, frozen, H, {})
+    from test_pipeline_and_freeze import _freeze
+    cfg, context, path = _freeze(tmp_path)
+    from utils.io import read_json
+    frozen=read_json(path)
+    verify_freeze(cfg,frozen,context['hashes'],context['env'])
+    cfg['classifier']['workers'] += 1
+    with pytest.raises(MethodologyViolation,match='Protocolo'):
+        verify_freeze(cfg,frozen,context['hashes'],context['env'])
 
 @pytest.mark.parametrize("condition", ["gpu_hot", "ram_low", "cpu_hot", "cpu_unobservable", "wrong_device", "sensor_missing"])
 def test_safety_blocks_verified_failure_conditions_without_real_hardware(tmp_path, monkeypatch, condition):

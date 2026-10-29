@@ -19,7 +19,7 @@ import sqlite3
 import sys
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Iterator, Mapping, Sequence
 
@@ -31,8 +31,9 @@ from utils.architectures import ArchSpec, archs  # noqa: E402
 from utils.config_loader import cfg_path  # noqa: E402
 
 PENDING, RUNNING, COMPLETE, FAILED, PRUNED = "PENDING", "RUNNING", "COMPLETE", "FAILED", "PRUNED"
-STATUSES = (PENDING, RUNNING, COMPLETE, FAILED, PRUNED)
-RANK = {COMPLETE: 5, PRUNED: 4, FAILED: 3, RUNNING: 2, PENDING: 1}
+PENDING_REVIEW, PUBLICATION_PENDING, BLOCKED = "PENDING_REVIEW", "PUBLICATION_PENDING", "BLOCKED"
+STATUSES = (PENDING, RUNNING, COMPLETE, FAILED, PRUNED, PENDING_REVIEW, PUBLICATION_PENDING, BLOCKED)
+RANK = {PENDING_REVIEW: 2, PUBLICATION_PENDING: 2, BLOCKED: 1, COMPLETE: 5, PRUNED: 4, FAILED: 3, RUNNING: 2, PENDING: 1}
 KINDS = ("baseline", "hpo", "repeat", "aggregate", "outer_train", "outer_eval", "thresholds")
 
 _SCHEMA = """
@@ -101,11 +102,17 @@ class StudyQueue:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._conn() as c:
             c.executescript(_SCHEMA)
+            c.execute('CREATE TABLE IF NOT EXISTS context (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
+            c.execute('CREATE TABLE IF NOT EXISTS reviews (id INTEGER PRIMARY KEY, job_id TEXT, operator TEXT, evidence TEXT, decision TEXT, at TEXT)')
+            row = c.execute("SELECT value FROM context WHERE key='config'").fetchone()
+            self.cfg = json.loads(row[0]) if row else None
 
     @classmethod
     def from_cfg(cls, cfg: Mapping[str, Any]) -> "StudyQueue":
         """Cola en ``paths.queue_dir/queue.sqlite``."""
-        return cls(cfg_path(cfg, "paths.queue_dir") / "queue.sqlite")
+        queue = cls(cfg_path(cfg, "paths.queue_dir") / "queue.sqlite")
+        queue.bind(cfg)
+        return queue
 
     @contextmanager
     def _conn(self) -> Iterator[sqlite3.Connection]:
@@ -120,6 +127,13 @@ class StudyQueue:
     def add_job(self, job: Job) -> bool:
         """Inserta el job si no existe (idempotente). Devuelve ``True`` si lo creo."""
         now = _now()
+        exp = (self.cfg or {}).get('experiment',{})
+        if exp.get('round_id'):
+            prefix = exp['experiment_id'] + '/' + exp['round_id'] + '/'
+            job.job_id = job.job_id if job.job_id.startswith(prefix) else prefix + job.job_id
+            job.depends_on = [d if d.startswith(prefix) else prefix+d for d in job.depends_on]
+            from utils.experiments import fingerprint
+            job.payload.update(round_id=exp['round_id'], experiment_id=exp['experiment_id'], fingerprint=fingerprint(self.cfg))
         with self._conn() as c:
             cur = c.execute(
                 "INSERT OR IGNORE INTO jobs (job_id, kind, architecture, task, study_name, payload, status, depends_on, priority, created_at, updated_at) "
@@ -131,18 +145,19 @@ class StudyQueue:
 
     def plan(self, cfg: Mapping[str, Any], selected: Sequence[ArchSpec] | None = None) -> int:
         """Crea ``baseline`` -> ``hpo`` de cada arquitectura (las etapas posteriores se crean tras el HPO)."""
-        prefix = str(cfg["optuna"].get("study_prefix", "botrytis"))
+        self.bind(cfg)
+        from utils.optuna_storage import study_name
         n = 0
-        for spec in selected or archs():
+        for spec in archs() if selected is None else selected:
             base = job_id_for("baseline", spec.slug)
-            n += self.add_job(Job(base, "baseline", spec.slug, spec.task, spec.study_name(prefix), priority=10))
-            n += self.add_job(Job(job_id_for("hpo", spec.slug), "hpo", spec.slug, spec.task, spec.study_name(prefix), depends_on=[base], priority=20))
+            n += self.add_job(Job(base, "baseline", spec.slug, spec.task, study_name(spec,cfg), priority=10))
+            n += self.add_job(Job(job_id_for("hpo", spec.slug), "hpo", spec.slug, spec.task, study_name(spec,cfg), depends_on=[base], priority=20))
         return n
 
     def expand_after_hpo(self, cfg: Mapping[str, Any], spec: ArchSpec, config_ids: Sequence[str]) -> int:
         """Crea repeat (top-k x seeds), aggregate, outer_train, outer_eval y thresholds de ``spec``."""
-        prefix = str(cfg["optuna"].get("study_prefix", "botrytis"))
-        study = spec.study_name(prefix)
+        from utils.optuna_storage import study_name
+        study = study_name(spec,cfg)
         seeds = [int(s) for s in cfg["robustness"]["seeds"]]
         n = 0
         repeat_ids: list[str] = []
@@ -157,6 +172,45 @@ class StudyQueue:
         for kind, deps, prio in chain:
             n += self.add_job(Job(job_id_for(kind, spec.slug), kind, spec.slug, spec.task, study, depends_on=deps, priority=prio))
         return n
+
+    def bind(self, cfg):
+        from utils.experiments import fingerprint
+        stamp = fingerprint(cfg)
+        with self._conn() as c:
+            old = c.execute("SELECT value FROM context WHERE key='fingerprint'").fetchone()
+            if old and old[0] != stamp:
+                raise RuntimeError('Cola de ronda incompatible; use new-round')
+            c.execute("INSERT OR REPLACE INTO context VALUES ('fingerprint',?)", (stamp,))
+            c.execute("INSERT OR REPLACE INTO context VALUES ('config',?)", (json.dumps(cfg),))
+        self.cfg = dict(cfg)
+
+    def approve(self, job_id, *, operator, evidence):
+        if not operator.strip() or not evidence.strip(): raise ValueError('Operador y evidencia obligatorios')
+        with self._conn() as c:
+            c.execute('BEGIN IMMEDIATE')
+            row = c.execute('SELECT status,payload FROM jobs WHERE job_id=?', (job_id,)).fetchone()
+            if not row or row[0] != PENDING_REVIEW: raise ValueError('Solo se aprueba PENDING_REVIEW')
+            c.execute('INSERT INTO reviews(job_id,operator,evidence,decision,at) VALUES (?,?,?,?,?)',
+                      (job_id,operator,evidence,'APPROVED',_now()))
+            payload=json.loads(row[1]);partial=payload.pop('partial_budget',False)
+            c.execute('UPDATE jobs SET status=?, payload=?, updated_at=? WHERE job_id=?',
+                      (PENDING if partial else COMPLETE,json.dumps(payload),_now(),job_id))
+            c.execute('COMMIT')
+
+    def mark_partial_block(self, job_id):
+        job=self.get(job_id)
+        if job.kind!='hpo':raise ValueError('Solo HPO tiene bloques')
+        payload=dict(job.payload,partial_budget=True)
+        with self._conn() as c:
+            c.execute('UPDATE jobs SET payload=? WHERE job_id=?',(json.dumps(payload),job_id))
+
+    def computed(self, job_id, *, published=False):
+        job = self.get(job_id)
+        supervised = (self.cfg or {}).get('experiment',{}).get('mode','supervised') == 'supervised'
+        state = PUBLICATION_PENDING if not published else (
+            PENDING_REVIEW if job.payload.get('partial_budget') or (supervised and job.kind in ('baseline','hpo','aggregate')) else COMPLETE)
+        self.finish(job_id, state)
+        return state
 
     # --------------------------------------------------------------- consultas
     @staticmethod
@@ -227,7 +281,11 @@ class StudyQueue:
                     deps = json.loads(r["depends_on"] or "[]")
                     if kinds and r["kind"] not in kinds:
                         continue
-                    if slugs and r["architecture"] not in slugs:
+                    if self.cfg:
+                        from orchestration.pc_registry import PCRegistry
+                        if PCRegistry(self.cfg).owner(r['architecture']) != pc_id:
+                            continue
+                    if slugs is not None and r["architecture"] not in slugs:
                         continue
                     if all(status.get(d) == COMPLETE for d in deps) and (ready_check is None or ready_check(self._row_to_job(r))):
                         cands.append(r)
@@ -257,7 +315,7 @@ class StudyQueue:
 
     def finish(self, job_id: str, status: str, *, error: str | None = None, log_path: str | None = None) -> None:
         """Cierra un job como COMPLETE o FAILED."""
-        if status not in (COMPLETE, FAILED):
+        if status not in (PENDING, COMPLETE, FAILED, PENDING_REVIEW, PUBLICATION_PENDING, BLOCKED):
             raise ValueError("finish solo admite COMPLETE o FAILED")
         with self._conn() as c:
             c.execute("UPDATE jobs SET status=?, finished_at=?, updated_at=?, error=?, log_path=COALESCE(?, log_path) WHERE job_id=?",
@@ -266,25 +324,13 @@ class StudyQueue:
     def retry_failed(self) -> int:
         """FAILED -> PENDING (conserva ``attempt``)."""
         with self._conn() as c:
-            cur = c.execute("UPDATE jobs SET status='PENDING', pc_id=NULL, updated_at=? WHERE status='FAILED'", (_now(),))
+            cur = c.execute("UPDATE jobs SET status='PENDING', pc_id=NULL, updated_at=? WHERE status='FAILED' AND attempt < 3", (_now(),))
             return cur.rowcount
 
     def recover_stale(self, *, minutes: float, force: bool = False, pc_id: str | None = None) -> list[str]:
         """RUNNING huerfanos (sin latido desde hace ``minutes``, o todos los de ``pc_id`` con ``force``) -> PENDING."""
-        limit = (datetime.now(timezone.utc) - timedelta(minutes=minutes)).isoformat()
-        recovered: list[str] = []
-        with self._conn() as c:
-            for r in c.execute("SELECT job_id, pc_id, heartbeat_at FROM jobs WHERE status='RUNNING'").fetchall():
-                stale = (r["heartbeat_at"] or "") < limit
-                mine = pc_id is not None and r["pc_id"] == pc_id
-                if stale or (force and (pc_id is None or mine)):
-                    c.execute("UPDATE jobs SET status='PENDING', updated_at=?, error=? WHERE job_id=?",
-                              (_now(), f"recuperado de RUNNING huerfano (PC {r['pc_id']})", r["job_id"]))
-                    c.execute("UPDATE trials SET status='FAILED', updated_at=? WHERE job_id=? AND status='RUNNING'", (_now(), r["job_id"]))
-                    recovered.append(r["job_id"])
-        return recovered
+        raise RuntimeError('Recuperacion automatica deshabilitada: use experiment_control resume con operador/evidencia y locks locales libres')
 
-    # ----------------------------------------------------------------- trials
     def record_trial(self, study_name: str, number: int, status: str, *, job_id: str | None = None, value: float | None = None, pc_id: str | None = None,
                      run_dir: str | None = None, provenance: Mapping[str, Any] | None = None, started_at: str | None = None, finished: bool = False) -> None:
         """Inserta/actualiza el estado de un trial del estudio."""
@@ -325,37 +371,55 @@ class StudyQueue:
             ``{'inserted', 'updated', 'conflicts'}``; un conflicto es el mismo job RUNNING en dos PCs distintas
             (se conserva el que empezo antes y se avisa).
         """
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-        ins = upd = 0
-        conflicts: list[dict[str, Any]] = []
+        from utils.durable import atomic_json
+        from utils.hashing import sha256_json
+        data = json.loads(Path(path).read_text(encoding='utf-8'))
+        atomic_json(self.path.parent/'foreign_evidence'/(sha256_json(data)+'.json'), data)
+        conflicts = []
+        for remote in data.get('jobs',[]):
+            local = self.get(remote['job_id'])
+            if local and (local.architecture != remote.get('architecture') or local.payload != json.loads(remote.get('payload','{}')) or (local.status == RUNNING and remote.get('status') == RUNNING and local.pc_id != remote.get('pc_id'))):
+                conflicts.append({'job_id':local.job_id,'reason':'incompatible identity or concurrent foreign authority'})
+        return dict(inserted=0,updated=0,conflicts=conflicts,authority='foreign evidence only')
+
+    def transfer_snapshot(self,slug):
         with self._conn() as c:
-            c.execute("BEGIN IMMEDIATE")
-            for j in data.get("jobs", []):
-                cur = c.execute("SELECT * FROM jobs WHERE job_id=?", (j["job_id"],)).fetchone()
-                cols = list(j)
-                if cur is None:
-                    c.execute(f"INSERT INTO jobs ({','.join(cols)}) VALUES ({','.join('?' for _ in cols)})", [j[k] for k in cols])
-                    ins += 1
-                    continue
-                if cur["status"] == RUNNING and j["status"] == RUNNING and cur["pc_id"] != j["pc_id"]:
-                    conflicts.append({"job_id": j["job_id"], "pcs": [cur["pc_id"], j["pc_id"]]})
-                    if (j["started_at"] or "") < (cur["started_at"] or "9"):
-                        pass
-                    else:
-                        continue
-                elif (RANK[j["status"]], j["updated_at"] or "") <= (RANK[cur["status"]], cur["updated_at"] or ""):
-                    continue
-                sets = ",".join(f"{k}=?" for k in cols if k != "job_id")
-                c.execute(f"UPDATE jobs SET {sets} WHERE job_id=?", [j[k] for k in cols if k != "job_id"] + [j["job_id"]])
-                upd += 1
-            for t in data.get("trials", []):
-                cur = c.execute("SELECT status, updated_at FROM trials WHERE study_name=? AND trial_number=?", (t["study_name"], t["trial_number"])).fetchone()
-                cols = list(t)
-                if cur is None:
-                    c.execute(f"INSERT INTO trials ({','.join(cols)}) VALUES ({','.join('?' for _ in cols)})", [t[k] for k in cols])
-                elif (RANK[t["status"]], t["updated_at"] or "") > (RANK[cur["status"]], cur["updated_at"] or ""):
-                    sets = ",".join(f"{k}=?" for k in cols if k not in ("study_name", "trial_number"))
-                    c.execute(f"UPDATE trials SET {sets} WHERE study_name=? AND trial_number=?",
-                              [t[k] for k in cols if k not in ("study_name", "trial_number")] + [t["study_name"], t["trial_number"]])
-            c.execute("COMMIT")
-        return {"inserted": ins, "updated": upd, "conflicts": conflicts}
+            c.execute('BEGIN')
+            jobs=[dict(r) for r in c.execute('SELECT * FROM jobs WHERE architecture=?',(slug,))]
+            studies={j['study_name'] for j in jobs}
+            trials=[dict(r) for r in c.execute('SELECT * FROM trials') if r['study_name'] in studies]
+            ids={j['job_id'] for j in jobs}
+            reviews=[dict(r) for r in c.execute('SELECT * FROM reviews') if r['job_id'] in ids]
+            c.execute('COMMIT')
+        return dict(jobs=jobs,trials=trials,reviews=reviews)
+
+    def adopt_transfer(self,slug,snapshot):
+        """Only called for an explicit, verified ownership offer; never ordinary ZIP imports."""
+        incoming=snapshot['jobs']
+        if any(j['architecture']!=slug or j['status']==RUNNING for j in incoming):raise ValueError('Transferencia con trabajo RUNNING/otra arquitectura')
+        with self._conn() as c:
+            c.execute('BEGIN IMMEDIATE')
+            local=c.execute('SELECT * FROM jobs WHERE architecture=?',(slug,)).fetchall()
+            if sorted([dict(j) for j in local],key=lambda j:j['job_id'])==sorted(incoming,key=lambda j:j['job_id']):
+                c.execute('COMMIT');return
+            if any(j['status']!=PENDING or j['attempt'] for j in local):raise ValueError('Cola receptora tiene trabajo local; no se sobrescribe')
+            for row in incoming:
+                if self.cfg and self.cfg.get('experiment',{}).get('round_id'):
+                    prefix=self.cfg['experiment']['experiment_id']+'/'+self.cfg['experiment']['round_id']+'/'
+                    if not row['job_id'].startswith(prefix):raise ValueError('Job de otra ronda')
+                columns=[r[1] for r in c.execute('PRAGMA table_info(jobs)')]
+                if set(row)!=set(columns):raise ValueError('Schema de job incompatible')
+                c.execute('DELETE FROM jobs WHERE job_id=? AND architecture=?',(row['job_id'],slug))
+                c.execute('INSERT INTO jobs ('+','.join(columns)+') VALUES ('+','.join('?' for _ in columns)+')',[row[k] for k in columns])
+            studies={j['study_name'] for j in incoming};ids={j['job_id'] for j in incoming}
+            for row in snapshot.get('trials',[]):
+                if row['study_name'] not in studies:raise ValueError('Trial de otro estudio')
+                columns=[r[1] for r in c.execute('PRAGMA table_info(trials)')]
+                if set(row)!=set(columns):raise ValueError('Schema de trial incompatible')
+                if c.execute('SELECT 1 FROM trials WHERE study_name=? AND trial_number=?',(row['study_name'],row['trial_number'])).fetchone():raise ValueError('Conflicto de trial local')
+                c.execute('INSERT INTO trials ('+','.join(columns)+') VALUES ('+','.join('?' for _ in columns)+')',[row[k] for k in columns])
+            for row in snapshot.get('reviews',[]):
+                if row['job_id'] not in ids:raise ValueError('Revision de otro job')
+                c.execute('INSERT INTO reviews(job_id,operator,evidence,decision,at) VALUES (?,?,?,?,?)',
+                          [row[k] for k in ('job_id','operator','evidence','decision','at')])
+            c.execute('COMMIT')

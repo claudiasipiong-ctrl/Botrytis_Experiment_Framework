@@ -53,7 +53,7 @@ paths:
 # --------------------------------------------------------------------------- #
 dataset:
   n_images_expected: 329            # control configurable; contar images/
-  enforce_expected_count: false      # abortar si el numero de imagenes difiere de n_images_expected
+  enforce_expected_count: true      # abortar si el numero de imagenes difiere de n_images_expected
   image_extensions: [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"]
   label_extension: ".txt"           # una anotacion YOLO por imagen, mismo stem (image_id = stem)
   dataset_hash: AUTO
@@ -173,15 +173,15 @@ compute:
     - split_hash
   reference_environment: artifacts/v4/environments/environment_reference.json
 
-# Registro de PCs (Estrategia_3PCs sec. 9): reparto ESTATICO recomendado de las 10 arquitecturas.
+# Registro de PCs (Estrategia_3PCs sec. 9): reparto inicial de las siete arquitecturas.
 # La cola es LOCAL a cada PC (un SQLite por PC); por eso cada PC se lanza con
 # `worker.py --architectures <su reparto>` (ver GUIA_EJECUCION_3PCs.md).
 pc_registry:
   pcs: [PC-01, PC-02, PC-03]
   first_batch:
-    PC-01: [YOLOv8n, YOLOv8m, YOLO26n, YOLO26s]
-    PC-02: [YOLOv8l, YOLO26l]
-    PC-03: [RT-DETR-R50, ResNet50, ViT-B/16, Swin-Tiny]
+    PC-01: [YOLOv8n, YOLOv8l, ResNet50]
+    PC-02: [YOLO26l, Swin-Tiny]
+    PC-03: [RT-DETR-R50, ViT-B/16]
   stale_running_minutes: 240        # un RUNNING sin latido mas alla de este tiempo se considera huerfano
 
 # --------------------------------------------------------------------------- #
@@ -202,7 +202,7 @@ optuna:
   max_failed_trials: 3              # si un estudio acumula mas FAILED, se aborta (evita bucles de OOM)
 
 detector:
-  architectures: [YOLOv8n, YOLOv8m, YOLOv8l, YOLO26n, YOLO26s, YOLO26l, RT-DETR-R50]
+  architectures: [YOLOv8n, YOLOv8l, YOLO26l, RT-DETR-R50]
   objective: map50_95
   image_size: 640
   pretrained: true
@@ -213,7 +213,7 @@ detector:
   early_stopping_patience: 20
   trials_per_architecture: 15
   workers: 4
-  oom_fallback: true                # ante CUDA OOM: micro-batch/2 (effective batch se conserva por nbs)
+  oom_fallback: false                # ante CUDA OOM: micro-batch/2 (effective batch se conserva por nbs)
   yolo26_enqueue_recipe_trial: true # sec. 15.2: centro de busqueda = recipe YOLO26 (trial 0 = baseline)
   yolo26_tune_augmentation: false   # sec. 15.2: mosaic/mixup solo si se amplia el presupuesto de TODOS
   baseline:                         # sec. 41.2 (valores del anexo)
@@ -256,7 +256,7 @@ classifier:
   early_stopping_patience: 15       # ANEXO (sec. 38.5): RECOMENDACION DERIVADA, a confirmar
   trials_per_architecture: 20
   workers: 4
-  oom_fallback: true                # ante OOM: micro-batch/2 con acumulacion x2 (effective batch = 32)
+  oom_fallback: false                # ante OOM: micro-batch/2 con acumulacion x2 (effective batch = 32)
   baseline:                         # sec. 41.2 (anexo)
     epochs: 50
     optimizer: AdamW
@@ -371,3 +371,13 @@ weights:
 manual_qa:
   ledger_dir: artifacts/manual_qa
   required_gate: READY_FOR_EXPERIMENT
+
+# Development may inspect legacy artifacts; official training requires an explicit round.
+experiment:
+  experiment_id: botrytis_v4
+  round_id: null
+  mode: supervised
+  operator: null
+  reason: null
+  architecture: null
+  trial_block_size: null

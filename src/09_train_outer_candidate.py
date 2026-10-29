@@ -69,7 +69,9 @@ def main(ctx: RunContext, args: argparse.Namespace) -> None:
     ctx.set_seed(seed)
     ckpt = final_checkpoint(cfg, spec)
     meta_path = ckpt.with_name("final_meta.json")
-    if ckpt.is_file() and meta_path.is_file() and not args.force:
+    if ckpt.exists() and args.force:
+        raise RuntimeError('--force no sobrescribe candidatos historicos; cree nueva ronda')
+    if ckpt.is_file() and meta_path.is_file():
         meta = read_json(meta_path)
         if meta.get("config_id") == best["config_id"] and meta.get("sha256") == sha256_file(ckpt):
             if meta.get("dataset_hash") != data.dataset_hash or meta.get("split_hash") != data.split_hash:
@@ -92,7 +94,7 @@ def main(ctx: RunContext, args: argparse.Namespace) -> None:
             ckpt.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, ckpt)
             info = {"vram_peak_mb": run.vram_peak_mb, "train_seconds": run.train_seconds, "params_m": run.params_m, "gflops": run.gflops,
-                    "pretrained_sha256": run.pretrained_sha256, "history": run.history, "micro_batch": run.micro_batch}
+                    "pretrained_sha256": run.pretrained_sha256, "history": run.history, "micro_batch": run.micro_batch, "batch_contract":run.extra.get("batch_contract")}
         else:
             manifest = load_crop_manifest(cfg)
             tr = crops_for(manifest, split="train", stage="outer_train", cfg=cfg)

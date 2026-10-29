@@ -34,14 +34,16 @@ def _sample(spec_name: str, cfg: dict, seed: int = 0) -> dict:
     if optuna is None:
         pytest.skip("Optuna unavailable: sampling/search study test requires optional dependency")
     spec = get_arch(spec_name)
-    study = optuna.create_study(direction="maximize", sampler=optuna.samplers.RandomSampler(seed=seed))
-    captured: dict = {}
-
-    def obj(trial: optuna.Trial) -> float:
-        captured.update(suggest_hyperparameters(trial, spec, cfg))
-        return 0.0
-
-    study.optimize(obj, n_trials=1)
+    # Deterministic schema fixture; never start an optimization loop.
+    import random
+    rng=random.Random(seed)
+    class Trial:
+        def suggest_float(self,name,low,high,log=False):
+            import math
+            return math.exp(rng.uniform(math.log(low),math.log(high))) if log else rng.uniform(low,high)
+        def suggest_categorical(self,name,choices):return rng.choice(choices)
+        def suggest_int(self,name,low,high,step=1,log=False):return rng.randrange(low,high+1,step)
+    captured = suggest_hyperparameters(Trial(),spec,cfg)
     return captured
 
 
@@ -74,13 +76,13 @@ def test_spec_examples_of_the_search_spaces(cfg: dict) -> None:
     assert sp["resnet50"]["lr"]["ranges"] == {"AdamW": [1e-5, 1e-3], "SGD": [1e-4, 1e-2]}
     assert sp["swin"]["drop_path_rate"]["values"] == [0.0, 0.1, 0.2] and "drop_path_rate" not in sp["vit"]
     assert sp["yolo26"]["freeze"]["values"] == [0, 10]
-    assert "mosaic" not in space_for(get_arch("YOLO26n"), cfg)                      # no se abren mas augmentations sin ampliar el presupuesto
+    assert "mosaic" not in space_for(get_arch("YOLO26l"), cfg)                      # no se abren mas augmentations sin ampliar el presupuesto
     assert len(search_space_hash()) == 64
 
 
 def test_budgets_are_15_detectors_and_20_classifiers(cfg: dict) -> None:
     assert {trials_for(a, cfg) for a in archs("detection")} == {15} and {trials_for(a, cfg) for a in archs("classification")} == {20}
-    assert sum(trials_for(a, cfg) for a in archs("detection")) == 105 and sum(trials_for(a, cfg) for a in archs("classification")) == 60
+    assert sum(trials_for(a, cfg) for a in archs("detection")) == 60 and sum(trials_for(a, cfg) for a in archs("classification")) == 60
     assert_equal_hpo_budget(cfg)
     with pytest.raises(MethodologyViolation, match="desigual"):
         assert_equal_hpo_budget(cfg, {"YOLOv8n": 10})
@@ -106,7 +108,7 @@ def test_tpe_and_median_pruner_configuration_and_independent_studies(cfg: dict) 
     names = set()
     for spec in (get_arch("YOLOv8n"), get_arch("ResNet50")):
         st = create_or_load_study(spec, cfg, 1)
-        st.optimize(lambda t: t.suggest_float("x", 0, 1), n_trials=2)
+        for _ in range(2): st.add_trial(optuna.trial.create_trial(value=0.5))
         names.add(st.study_name)
         assert storage_url(cfg, spec).endswith(f"botrytis_{spec.slug}.db")                              # un fichero por estudio
     assert names == {"botrytis_yolov8n", "botrytis_resnet50"}
@@ -123,9 +125,10 @@ def test_zombie_running_trials_are_failed_on_resume_and_do_not_consume_budget(cf
     hpo = importlib.import_module("07_run_hpo_study")
     spec = get_arch("ResNet50")
     study = create_or_load_study(spec, cfg, 1)
-    study.optimize(lambda t: t.suggest_float("x", 0, 1), n_trials=2)
+    for _ in range(2): study.add_trial(optuna.trial.create_trial(value=0.5))
     zombie = study.ask()                                                      # un trial RUNNING que dejo un corte de luz
-    zombie.suggest_float("x", 0, 1)
+    import socket
+    zombie.set_user_attr('process_owner',dict(hostname=socket.gethostname(),pid=99999999,created=0))
     resumed = create_or_load_study(spec, cfg, 1)
     assert hpo.fail_zombie_trials(resumed, logging.getLogger("t")) == 1
     states = [t.state.name for t in resumed.trials]
@@ -139,7 +142,7 @@ def test_zombie_running_trials_are_failed_on_resume_and_do_not_consume_budget(cf
 
 def test_enqueue_recipe_trial_reproduces_the_baseline_hp(cfg: dict) -> None:
     if optuna is None:pytest.skip("Optuna unavailable; enqueue checks pending")
-    spec = get_arch("YOLO26n")
+    spec = get_arch("YOLO26l")
     base = baseline_hyperparameters(spec, cfg)
     study = optuna.create_study(direction="maximize", sampler=make_sampler(cfg, 0))
     study.enqueue_trial(enqueue_params_from_hp(spec, base, cfg))
@@ -149,7 +152,7 @@ def test_enqueue_recipe_trial_reproduces_the_baseline_hp(cfg: dict) -> None:
         captured.update(suggest_hyperparameters(trial, spec, cfg))
         return 0.0
 
-    study.optimize(obj, n_trials=1)
+    trial=study.ask(); obj(trial); study.tell(trial,0.0)
     for k, v in base.items():
         assert captured[k] == pytest.approx(v), k
 

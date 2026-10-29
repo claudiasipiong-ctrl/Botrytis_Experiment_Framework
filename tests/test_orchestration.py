@@ -31,13 +31,13 @@ def queue(tmp_path: Path, cfg: dict) -> StudyQueue:
 
 def test_plan_creates_one_baseline_and_one_hpo_per_architecture(queue: StudyQueue) -> None:
     jobs = queue.jobs()
-    assert len(jobs) == 20 and {j.kind for j in jobs} == {"baseline", "hpo"}
+    assert len(jobs) == 14 and {j.kind for j in jobs} == {"baseline", "hpo"}
     names = {j.study_name for j in jobs}
-    assert len(names) == 10 and "botrytis_yolov8n" in names and "botrytis_rtdetr_r50" in names
+    assert len(names) == 7 and "botrytis_yolov8n" in names and "botrytis_rtdetr_r50" in names
     assert not any("global" in n for n in names)            # un estudio por arquitectura, nunca study_global
     hpo = queue.get(job_id_for("hpo", "yolov8n"))
     assert hpo is not None and hpo.depends_on == [job_id_for("baseline", "yolov8n")]
-    assert queue.plan(load_config(None, [])) == 0           # idempotente
+    assert queue.plan(queue.cfg) == 0           # idempotente
 
 
 def test_claim_respects_dependencies_one_gpu_per_pc_and_global_cap(queue: StudyQueue) -> None:
@@ -46,7 +46,7 @@ def test_claim_respects_dependencies_one_gpu_per_pc_and_global_cap(queue: StudyQ
     assert queue.claim_next("PC-01") is None                  # una PC = un trabajo GPU
     j2 = queue.claim_next("PC-02", preferred_slugs=["yolov8l"])
     j3 = queue.claim_next("PC-03", preferred_slugs=["resnet50"])
-    assert {j2.architecture, j3.architecture} == {"yolov8l", "resnet50"}      # type: ignore[union-attr]
+    assert {j2.architecture, j3.architecture} == {"yolo26l", "rtdetr_r50"}      # type: ignore[union-attr]
     assert queue.claim_next("PC-04") is None                  # maximo 3 trabajos globales
     assert queue.counts()[RUNNING] == 3
     # el HPO de yolov8n no puede empezar mientras su baseline no este COMPLETE
@@ -89,15 +89,15 @@ def test_expand_after_hpo_builds_the_robustness_chain(queue: StudyQueue, cfg: di
     assert queue.expand_after_hpo(cfg, spec, ["cfg_aaaaaaaa", "cfg_bbbbbbbb", "cfg_cccccccc"]) == 0
 
 
-def test_seeds_can_run_in_parallel_on_three_pcs(queue: StudyQueue, cfg: dict) -> None:
+def test_same_architecture_seeds_stay_on_exclusive_owner(queue: StudyQueue, cfg: dict) -> None:
     spec = get_arch("ResNet50")
     for kind in ("baseline", "hpo"):
         jid = job_id_for(kind, spec.slug)
         queue.claim_next("PC-01", slugs=[spec.slug], kinds=[kind])
         queue.finish(jid, COMPLETE)
-    queue.expand_after_hpo(cfg, spec, ["cfg_aaaaaaaa"])
+    queue.expand_after_hpo(cfg, spec, ["cfg_aaaaaaaa","cfg_bbbbbbbb","cfg_cccccccc"])
     got = [queue.claim_next(pc, slugs=[spec.slug], kinds=["repeat"]) for pc in ("PC-01", "PC-02", "PC-03")]
-    assert all(g is not None for g in got) and {g.payload["seed"] for g in got} == {17, 42, 73}     # type: ignore[union-attr]
+    assert got[0] is not None and got[0].payload["seed"] == 17 and got[1:] == [None,None]     # type: ignore[union-attr]
 
 
 def test_jobs_without_local_inputs_stay_pending_and_chains_stay_on_the_same_pc(queue: StudyQueue, cfg: dict, tmp_path: Path) -> None:
@@ -108,13 +108,13 @@ def test_jobs_without_local_inputs_stay_pending_and_chains_stay_on_the_same_pc(q
     cfg["paths"]["best_configs_dir"] = str(tmp_path / "best")
     cfg["paths"]["artifacts_dir"] = str(tmp_path / "art")
     for kind in ("baseline", "hpo"):
-        assert queue.claim_next("PC-03", slugs=[spec.slug], kinds=[kind]) is not None
+        assert queue.claim_next("PC-01", slugs=[spec.slug], kinds=[kind]) is not None
         queue.finish(job_id_for(kind, spec.slug), COMPLETE)
-    queue.expand_after_hpo(cfg, spec, ["cfg_aaaaaaaa"])
+    queue.expand_after_hpo(cfg, spec, ["cfg_aaaaaaaa","cfg_bbbbbbbb","cfg_cccccccc"])
     runs = tmp_path / "runs"
     # PC-01 no tiene el estudio Optuna (se ejecuto en PC-03): no debe reclamar la robustez
     ready = lambda j: local_inputs_ready(cfg, j, runs)  # noqa: E731
-    assert queue.claim_next("PC-01", slugs=[spec.slug], kinds=["repeat"], ready_check=ready) is None
+    assert queue.claim_next("PC-02", slugs=[spec.slug], kinds=["repeat"], ready_check=ready) is None
     (tmp_path / "optuna").mkdir(exist_ok=True)
     (tmp_path / "optuna" / "botrytis_resnet50.db").write_bytes(b"x")                         # tras desempaquetar el ZIP de PC-03
     got = queue.claim_next("PC-01", slugs=[spec.slug], kinds=["repeat"], ready_check=ready)
@@ -122,16 +122,17 @@ def test_jobs_without_local_inputs_stay_pending_and_chains_stay_on_the_same_pc(q
     queue.finish(got.job_id, FAILED)
     # agregar exige los result.json de los 3 seeds en el disco local
     assert not local_inputs_ready(cfg, queue.get(job_id_for("aggregate", spec.slug)), runs)       # type: ignore[arg-type]
-    for s in (17, 42, 73):
-        d = runs / spec.slug / "robustness" / "cfg_aaaaaaaa" / f"seed_{s}"
-        d.mkdir(parents=True)
-        (d / "result.json").write_text("{}")
+    for cid in ('cfg_aaaaaaaa','cfg_bbbbbbbb','cfg_cccccccc'):
+        for seed in (17,42,73):
+            d=runs/spec.slug/'robustness'/cid/f'seed_{seed}'
+            d.mkdir(parents=True)
+            (d/'result.json').write_text('{}')
     assert local_inputs_ready(cfg, queue.get(job_id_for("aggregate", spec.slug)), runs)           # type: ignore[arg-type]
     assert not local_inputs_ready(cfg, queue.get(job_id_for("outer_train", spec.slug)), runs)     # type: ignore[arg-type]
     assert not local_inputs_ready(cfg, queue.get(job_id_for("outer_eval", spec.slug)), runs)      # type: ignore[arg-type]
     assert local_inputs_ready(cfg, queue.get(job_id_for("hpo", spec.slug)), runs)                 # type: ignore[arg-type]
     # continuidad: la PC que ya trabajo una arquitectura prefiere sus siguientes etapas frente a una baseline ajena
-    nxt = queue.claim_next("PC-03", kinds=["baseline", "repeat"])
+    nxt = queue.claim_next("PC-01", kinds=["baseline", "repeat"])
     assert nxt is not None and nxt.architecture == spec.slug
 
 
@@ -146,11 +147,13 @@ def test_recover_stale_and_merge_states(tmp_path: Path, cfg: dict) -> None:
     assert jb is not None
     state_a = a.export_state(tmp_path / "state_a.json")
     res = b.merge_state(state_a)
-    assert res["updated"] >= 1 and b.get(ja.job_id).status == COMPLETE and b.get(jb.job_id).status == RUNNING         # type: ignore[union-attr]
+    assert res["updated"] == 0 and b.get(ja.job_id).status == PENDING and b.get(jb.job_id).status == RUNNING         # type: ignore[union-attr]
     # un RUNNING huerfano (sin latido) se recupera; el que esta vivo no
-    assert b.recover_stale(minutes=10_000) == []
-    assert b.recover_stale(minutes=0, force=True, pc_id="PC-02") == [jb.job_id]
-    assert b.get(jb.job_id).status == PENDING                                                                           # type: ignore[union-attr]
+    with pytest.raises(RuntimeError,match='Recuperacion automatica'):
+        b.recover_stale(minutes=10_000)
+    with pytest.raises(RuntimeError):
+        b.recover_stale(minutes=0,force=True,pc_id='PC-02')
+    assert b.get(jb.job_id).status == RUNNING                                                                           # type: ignore[union-attr]
 
 
 def test_merge_flags_same_job_running_on_two_pcs(tmp_path: Path, cfg: dict) -> None:
@@ -159,7 +162,13 @@ def test_merge_flags_same_job_running_on_two_pcs(tmp_path: Path, cfg: dict) -> N
     b.plan(cfg)
     a.claim_next("PC-01", preferred_slugs=["yolov8n"])
     b.claim_next("PC-02", preferred_slugs=["yolov8n"])
-    res = b.merge_state(a.export_state(tmp_path / "s.json"))
+    # Simulate a conflicting foreign authority without allowing this local queue to claim foreign work.
+    path=a.export_state(tmp_path/'s.json')
+    data=json.loads(path.read_text())
+    row=next(j for j in data['jobs'] if j['job_id']=='baseline:yolov8n')
+    row['payload']=json.dumps({'foreign_conflicting_round':True})
+    path.write_text(json.dumps(data))
+    res = b.merge_state(path)
     assert res["conflicts"] and res["conflicts"][0]["job_id"] == job_id_for("baseline", "yolov8n")
 
 
@@ -176,7 +185,7 @@ def test_build_command_passes_config_and_overrides() -> None:
 def test_pc_registry_identity_and_first_batch(cfg: dict) -> None:
     reg = PCRegistry(cfg)
     assert reg.validate("PC-01").is_benchmark and not reg.validate("PC-02").is_benchmark
-    assert reg.is_preferred("PC-01", "yolov8m") and reg.is_preferred("PC-03", "vit_b16") and reg.is_preferred("PC-02", "yolo26l")
+    assert reg.is_preferred("PC-01", "yolov8l") and reg.is_preferred("PC-03", "vit_b16") and reg.is_preferred("PC-02", "yolo26l")
     with pytest.raises(UnknownPC):
         reg.validate("PC-99")
     assert reg.missing_environments() == ["PC-01", "PC-02", "PC-03"]
@@ -212,8 +221,8 @@ def test_gpu_lock_allows_a_single_heavy_job_per_pc(cfg: dict) -> None:
         pass
 
 
-def test_all_ten_architectures_registered() -> None:
-    assert [a.name for a in archs("detection")] == ["YOLOv8n", "YOLOv8m", "YOLOv8l", "YOLO26n", "YOLO26s", "YOLO26l", "RT-DETR-R50"]
+def test_all_seven_architectures_registered() -> None:
+    assert [a.name for a in archs("detection")] == ["YOLOv8n", "YOLOv8l", "YOLO26l", "RT-DETR-R50"]
     assert [a.name for a in archs("classification")] == ["ResNet50", "ViT-B/16", "Swin-Tiny"]
     with pytest.raises(KeyError, match="U-Net"):
         get_arch("U-Net")

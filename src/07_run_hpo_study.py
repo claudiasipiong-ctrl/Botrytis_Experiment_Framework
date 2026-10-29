@@ -58,20 +58,29 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     """Argumentos propios del script."""
     add_arch_arguments(parser)
     g = parser.add_argument_group("07_run_hpo_study")
+    g.add_argument("--trial-block-size", type=int, default=None, help="maximo de trials nuevos en este bloque; conserva presupuesto total 15/20")
     g.add_argument("--n-trials", type=int, default=None, help="presupuesto del estudio (por defecto el de la metodologia: 15/20)")
     g.add_argument("--allow-budget-override", action="store_true", help="permite un presupuesto distinto al oficial (queda DECLARADO en metadata.json)")
 
 
 def fail_zombie_trials(study: Any, log: Any) -> int:
-    """Marca como FAIL los trials RUNNING que dejo un corte anterior (no tienen proceso vivo)."""
-    import optuna
-
+    """Recover only provably dead local trials through public Optuna APIs."""
+    import optuna, socket, psutil
     n = 0
     for t in study.get_trials(deepcopy=False):
-        if t.state == optuna.trial.TrialState.RUNNING:
-            study._storage.set_trial_state_values(t._trial_id, optuna.trial.TrialState.FAIL)
-            log.warning("trial %d estaba RUNNING tras un corte: marcado FAIL (se repone dentro del presupuesto)", t.number)
-            n += 1
+        if t.state != optuna.trial.TrialState.RUNNING: continue
+        owner = t.user_attrs.get('process_owner',{})
+        if owner.get('hostname') != socket.gethostname() or not owner.get('pid'):
+            raise RuntimeError('Trial RUNNING sin propietario local verificable; recuperar explicitamente, nunca asumir zombie')
+        try:
+            proc = psutil.Process(owner['pid'])
+            alive = abs(proc.create_time()-owner.get('created',0)) < 1
+        except psutil.NoSuchProcess:
+            alive = False
+        if alive: raise RuntimeError('Trial RUNNING con proceso vivo; no se recupera')
+        study.tell(t.number, state=optuna.trial.TrialState.FAIL)
+        log.warning('trial %d: proceso local muerto verificado, FAIL via API publica',t.number)
+        n += 1
     return n
 
 
@@ -134,6 +143,8 @@ def main(ctx: RunContext, args: argparse.Namespace) -> None:
     sec = section_for(spec, cfg)
     n_trials = trials_for(spec, cfg)
     if args.n_trials is not None and int(args.n_trials) != n_trials:
+        if cfg['project']['profile']=='official':
+            raise MethodologyViolation('Presupuesto oficial inmutable; trial-block-size limita el bloque sin reducir 15/20')
         assert_equal_hpo_budget(cfg, {spec.name: int(args.n_trials)}, declared_override=bool(args.allow_budget_override))
         n_trials = int(args.n_trials)
         ctx.add_metadata(budget_override_declared=True, n_trials=n_trials)
@@ -156,6 +167,8 @@ def main(ctx: RunContext, args: argparse.Namespace) -> None:
         max_failed = int(cfg["optuna"].get("max_failed_trials", 3))
 
         def objective(trial: Any) -> float:
+            import os, socket, psutil
+            trial.set_user_attr('process_owner',dict(hostname=socket.gethostname(),pid=os.getpid(),created=psutil.Process().create_time()))
             hp = suggest_hyperparameters(trial, spec, cfg, spaces)
             cid = config_id(hp)
             name = f"hpo/trial_{trial.number:03d}"
@@ -197,10 +210,14 @@ def main(ctx: RunContext, args: argparse.Namespace) -> None:
 
         remaining = n_trials - budget_used(study)
         log.info("estudio %s: %d/%d trials usados; restan %d (TPE + MedianPruner, n_jobs=1)", study.study_name, budget_used(study), n_trials, remaining)
+        block = args.trial_block_size or cfg.get('experiment',{}).get('trial_block_size') or remaining
+        if int(block) < 1: raise ValueError('trial-block-size debe ser positivo')
+        block_target = min(n_trials, budget_used(study) + int(block))
+        remaining = block_target - budget_used(study)
         guard_rounds = 0
         while remaining > 0 and failed_trials(study) <= max_failed and guard_rounds < n_trials + max_failed + 2:
             study.optimize(objective, n_trials=remaining, n_jobs=1, callbacks=[after_trial], catch=(Exception,))
-            remaining = n_trials - budget_used(study)
+            remaining = block_target - budget_used(study)
             guard_rounds += 1
         if failed_trials(study) > max_failed:
             write_study_outputs(ctx, spec, study, hpo_dir, make_figures=True)
@@ -208,6 +225,9 @@ def main(ctx: RunContext, args: argparse.Namespace) -> None:
 
     tt = write_study_outputs(ctx, spec, study, hpo_dir, make_figures=True)
     done = tt[tt["state"] == "COMPLETE"]
+    if budget_used(study) < n_trials:
+        log.info("Bloque HPO guardado: %d/%d; job sigue PENDING",budget_used(study),n_trials)
+        return
     if done.empty:
         raise MethodologyViolation(f"El estudio {study.study_name} no tiene ningun trial COMPLETE")
     log.info("HPO %s terminado: mejor trial %d valor %.4f | %d COMPLETE, %d PRUNED", spec.name, int(done.sort_values('value', ascending=False).iloc[0]['number']),

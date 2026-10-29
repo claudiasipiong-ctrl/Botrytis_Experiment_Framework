@@ -46,7 +46,7 @@ def test_architecture_trial_layout_and_mandatory_files(tmp_path: Path) -> None:
     run = tmp_path / "runs" / "yolov8n" / "hpo" / "trial_003"
     _assert_complete(run)
     meta = read_json(run / "metadata.json")
-    assert meta["run_id"] == "yolov8n/hpo/trial_003" and meta["architecture"] == "yolov8n" and meta["status"] == "COMPLETE"
+    assert "07_run_hpo_study_yolov8n" in meta["run_id"] and meta["architecture"] == "yolov8n" and meta["status"] == "COMPLETE"
     assert meta["splits_accessed"] == [{"split": "train", "stage": "hpo_trial"}] and meta["extra"]["hp"] == {"lr0": 0.01}
     ck = read_json(run / "checkpoint_metadata.json")
     assert ck["checkpoints"][0]["sha256"] == "abc" and ck["architecture"] == "yolov8n" and set(ck) >= {"dataset_hash", "code_hash", "environment_hash", "split_hash"}
@@ -132,6 +132,7 @@ def test_audit_compares_instants_across_timezones(tmp_path: Path) -> None:
 
 def test_required_figure_catalog_covers_the_mandatory_charts() -> None:
     names = {f["name"] for f in required_figures()}
+    plt.close("all")
     for must in ("det_map50_95_por_arquitectura", "det_map50_por_arquitectura", "det_recall_vs_latencia", "det_radar_detectores", "det_ap_vs_iou", "det_map_vs_flops",
                  "det_map_vs_parametros", "det_pareto_map_latencia", "det_pareto_map_vram", "cls_curva_pr", "cls_curva_roc", "cls_matriz_confusion", "cls_gradcam",
                  "cls_umbral_vs_f1", "cls_ap_positiva_por_arquitectura", "pipe_arquitectura_completa_test", "pipe_latencia_por_etapa", "pipe_errores_acumulados_test",
@@ -198,3 +199,4 @@ def test_every_experiment_plot_draws_with_data_and_with_empty_inputs() -> None:
         plt.close(f)
     no_latency = d.drop(columns=["latency_ms"])
     assert "Sin datos" in "".join(t.get_text() for t in plot_recall_vs_latency(no_latency).axes[0].texts)
+    plt.close("all")

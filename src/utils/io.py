@@ -87,6 +87,11 @@ def write_json(path: str | Path, data: Any, *, indent: int = 2, sort_keys: bool 
             if cfg is not None:
                 from utils.semantics import semantic_fingerprint
                 data = {**data, "semantic_fingerprint": semantic_fingerprint(cfg), "schema_version":4}
+                if cfg.get('experiment',{}).get('round_id'):
+                    from utils.experiments import fingerprint
+                    data['experiment_fingerprint'] = fingerprint(cfg)
+                    data['experiment_id'] = cfg['experiment']['experiment_id']
+                    data['round_id'] = cfg['experiment']['round_id']
         except (ImportError,KeyError):
             pass
     text = json.dumps(_sanitize(data), indent=indent, ensure_ascii=False, sort_keys=sort_keys, default=_json_default)

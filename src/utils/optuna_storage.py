@@ -9,7 +9,6 @@
 
 from __future__ import annotations
 
-import os
 import warnings
 from pathlib import Path
 from typing import Any, Mapping
@@ -17,7 +16,7 @@ from typing import Any, Mapping
 import pandas as pd
 
 from utils.architectures import ArchSpec
-from utils.config_loader import BlockingTodoError, cfg_path, get_nested
+from utils.config_loader import cfg_path, get_nested
 from utils.io import ensure_dir
 
 
@@ -64,32 +63,44 @@ def make_pruner(cfg: Mapping[str, Any]) -> Any:
     )
 
 
+def study_name(spec, cfg):
+    exp = cfg.get('experiment',{})
+    prefix = str(get_nested(cfg, 'optuna.study_prefix', default='botrytis'))
+    if exp.get('round_id'):
+        prefix += '_' + exp['experiment_id'] + '_' + exp['round_id']
+    return spec.study_name(prefix)
+
+
+def assert_study_identity(study, expected, *, initialize=False):
+    prior = study.user_attrs.get('experiment_identity')
+    if prior != expected:
+        if prior is not None or study.get_trials(deepcopy=False) or not initialize:
+            raise ValueError('Estudio incompatible: ' + ','.join(k for k in expected if (prior or {}).get(k) != expected[k]))
+        study.set_user_attr('experiment_identity', dict(expected))
+
+
 def create_or_load_study(spec: ArchSpec, cfg: Mapping[str, Any], seed: int | None) -> Any:
     """Crea (o reanuda) el estudio INDEPENDIENTE de ``spec`` (direccion: maximizar)."""
     optuna = _optuna()
-    prefix = str(get_nested(cfg, "optuna.study_prefix", default="botrytis"))
     study = optuna.create_study(
-        study_name=spec.study_name(prefix), storage=storage_url(cfg, spec), sampler=make_sampler(cfg, seed),
+        study_name=study_name(spec,cfg), storage=storage_url(cfg, spec), sampler=make_sampler(cfg, seed),
         pruner=make_pruner(cfg), direction="maximize", load_if_exists=bool(get_nested(cfg, "optuna.load_if_exists", default=True)),
     )
 
+    from utils.experiments import identity
+    assert_study_identity(study, identity(cfg), initialize=True)
     from utils.semantics import semantic_fingerprint
-    identity=semantic_fingerprint(cfg)
-    prior=study.user_attrs.get("semantic_fingerprint")
-    if (prior and prior!=identity) or (study.trials and not prior):
-        raise RuntimeError("Estudio Optuna obsoleto/incompatible; conservar y usar namespace v4 nuevo")
-    study.set_user_attr("semantic_fingerprint",identity)
-    study.set_user_attr("initialization",cfg.get("initialization"))
+    study.set_user_attr('semantic_fingerprint',semantic_fingerprint(cfg))
+    study.set_user_attr('initialization',cfg.get('initialization'))
     return study
 
 
 def load_study(spec: ArchSpec, cfg: Mapping[str, Any]) -> Any:
     """Carga un estudio existente (sin crearlo)."""
     optuna = _optuna()
-    prefix = str(get_nested(cfg, "optuna.study_prefix", default="botrytis"))
-    study=optuna.load_study(study_name=spec.study_name(prefix), storage=storage_url(cfg, spec))
-    from utils.semantics import semantic_fingerprint
-    if study.user_attrs.get("semantic_fingerprint")!=semantic_fingerprint(cfg):raise RuntimeError("Estudio de otra semantica; no reutilizar")
+    study=optuna.load_study(study_name=study_name(spec,cfg), storage=storage_url(cfg, spec))
+    from utils.experiments import identity
+    assert_study_identity(study, identity(cfg))
     return study
 
 

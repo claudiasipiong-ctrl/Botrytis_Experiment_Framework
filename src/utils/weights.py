@@ -29,7 +29,12 @@ def verified_local_weight(spec,cfg=None):
     m=json.loads(side.read_text(encoding='utf-8'))
     if m.get('state')!='DESCARGADO_VERIFICADO' or m.get('slug')!=spec.slug or m.get('source_url')!=r['url']:
         raise RuntimeError('Proveniencia incompatible de pesos: '+str(side))
-    if m.get('sha256')!=digest(p) or m.get('size_bytes')!=p.stat().st_size:
+    actual=digest(p)
+    declared=(cfg or {}).get('experiment',{}).get('initial_weights',{}).get(spec.slug)
+    if declared is not None and actual!=declared:raise RuntimeError('Pesos de otra identidad de ronda')
+    if not m.get('license_accepted') or (r.get('official_sha256') and actual!=r['official_sha256']) or (r.get('checksum_prefix') and not actual.startswith(r['checksum_prefix'])) or (r.get('size_bytes') is not None and p.stat().st_size!=r['size_bytes']):
+        raise RuntimeError('Pesos distintos del catalogo/licencia no aceptada: '+str(p))
+    if m.get('sha256')!=actual or m.get('size_bytes')!=p.stat().st_size:
         raise RuntimeError('Pesos alterados; repetir verificacion manual: '+str(p))
     from utils.bootstrap import event
     event("verified_weight_loaded",architecture=spec.slug,path=str(p.resolve()),sha256=m["sha256"],size_bytes=m["size_bytes"],source_url=r["url"],initialization="pretrained")

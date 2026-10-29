@@ -32,3 +32,19 @@ reports/tables/*
 !reports/tables/.gitkeep
 .venv/
 venv/
+
+# Local identity, experiment control and heavy mutable outputs
+configs/local.yaml
+weights/
+logs_qa/
+results/
+reports/v4/
+artifacts/v4/
+artifacts/experiments/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-*
+*.zip
+*.partial

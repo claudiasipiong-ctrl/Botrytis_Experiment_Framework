@@ -1,0 +1,4 @@
+# Compatible API pair; install the chosen official CUDA/CPU build first.
+# Local tags (+cpu, +cu126) are accepted by these public-version pins.
+torch==2.14.1
+torchvision==0.29.1

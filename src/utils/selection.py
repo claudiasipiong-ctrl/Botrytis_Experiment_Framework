@@ -81,3 +81,17 @@ def rank_candidates(
          .sort_values(["eligible", "_w", primary], ascending=[False, False, False], kind="stable").reset_index(drop=True).drop(columns="_w"))
     t["rank"] = range(1, len(t) + 1)
     return t, str(winner_row["architecture"])
+
+
+def assert_candidates_ready(cfg, task, expected):
+    from utils.architectures import archs
+    from utils.hpo_results import require_final_checkpoint,stage_json_path,load_best_config
+    from utils.io import read_json
+    for spec in archs(task):
+        require_final_checkpoint(cfg,spec,expected)
+        load_best_config(cfg,spec)
+        for stage in ('outer_validation','inference_thresholds'):
+            path=stage_json_path(cfg,stage,spec)
+            if not path.is_file():raise FileNotFoundError(path)
+            row=read_json(path)
+            if any(row.get(k)!=v for k,v in expected.items()):raise MethodologyViolation('Candidato incompatible: '+spec.slug)

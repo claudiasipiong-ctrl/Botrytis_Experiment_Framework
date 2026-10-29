@@ -211,6 +211,9 @@ def main(ctx: RunContext, args: argparse.Namespace) -> None:
     cfg = ctx.cfg
     spec = arch_from_args(args)
     data = prepare_for_inference(ctx, args)
+    if cfg['project']['profile'] == 'official':
+        from utils.experiments import use_external
+        use_external(cfg,'outer_validation',final_checkpoint(cfg,spec))
     guard_not_frozen(ctx, "10_evaluate_outer_validation")
     best = load_best_config(cfg, spec)
     ckpt = final_checkpoint(cfg, spec)

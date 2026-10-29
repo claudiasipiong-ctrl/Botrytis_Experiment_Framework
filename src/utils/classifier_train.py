@@ -88,7 +88,7 @@ def lr_at(step: int, base_lr: float, warmup_steps: int, total_steps: int) -> flo
     return base_lr * 0.5 * (1.0 + math.cos(math.pi * min(1.0, progress)))
 
 
-@torch.no_grad()
+@torch.inference_mode()
 def predict_probs(model: nn.Module, loader: Any, device: str, use_amp: bool) -> tuple[np.ndarray, np.ndarray, np.ndarray, float]:
     """``(p_con_signos, y_true, indices, loss_ce)`` sobre un ``DataLoader`` deterministico."""
     model.eval()
@@ -227,7 +227,7 @@ def _train_once(
             from utils.resume import receipt
             path=Path(resume_output)
             atomic_torch_save({"identity":identity,"epoch":epoch,"model":model.state_dict(),"optimizer":opt.state_dict(),"scaler":scaler.state_dict(),"history":history,"best":best,"bad_epochs":bad_epochs,"step":step,"python_rng":random.getstate(),"numpy_rng":np.random.get_state(),"torch_rng":torch.get_rng_state(),"cuda_rng":torch.cuda.get_rng_state_all() if torch.cuda.is_available() else [],"loader_rng":train_loader.generator.get_state() if train_loader.generator is not None else None},path)
-            receipt(path,spec,cfg,{"seed":seed,"epoch":epoch,"identity":identity})
+            receipt(path,spec,cfg,{"seed":seed,"epoch":epoch,"identity":identity,"context":cc.get("_resume_context",{})})
         if epoch_callback is not None and not fixed_epochs:
             epoch_callback(step_offset + epoch - 1, row)  # puede lanzar optuna.TrialPruned
         if not fixed_epochs and patience is not None and bad_epochs >= patience:

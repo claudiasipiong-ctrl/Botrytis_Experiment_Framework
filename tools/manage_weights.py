@@ -70,6 +70,16 @@ def main():
             if not a.sha256.startswith(r["checksum_prefix"]):raise ValueError("Prefijo oficial incorrecto; descarga no publicada")
         verify(r,tmp,a.sha256,a.accept_license,a.expected_size)
         os.replace(tmp,dest);os.replace(tmp.with_suffix(tmp.suffix+'.provenance.json'),dest.with_suffix(dest.suffix+'.provenance.json'))
+    if a.action=='verify' and a.file:
+        source=a.file.resolve()
+        if not source.is_file():raise FileNotFoundError(source)
+        if source!=dest.resolve():
+            if dest.exists():raise FileExistsError('Se preservan pesos existentes: '+str(dest))
+            expected=a.sha256 or digest(source)
+            verify(r,source,expected,a.accept_license,a.expected_size)
+            from utils.durable import atomic_copy
+            atomic_copy(source,dest)
+            a.sha256=expected
     if not a.sha256:
         a.sha256=digest(dest)
     print(json.dumps(verify(r,dest,a.sha256,a.accept_license,a.expected_size),indent=2));return 0

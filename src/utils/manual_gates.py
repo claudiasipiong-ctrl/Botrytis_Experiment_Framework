@@ -21,6 +21,12 @@ def require_gate(cfg,pc_id,gate):
 def require_test_release(cfg,freeze):
     p=cfg_path(cfg,'paths.artifacts_dir')/'manual_test_release.json'
     m=json.loads(p.read_text(encoding='utf-8')) if p.is_file() else {}
-    h=hashlib.sha256(Path(freeze).read_bytes()).hexdigest()
+    from utils.freeze import freeze_path
+    # splits passes the validated manifest dict; authorization binds the actual file.
+    actual = freeze_path(cfg) if isinstance(freeze, dict) else Path(freeze)
+    if not actual.is_file(): raise RuntimeError('TEST_RELEASE: freeze ausente')
+    if isinstance(freeze, dict) and json.loads(actual.read_text(encoding='utf-8')) != freeze:
+        raise RuntimeError('TEST_RELEASE: freeze cargado distinto del archivo')
+    h=hashlib.sha256(actual.read_bytes()).hexdigest()
     if m.get('state')!='AUTORIZADO_PERSONALMENTE' or m.get('freeze_sha256')!=h or not m.get('operator') or not m.get('evidence'):
         raise RuntimeError('PENDIENTE_USUARIO: test cerrado. Tras freeze, ejecute personalmente tools/manual_gates.py release-test y conserve evidencia.')

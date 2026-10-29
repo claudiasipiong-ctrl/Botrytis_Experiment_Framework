@@ -11,13 +11,16 @@ def receipt(path,spec,cfg,extra=None):
     from utils.config_loader import cfg_path
     from utils.splits import current_split_hash
     art=cfg_path(cfg,'paths.artifacts_dir')
-    row=dict(state='GENERADO_POR_ENTRENAMIENTO',architecture=spec.slug,path=str(path),sha256=digest(path),semantic_fingerprint=semantic_fingerprint(cfg),dataset_hash=recorded_dataset_hash(art),split_hash=current_split_hash(art,str(cfg['outer_split']['manifest_name'])),extra=extra or {})
+    from utils.experiments import fingerprint
+    row=dict(experiment_fingerprint=fingerprint(cfg),state='GENERADO_POR_ENTRENAMIENTO',architecture=spec.slug,path=str(path),sha256=digest(path),semantic_fingerprint=semantic_fingerprint(cfg),dataset_hash=recorded_dataset_hash(art),split_hash=current_split_hash(art,str(cfg['outer_split']['manifest_name'])),extra=extra or {})
     atomic_json(path.with_suffix(path.suffix+'.resume.json'),row)
 def require_checkpoint(path,spec,cfg):
     path=Path(path)
     meta=path.with_suffix(path.suffix+'.resume.json')
     if not path.is_file() or not meta.is_file():raise RuntimeError('PENDIENTE: checkpoint propio y recibo .resume.json ausentes; no inventar rutas')
     m=json.loads(meta.read_text(encoding='utf-8'))
+    from utils.experiments import fingerprint
+    if m.get('experiment_fingerprint') != fingerprint(cfg):raise RuntimeError('Checkpoint de otra ronda/configuracion/espacio HPO')
     if m.get('state')!='GENERADO_POR_ENTRENAMIENTO' or m.get('architecture')!=spec.slug or m.get('sha256')!=digest(path) or m.get('semantic_fingerprint')!=semantic_fingerprint(cfg):raise RuntimeError('Checkpoint incompatible/alterado; no se reanuda')
     from utils.dataset import recorded_dataset_hash
     from utils.config_loader import cfg_path

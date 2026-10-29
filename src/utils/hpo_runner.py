@@ -94,6 +94,22 @@ def evaluate_config(
     vram: float | None = None
     params_m = gflops = float("nan")
     for i, fold in enumerate(folds):
+        from utils.experiments import fingerprint
+        from utils.hashing import sha256_json,sha256_file
+        from utils.durable import atomic_json
+        import json,copy
+        signature=sha256_json(dict(experiment=fingerprint(cfg),architecture=spec.slug,hp=dict(hp),seed=seed,fold=fold,epochs=max_epochs,patience=patience))
+        cache=run_dir/f'fold{fold}'/'completed_fold.json'
+        cache_history=cache.with_name('completed_history.csv')
+        if cache.exists():
+            prior=json.loads(cache.read_text(encoding='utf-8'))
+            if prior['signature']!=signature or not cache_history.is_file() or sha256_file(cache_history)!=prior['history_sha256']:
+                raise MethodologyViolation('Fold previo incompatible/alterado; no se sobrescribe: '+str(cache))
+            rows.append(prior['row']);hists.append(pd.read_csv(cache_history))
+            params_m,gflops=prior['params_m'],prior['gflops']
+            vram=max([v for v in (vram,prior['vram_peak_mb']) if v is not None],default=None)
+            log('fold %d ya completo y verificado; se conserva sin entrenar',fold)
+            continue
         ctx.note_split_access("train", "hpo_trial")
         log("=== %s | fold %d (%d/%d) | seed=%d | hp=%s", spec.name, fold, i + 1, len(folds), seed, dict(hp))
         cb = make_reporter(trial, spec, max_epochs, i)
@@ -112,7 +128,15 @@ def evaluate_config(
             tr, va = load_fold_frames(manifest, cfg, fold)
             if set(va["y"].unique()) != {0,1}:
                 raise MethodologyViolation("Fold interno sin ambas clases: AP no comparable; revisar estratificacion/anotaciones antes de HPO")
-            run = train_classifier(spec, hp, cfg, tr, va, seed=seed, max_epochs=max_epochs, patience=patience, epoch_callback=cb,
+            runtime=copy.deepcopy(cfg)
+            runtime['classifier']['resume_output']=str(run_dir/f'fold{fold}'/'resume.pt')
+            runtime['classifier']['_resume_context']=dict(fold=fold,seed=seed,architecture=spec.slug)
+            checkpoint=runtime['classifier'].get('resume_checkpoint')
+            if checkpoint:
+                side=Path(checkpoint).with_suffix(Path(checkpoint).suffix+'.resume.json')
+                if json.loads(side.read_text(encoding='utf-8')).get('extra',{}).get('context',{}).get('fold')!=fold:
+                    runtime['classifier'].pop('resume_checkpoint',None)
+            run = train_classifier(spec, hp, runtime, tr, va, seed=seed, max_epochs=max_epochs, patience=patience, epoch_callback=cb,
                                    step_offset=i * width, log=log)
             ctx.record_checkpoint(f"fold{fold}_best", sha256=run.state_sha256, fold=fold, weights_discarded=True)
             m = run.metrics
@@ -136,6 +160,8 @@ def evaluate_config(
         h["validation_role"] = "inner_fold_within_outer_train"
         hists.append(h)
         rows.append(row)
+        write_csv(h,cache_history,float_format='%.12g')
+        atomic_json(cache,dict(signature=signature,row=row,history_sha256=sha256_file(cache_history),params_m=params_m,gflops=gflops,vram_peak_mb=run.vram_peak_mb))
         log("fold %d: score=%.4f best_epoch=%d epochs=%d (%.1fs)", fold, row["score"], row["best_epoch"], row["epochs_run"], row["train_seconds"])
     hist = pd.concat(hists, ignore_index=True) if hists else pd.DataFrame()
     write_csv(pd.DataFrame(rows), run_dir / "fold_metrics.csv", float_format="%.8g")

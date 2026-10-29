@@ -20,7 +20,7 @@ POSITIVE_INDEX = 1
 
 
 def build_classifier(
-    spec: ArchSpec, hp: Mapping[str, Any] | None = None, *, pretrained: bool = True, cfg: Mapping[str, Any] | None = None
+    spec: ArchSpec, hp: Mapping[str, Any] | None = None, *, pretrained: bool = True, cfg: Mapping[str, Any] | None = None, implementation_model: str | None = None
 ) -> tuple[nn.Module, dict[str, tuple[float, ...]]]:
     """Construye el modelo y devuelve ``(modelo, {'mean': ..., 'std': ...})``.
 
@@ -48,6 +48,7 @@ def build_classifier(
         if weights is not None:
             tr = weights.transforms()
             mean, std = tuple(float(v) for v in tr.mean), tuple(float(v) for v in tr.std)
+        model._botrytis_implementation_model = "resnet50"
         return model, {"mean": mean, "std": std}
     if spec.family in ("vit", "swin"):
         import timm
@@ -56,7 +57,7 @@ def build_classifier(
         if spec.family == "swin":
             kwargs["drop_path_rate"] = float(hp.get("drop_path_rate", 0.0))
         from utils.weights import entry_for
-        exact_model = entry_for(spec, cfg)["implementation_model"] if cfg else spec.weights
+        exact_model = implementation_model or (entry_for(spec, cfg)["implementation_model"] if cfg else spec.weights)
         model = timm.create_model(exact_model, pretrained=False, num_classes=1000 if source else 2, **kwargs)
         if source:
             model.load_state_dict(torch.load(source, map_location="cpu", weights_only=True), strict=True)
@@ -64,6 +65,7 @@ def build_classifier(
         pc = getattr(model, "pretrained_cfg", {}) or {}
         mean = tuple(float(v) for v in pc.get("mean", (0.485, 0.456, 0.406)))
         std = tuple(float(v) for v in pc.get("std", (0.229, 0.224, 0.225)))
+        model._botrytis_implementation_model = exact_model
         return model, {"mean": mean, "std": std}
     raise ValueError(f"{spec.name} no es un clasificador")
 
@@ -71,7 +73,7 @@ def build_classifier(
 def save_classifier(path: Any, model: nn.Module, spec: ArchSpec, hp: Mapping[str, Any], norm: Mapping[str, Any], **extra: Any) -> None:
     """Guarda un checkpoint autocontenido (pesos + hiperparametros + normalizacion)."""
     state = {k: v.detach().cpu() for k, v in model.state_dict().items()}
-    torch.save({"arch": spec.name, "state_dict": state, "hp": dict(hp), "norm": {k: list(v) for k, v in norm.items()},
+    torch.save({"arch": spec.name, "implementation_model":getattr(model,"_botrytis_implementation_model",spec.weights), "state_dict": state, "hp": dict(hp), "norm": {k: list(v) for k, v in norm.items()},
                 "image_size": 224, "classes": list(CLASS_NAMES), **extra}, path)
 
 
@@ -83,9 +85,11 @@ def load_classifier(path: Any, device: str | torch.device = "cpu") -> tuple[nn.M
     """
     from utils.architectures import get_arch
 
-    ckpt = torch.load(path, map_location="cpu", weights_only=False)
+    ckpt = torch.load(path, map_location="cpu", weights_only=True)
+    if ckpt.get("classes")!=list(CLASS_NAMES) or set(ckpt.get("norm",{}))!={"mean","std"}:raise ValueError("Checkpoint de otro contrato de clases/normalizacion")
+    if len(ckpt["norm"]["mean"])!=3 or len(ckpt["norm"]["std"])!=3 or any(float(v)<=0 for v in ckpt["norm"]["std"]):raise ValueError("Normalizacion invalida")
     spec = get_arch(ckpt["arch"])
-    model, _ = build_classifier(spec, ckpt.get("hp"), pretrained=False)
+    model, _ = build_classifier(spec, ckpt.get("hp"), pretrained=False, implementation_model=ckpt.get("implementation_model"))
     model.load_state_dict(ckpt["state_dict"])
     model.to(device).eval()
     meta = {k: v for k, v in ckpt.items() if k != "state_dict"}

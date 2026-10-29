@@ -31,7 +31,7 @@ _ENV_NON_HW = ("git_commit", "code_hash", "dataset_hash", "split_hash")
 def add_arch_arguments(parser: argparse.ArgumentParser, *, required: bool = True) -> None:
     """``--architecture`` (nombre o slug) y ``--skip-env-check``."""
     parser.add_argument("--architecture", "-a", required=required, default=None,
-                        help="YOLOv8n|YOLOv8m|YOLOv8l|YOLO26n|YOLO26s|YOLO26l|RT-DETR-R50|ResNet50|ViT-B/16|Swin-Tiny (o el slug)")
+                        help="YOLOv8n|YOLOv8l|YOLO26l|RT-DETR-R50|ResNet50|ViT-B/16|Swin-Tiny (o el slug)")
     parser.add_argument("--skip-env-check", action="store_true", help="no comparar el entorno con la referencia (solo desarrollo; queda WARNING)")
 
 
@@ -78,6 +78,14 @@ def preflight_training(ctx: RunContext, args: argparse.Namespace, *, with_folds:
         ``PreparedData`` con dataset validado, split y (opcionalmente) folds verificados.
     """
     cfg = ctx.cfg
+    from utils.experiments import verify_round
+    if is_official(cfg):
+        verify_round(cfg, architecture=get_arch(args.architecture).slug)
+        from utils.reproducibility import get_git_info
+        if get_git_info(Path(__file__).resolve().parents[2]).get('dirty'):
+            raise MethodologyViolation('Codigo con cambios locales: fije un commit aprobado antes de entrenar')
+        if not cfg['dataset'].get('enforce_expected_count'):
+            raise MethodologyViolation('Inventario oficial sin conteo conciliado/verificacion obligatoria')
     assert_equal_hpo_budget(cfg, declared_override=not is_official(cfg))
     assert_same_pretrained_policy(cfg)
     assert_image_size_fixed(cfg)
@@ -98,6 +106,8 @@ def preflight_training(ctx: RunContext, args: argparse.Namespace, *, with_folds:
     detection_images_table(cfg)
     load_crop_manifest(cfg)
     check_environment_matches_reference(ctx, strict=not bool(getattr(args, "skip_env_check", False)))
+    from utils.experiments import stage_job
+    stage_job(ctx,args)
     return data
 
 

@@ -66,6 +66,10 @@ def hashes(cfg):
         result[key] = read_checksum_file(p) if p.is_file() else None
     p = art / "fleet_mapping.json"
     result["fleet_hash"] = sha256_json(_json(p)) if p.is_file() else None
+    exp=cfg.get('experiment',{})
+    if exp.get('round_id'):
+        from utils.experiments import fingerprint
+        result['experiment_fingerprint']=fingerprint(cfg)
     return result
 
 def require_hashes(h):
@@ -151,6 +155,10 @@ def publish_architecture(cfg, pc_id, slug, runs_dir, *, stage, complete=True):
             if p.is_file() and not p.is_symlink() and p.suffix.lower() in {".json", ".jsonl", ".csv", ".yaml", ".log", ".txt", ".svg", ".pdf", ".png", ".html"}:
                 if "__pycache__" not in p.parts:
                     members.append((p, "runs/" + p.relative_to(runs_dir).as_posix(), False))
+            elif p.is_file() and not p.is_symlink() and p.suffix.lower() in {'.pt','.pth'}:
+                side=p.with_suffix(p.suffix+'.resume.json')
+                if side.is_file() and _json(side).get('sha256')==sha256_file(p):
+                    members.append((p, 'runs/'+p.relative_to(runs_dir).as_posix(),False))
     for directory in ("best_configs", "outer_validation", "inference_thresholds"):
         for p in sorted((art / directory).glob(slug + "*")):
             if p.is_file() and p.suffix in {".json", ".csv"}:
@@ -260,7 +268,7 @@ def pack_results(cfg, out, pc_id, runs_dir, *, with_checkpoints=True, deadline_a
                 raise RuntimeError(f"Publicacion incompatible: {slug}; no se mezclan experimentos")
             receipts.append({k: v for k, v in receipt.items() if k != "files"})
             for entry in receipt["files"]:
-                if not with_checkpoints and entry["path"].endswith(".pt"):
+                if not with_checkpoints and Path(entry["path"]).suffix in {".pt",".pth",".onnx"}:
                     continue
                 entries[entry["path"]] = entry
         # Evidencia de cola consistente (dos SELECT dentro de una transaccion); no se importa como autoridad.
@@ -338,6 +346,17 @@ def verify_zip(zip_path, *, require_sidecar=True):
                     h.update(chunk)
             if h.hexdigest() != e["sha256"]:
                 raise ValueError(f"SHA-256 distinto: {e['path']}")
+        by_name={e['path']:e for e in entries}
+        for e in entries:
+            name=e['path']
+            if Path(name).suffix not in {'.pt','.pth'}:continue
+            receipt = (str(Path(name).with_name('final_meta.json')).replace('\\','/')
+                       if name.startswith('artifacts/checkpoints/') else name+'.resume.json')
+            if receipt not in by_name or by_name[receipt]['size']>16<<20:
+                raise ValueError('Checkpoint sin recibo completo: '+name)
+            metadata=json.loads(z.read(receipt))
+            if metadata.get('sha256')!=e['sha256']:
+                raise ValueError('Checkpoint distinto de su recibo: '+name)
     return man
 
 def _target(cfg, arc, runs_dir):
@@ -372,7 +391,7 @@ def _authorized(cfg, man, arc):
         if pc != owner:
             continue
         if arc.startswith("runs/" + slug + "/"):
-            return Path(arc).suffix in {".json", ".jsonl", ".csv", ".yaml", ".log", ".txt", ".svg", ".pdf", ".png", ".html"}
+            return Path(arc).suffix in {".json", ".jsonl", ".csv", ".yaml", ".log", ".txt", ".svg", ".pdf", ".png", ".html", ".pt", ".pth"}
         if arc.startswith("artifacts/checkpoints/" + slug + "/"):
             return arc.rsplit("/", 1)[-1] in {"final.pt", "final_meta.json"}
         for directory in ("best_configs", "outer_validation", "inference_thresholds"):

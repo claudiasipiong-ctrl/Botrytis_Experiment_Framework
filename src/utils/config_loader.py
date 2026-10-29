@@ -284,6 +284,7 @@ _OFFICIAL_EXPECTATIONS: dict[str, tuple[Any, str]] = {
     "classifier.batch_size": (32, "sec. 14.2: batch 32"),
     "detector.trials_per_architecture": (15, "sec. 12.1: 15 trials por detector"),
     "classifier.trials_per_architecture": (20, "sec. 12.2: 20 trials por clasificador"),
+    "reproducibility.seed": (42, "seed global predeclarada"),
     "outer_split.seed": (67, "split predeclarado distinto de semillas de robustez"),
     "inner_hpo.folds": (3, "tres folds internos"),
     "detector.precision": ("fp16", "sec. 14: precision fp16"),
@@ -342,6 +343,15 @@ def validate_fixed_decisions(cfg: Mapping[str, Any]) -> None:
         errors.append("detector/classifier.pretrained deben coincidir con initialization.mode")
     if mode == "scratch" and not str(init.get("scratch_decision") or "").strip():
         errors.append("Scratch requiere initialization.scratch_decision predeclarada; experimento separado")
+    if str(get_nested(cfg,'project.profile'))=='official':
+        if any(cfg.get(section,{}).get('oom_fallback') for section in ('detector','classifier')) and not cfg.get('compute',{}).get('microbatch_qa_evidence'):
+            errors.append('microbatch: OOM fallback requiere evidencia QA predeclarada; puede cambiar BatchNorm y acumulacion')
+    from utils.architectures import archs
+    for task,section in [('detection','detector'),('classification','classifier')]:
+        actual=cfg.get(section,{}).get('architectures',[])
+        expected={a.name for a in archs(task)}
+        if set(actual)!=expected:
+            errors.append(section+'.architectures: registro activo obligatorio '+str(sorted(expected)))
     if errors:
         raise FixedDecisionViolation(
             "Se alteraron decisiones FIJAS de la metodologia:\n  - " + "\n  - ".join(errors)

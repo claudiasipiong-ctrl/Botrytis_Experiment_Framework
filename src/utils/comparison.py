@@ -10,7 +10,7 @@ from utils.io import read_json
 
 def protocol(cfg):
     return {"detector": cfg["detector"], "classifier": cfg["classifier"],
-            "comparison_classifier_threshold": .5, "test_use": "descriptive_only_no_reselection"}
+            "source_rounds":cfg.get("experiment",{}).get("cohort"), "comparison_classifier_threshold": .5, "test_use": "descriptive_only_no_reselection"}
 
 
 def freeze_candidates(cfg, hashes):
@@ -44,6 +44,8 @@ def freeze_candidates(cfg, hashes):
             raise MethodologyViolation(f"Configuracion distinta a la validada: {spec.name}")
         candidates.append({"architecture": spec.name, "slug": spec.slug, "task": spec.task, "checkpoint": str(ck), "checkpoint_sha256": sha256_file(ck),
                            "validation_file": str(val), "validation_sha256": sha256_file(val), "best": best})
+    if cfg['project']['profile']=='official' and len(candidates)!=len(archs()):
+        raise MethodologyViolation('Freeze oficial exige los siete candidatos completos; RT-DETR bloqueado impide cerrar comparacion oficial')
     if not candidates:
         raise MethodologyViolation("No hay candidatos validados para sellar")
     derived = {task: sha256_file(cfg_path(cfg, f"paths.{task}_dir") / "content_integrity.json") for task in ("detection", "classification")}

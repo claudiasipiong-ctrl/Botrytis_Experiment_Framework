@@ -49,6 +49,8 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
 def main(ctx: RunContext, args: argparse.Namespace) -> None:
     """Elige el clasificador aplicando la politica de seleccion predeclarada."""
     cfg, log = ctx.cfg, ctx.logger
+    if cfg['project']['profile']=='official' and args.allow_partial:
+        raise MethodologyViolation('--allow-partial no esta permitido en seleccion oficial')
     prepare_for_inference(ctx, args)
     guard_not_frozen(ctx, "13_select_classifier")
     policy_path, policy_sha = materialize_policy(cfg)

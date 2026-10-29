@@ -151,79 +151,69 @@ def test_audit_flags_identical_images_across_splits(ws60: Workspace, cfg60: dict
 
 
 # ---------------------------------------------- sync ------------------------------------------- #
-def test_base_zip_roundtrip_detects_corruption_and_bad_hashes(ws60: Workspace, cfg60: dict, tmp_path: Path) -> None:
-    out = tmp_path / "sync_001_base.zip"
-    man = pack_base(cfg60, out)
-    assert out.is_file() and out.with_suffix(".zip.sha256").is_file() and man["kind"] == "base"
-    names = set(zipfile.ZipFile(out).namelist())
-    assert "manifest.json" in names and "hashes/hashes.json" in names and "artifacts/split_manifest.csv" in names and "configs/default.yaml" in names
-    assert not any(n.startswith(("runs/", "data/detection", "data/classification")) for n in names)        # sin derivados ni checkpoints
-    assert sum(1 for n in names if n.startswith("dataset/images/")) == 60
-    assert verify_zip(out)["n_files"] == man["n_files"]
-    bad = tmp_path / "bad.zip"
-    data = bytearray(out.read_bytes())
-    data[len(data) // 2] ^= 0xFF
-    bad.write_bytes(bytes(data))
-    shutil.copy(out.with_suffix(".zip.sha256"), bad.with_suffix(".zip.sha256"))
-    with pytest.raises(MethodologyViolation):
-        verify_zip(bad)
+def test_base_zip_roundtrip_detects_corruption_and_bad_hashes(ws60, cfg60, tmp_path):
+    out=tmp_path/'base.zip'
+    man=pack_base(cfg60,out)
+    assert man['kind']=='base'
+    names=set(zipfile.ZipFile(out).namelist())
+    assert 'artifacts/split_manifest.csv' in names and 'artifacts/fleet_mapping.json' in names
+    assert not any(n.startswith(('runs/','dataset/','data/')) for n in names)
+    assert verify_zip(out)['n_files']==man['n_files']
+    bad=tmp_path/'bad.zip';data=bytearray(out.read_bytes());data[len(data)//2]^=0xff;bad.write_bytes(data)
+    shutil.copy(out.with_suffix('.zip.sha256'),bad.with_suffix('.zip.sha256'))
+    with pytest.raises(ValueError):verify_zip(bad)
 
 
-def test_base_zip_bootstraps_a_fresh_pc_and_results_zip_never_carries_the_queue_db(ws60: Workspace, cfg60: dict, tmp_path: Path) -> None:
-    from orchestration.sync import pack_results
+def test_base_requires_local_validated_dataset_and_preserves_queue_authority(ws60,cfg60,tmp_path,monkeypatch):
+    import copy
+    from orchestration import exchange as ex
     from orchestration.study_queue import StudyQueue
-    from utils.config_loader import load_config
+    from utils.config_loader import cfg_path
+    src=cfg60;out=tmp_path/'base.zip';pack_base(src,out)
+    fresh=tmp_path/'pc02';dst=copy.deepcopy(src)
+    dst['paths'].update(artifacts_dir=str(fresh/'art'),queue_dir=str(fresh/'art/queue'),environments_dir=str(fresh/'art/environments'))
+    # Raw/derived fixture bytes already exist locally. Base ZIP never transports images.
+    art=cfg_path(dst,'paths.artifacts_dir');art.mkdir(parents=True)
+    for name in ['dataset_validation.json','fleet_mapping.json']:
+        shutil.copy(ws60.artifacts/name,art/name)
+    monkeypatch.setattr(ex,'read_binding',lambda c:{'pc_id':'PC-02','machine_id':'i21314'})
+    with pytest.raises(ValueError,match='--force'):ex.unpack(dst,out,fresh,runs_dir=fresh/'runs',force=True)
+    result=ex.unpack(dst,out,fresh,runs_dir=fresh/'runs')
+    assert result['kind']=='base' and (art/'split_manifest.csv').read_bytes()==(ws60.artifacts/'split_manifest.csv').read_bytes()
+    q=StudyQueue.from_cfg(src);q.plan(src)
+    monkeypatch.setattr(ex,'read_binding',lambda c:{'pc_id':'PC-01','machine_id':'i21315'})
+    result=ex.pack_results(src,tmp_path/'results.zip','PC-01',ws60.runs,with_checkpoints=False)
+    assert any(e['path']=='evidence/PC-01/queue.json' for e in result['files'])
+    assert not any('queue.sqlite' in e['path'] for e in result['files'])
 
-    out = tmp_path / "base.zip"
-    pack_base(cfg60, out)
-    fresh = tmp_path / "pc02"
-    cfg2 = load_config(None, [f"paths.artifacts_dir={fresh / 'art'}", f"paths.raw_images_dir={fresh / 'raw' / 'images'}", f"paths.raw_labels_dir={fresh / 'raw' / 'labels'}",
-                              f"paths.queue_dir={fresh / 'art' / 'queue'}", f"paths.environments_dir={fresh / 'art' / 'environments'}"])
-    res = unpack(cfg2, out, fresh, runs_dir=fresh / "runs", force=True)
-    assert res["kind"] == "base" and len(list((fresh / "raw" / "images").glob("*.jpg"))) == 60 and len(list((fresh / "raw" / "labels").glob("*.txt"))) == 60
-    assert (fresh / "art" / "split_manifest.csv").is_file() and (fresh / "art" / "environments" / "environment_reference.json").is_file()
-    # el ZIP de resultados lleva el estado JSON de la cola, NUNCA queue.sqlite (pisaria la cola local de otra PC)
-    q = StudyQueue.from_cfg(cfg60)
-    q.plan(cfg60)
-    man = pack_results(cfg60, tmp_path / "res.zip", "PC-01", tmp_path / "runs_x", with_checkpoints=False)
-    paths = [e["path"] for e in man["files"]]
-    assert any(p.endswith("state_pc01.json") for p in paths) and not any("queue.sqlite" in p for p in paths)
 
-
-def test_results_zip_rejects_other_dataset_and_merges_identical_files(ws60: Workspace, cfg60: dict, tmp_path: Path) -> None:
+def test_results_zip_rejects_other_dataset_and_imports_idempotently(ws60,cfg60,tmp_path,monkeypatch):
     import json
-
-    from orchestration.sync import pack_results
-
-    runs = tmp_path / "runs_a"
-    (runs / "yolov8n" / "baseline").mkdir(parents=True)
-    (runs / "yolov8n" / "baseline" / "metrics.json").write_text(json.dumps({"x": 1}))
-    out = tmp_path / "sync_results.zip"
-    man = pack_results(cfg60, out, "PC-02", runs, with_checkpoints=False)
-    assert man["kind"] == "results" and any(e["path"] == "runs/yolov8n/baseline/metrics.json" for e in man["files"])
-    dest_runs = tmp_path / "runs_b"
-    res = unpack(cfg60, out, tmp_path, runs_dir=dest_runs, force=False)
-    assert (dest_runs / "yolov8n" / "baseline" / "metrics.json").is_file() and res["kind"] == "results"
-    assert unpack(cfg60, out, tmp_path, runs_dir=dest_runs, force=False)["copied"] == 0            # idempotente
-    from utils.config_loader import PROJECT_ROOT
-
-    assert not list((PROJECT_ROOT / "reports" / "figures").glob("*.png"))                          # nunca escribe en el proyecto, solo en las rutas de la config
-    # un ZIP de OTRO dataset/split se rechaza
-    tampered = tmp_path / "other.zip"
-    with zipfile.ZipFile(out) as zin, zipfile.ZipFile(tampered, "w") as zout:
+    from orchestration import exchange as ex
+    from utils.hashing import write_checksum_file
+    runs=tmp_path/'runs_a';path=runs/'yolov8n/baseline/metrics.json';path.parent.mkdir(parents=True)
+    path.write_text(json.dumps({'fixture':'SYNTHETIC_NO_TRAINING','x':1}))
+    monkeypatch.setattr(ex,'read_binding',lambda c:{'pc_id':'PC-01','machine_id':'i21315'})
+    ex.publish_architecture(cfg60,'PC-01','yolov8n',runs,stage='baseline')
+    out=tmp_path/'results.zip';ex.pack_results(cfg60,out,'PC-01',runs,with_checkpoints=False)
+    monkeypatch.setattr(ex,'read_binding',lambda c:{'pc_id':'PC-02','machine_id':'i21314'})
+    dest=tmp_path/'runs_b';result=ex.unpack(cfg60,out,tmp_path,runs_dir=dest)
+    assert (dest/'yolov8n/baseline/metrics.json').read_bytes()==path.read_bytes()
+    assert result['queue_merge'].startswith('foreign evidence')
+    assert ex.unpack(cfg60,out,tmp_path,runs_dir=dest)['idempotent']
+    tampered=tmp_path/'other.zip'
+    with zipfile.ZipFile(out) as zin,zipfile.ZipFile(tampered,'w') as zout:
         for item in zin.infolist():
-            payload = zin.read(item.filename)
-            if item.filename == "manifest.json":
-                m = json.loads(payload)
-                m["hashes"]["dataset_hash"] = "0" * 64
-                payload = json.dumps(m).encode()
-            zout.writestr(item, payload)
-    with pytest.raises(MethodologyViolation):
-        unpack(cfg60, tampered, tmp_path, runs_dir=dest_runs, force=False)
+            payload=zin.read(item.filename)
+            if item.filename=='manifest.json':
+                m=json.loads(payload);m['hashes']['dataset_hash']='0'*64;payload=json.dumps(m).encode()
+            zout.writestr(item,payload)
+    write_checksum_file(tampered,tampered.with_suffix('.zip.sha256'))
+    with pytest.raises(ValueError,match='hashes diferentes'):ex.unpack(cfg60,tampered,tmp_path,runs_dir=dest)
 
 
-def test_detection_table_matches_the_manifest(cfg60: dict) -> None:
-    t = detection_images_table(cfg60)
-    man = pd.read_csv(Path(cfg60["paths"]["artifacts_dir"]) / "split_manifest.csv")
-    assert len(t) == len(man) == 60 and set(t["outer_split"]) == {"train", "validation", "test"}
-    assert t.loc[t["outer_split"] != "train", "inner_fold_det"].isna().all()
+def test_detection_table_matches_the_manifest(cfg60):
+    t=detection_images_table(cfg60)
+    man=pd.read_csv(Path(cfg60['paths']['artifacts_dir'])/'split_manifest.csv')
+    assert len(t)==len(man)==60 and set(t['outer_split'])=={'train','validation','test'}
+    assert t.loc[t['outer_split']!='train','inner_fold_det'].isna().all()

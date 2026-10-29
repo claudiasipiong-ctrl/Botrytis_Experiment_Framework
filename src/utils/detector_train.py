@@ -1,6 +1,6 @@
-"""Entrenamiento de los 7 detectores con Ultralytics (un fold interno o el 70 % completo).
+"""Entrenamiento de los 4 detectores con Ultralytics (un fold interno o el 70 % completo).
 
-* YOLOv8n/m/l, YOLO26n/s/l y RT-DETR-R50, detector de UNA clase (``fruit``).
+* YOLOv8n/l, YOLO26l y RT-DETR-R50, detector de UNA clase (``fruit``).
 * Hiperparametros del espacio HPO -> argumentos de Ultralytics; ``imgsz=640``, batch 16 (micro-batch) con
   ``nbs=64`` (mismo effective batch size para todas), AMP fp16, ``pretrained`` siempre.
 * Callback por epoca -> Optuna (reporte + ``MedianPruner``); el score del fold es el mejor mAP@0.5:0.95.
@@ -89,7 +89,9 @@ def _rtdetr_backbone_lr_callback(ratio: float) -> Callable[[Any], None]:
     """Callback ``on_train_start``: divide los grupos de parametros en backbone (x ratio) y resto."""
 
     def _cb(trainer: Any) -> None:
+        if not 0 < ratio <= 1: raise ValueError('backbone_lr_ratio fuera de (0,1]')
         backbone = {id(p) for n, p in trainer.model.named_parameters() if re.match(r"(module\.)?model\.[0-4]\.", n)}
+        if not backbone: raise RuntimeError('Backend RT-DETR sin backbone identificable; no entrenar con LR incorrecto')
         opt = trainer.optimizer
         old = list(opt.param_groups)
         new_groups: list[dict[str, Any]] = []
@@ -198,13 +200,18 @@ def train_detector(
             log(f"CUDA OOM: reintentando con micro-batch={micro} (effective batch {d['nominal_batch_size']} por nbs)")
 
 
-def _disable_final_validation(trainer: Any) -> None:
-    """Ultralytics can validate on final epoch even with val=False; disable both hooks.
-
-    Applied only to fixed-epoch outer training. HPO retains its usual validator.
-    """
-    trainer.validate = lambda: ({}, 0.0)
-    trainer.final_eval = lambda: None
+def fixed_epoch_trainer(spec):
+    """Explicit trainer override supported by Model.train(trainer=...), pinned backend."""
+    from ultralytics.models.yolo.detect.train import DetectionTrainer
+    from ultralytics.models.rtdetr.train import RTDETRTrainer
+    base = RTDETRTrainer if spec.family == 'rtdetr' else DetectionTrainer
+    class FixedEpochTrainer(base):
+        def validate(self):
+            return {}, 0.0
+        def final_eval(self):
+            # Last checkpoint is saved by the base trainer; no external val is opened.
+            return None
+    return FixedEpochTrainer
 
 
 def _train_once(spec: ArchSpec, hp: Mapping[str, Any], cfg: Mapping[str, Any], *, data_yaml: Path, project_dir: Path, name: str, seed: int,
@@ -221,12 +228,19 @@ def _train_once(spec: ArchSpec, hp: Mapping[str, Any], cfg: Mapping[str, Any], *
     history: list[dict[str, Any]] = []
     final: dict[str, Any] = {}
     model.add_callback("on_fit_epoch_end", lambda tr: _collect(tr, history, final, epoch_callback, step_offset, log, fixed_epochs))
-    if fixed_epochs:
-        model.add_callback("on_train_start", _disable_final_validation)
     if spec.family == "rtdetr":
         model.add_callback("on_train_start", _rtdetr_backbone_lr_callback(float(hp.get("backbone_lr_ratio", 0.1))))
     args = _train_args(spec, hp, cfg, data_yaml=data_yaml, epochs=epochs, patience=patience, seed=seed, micro_batch=micro_batch,
                        project=project_dir, name=name, fixed_epochs=fixed_epochs)
+    if fixed_epochs:
+        args['trainer'] = fixed_epoch_trainer(spec)
+    batch_contract = []
+    def record_batch(tr):
+        row = dict(epoch=int(tr.epoch), micro_batch=micro_batch,
+                   nominal_batch=int(d['nominal_batch_size']), accumulate=getattr(tr,'accumulate',None),
+                   learning_rates=[float(g['lr']) for g in tr.optimizer.param_groups])
+        if not batch_contract or row != batch_contract[-1]: batch_contract.append(row)
+    model.add_callback('on_train_batch_end',record_batch)
     reset_peak_vram()
     t0 = time.perf_counter()
     try:
@@ -243,7 +257,8 @@ def _train_once(spec: ArchSpec, hp: Mapping[str, Any], cfg: Mapping[str, Any], *
     save_dir = project_dir / name
     best_pt, last_pt = save_dir / "weights" / "best.pt", save_dir / "weights" / "last.pt"
     chosen = last_pt if fixed_epochs else (best_pt if best_pt.is_file() else last_pt)
-    w_sha = weights_sha256(str(chosen)) if chosen.is_file() else None
+    if not chosen.is_file(): raise RuntimeError('Backend no publico checkpoint final completo: '+str(chosen))
+    w_sha = weights_sha256(str(chosen))
     hist = pd.DataFrame(history)
     if fixed_epochs:  # sin validacion: el historial (perdidas por epoca) sale de results.csv
         csv = save_dir / "results.csv"
@@ -271,5 +286,5 @@ def _train_once(spec: ArchSpec, hp: Mapping[str, Any], cfg: Mapping[str, Any], *
     return DetectorRun(
         score=score, best_epoch=best_epoch, epochs_run=len(hist) if len(hist) else epochs, stopped_early=bool(len(hist) and len(hist) < epochs and not fixed_epochs),
         history=hist, final_metrics=final, train_seconds=seconds, vram_peak_mb=vram, micro_batch=micro_batch, params_m=stats["params_m"],
-        gflops=stats["gflops"], weights_path=chosen_path, weights_sha256=w_sha, pretrained_sha256=pre_sha,
+        gflops=stats["gflops"], weights_path=chosen_path, extra={"batch_contract":batch_contract}, weights_sha256=w_sha, pretrained_sha256=pre_sha,
     )

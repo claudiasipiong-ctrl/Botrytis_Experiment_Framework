@@ -35,7 +35,7 @@ SRC = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SRC))
 
 from orchestration.pc_registry import PCRegistry  # noqa: E402
-from orchestration.study_queue import COMPLETE, FAILED, KINDS, PENDING, RUNNING, Job, StudyQueue  # noqa: E402
+from orchestration.study_queue import FAILED, KINDS, PENDING, RUNNING, Job, StudyQueue  # noqa: E402
 from utils.architectures import get_arch  # noqa: E402
 from utils.config_loader import cfg_path  # noqa: E402
 from utils.dataset import recorded_dataset_hash  # noqa: E402
@@ -56,7 +56,7 @@ HEARTBEAT_SECONDS = 30.0
 def add_arguments(parser: argparse.ArgumentParser) -> None:
     """Argumentos propios del worker."""
     g = parser.add_argument_group("worker")
-    g.add_argument("--init-plan", action="store_true", help="crea los jobs baseline -> hpo de las 10 arquitecturas (idempotente)")
+    g.add_argument("--init-plan", action="store_true", help="crea baseline -> hpo solo para arquitecturas activas propias filtradas (idempotente)")
     g.add_argument("--wait", action="store_true", help="si no hay job listo pero otras PCs trabajan, espera en vez de salir")
     g.add_argument("--once", action="store_true", help="ejecuta a lo sumo un job")
     g.add_argument("--max-jobs", type=int, default=None, help="maximo de jobs a ejecutar")
@@ -102,6 +102,9 @@ def local_inputs_ready(cfg: Mapping[str, Any], job: Job, runs_base: Path) -> boo
     from utils.optuna_storage import study_db_path
 
     spec = get_arch(job.architecture)
+    from utils.weights import entry_for
+    if cfg.get('initialization',{}).get('mode') == 'pretrained' and not entry_for(spec,cfg)['compatible_pretrained']:
+        return False
     if job.kind == "repeat":
         return study_db_path(cfg, spec).is_file()
     if job.kind == "aggregate":
@@ -132,25 +135,40 @@ def _provenance(cfg: Mapping[str, Any]) -> dict[str, Any]:
 def _run_job(ctx: RunContext, queue: StudyQueue, job: Job, args: argparse.Namespace, log_dir: Path) -> int:
     """Ejecuta el job en un subproceso con latido; devuelve el codigo de salida."""
     cmd = build_command(job, ctx.pc_id, str(args.config), args.set, runs_dir=args.runs_dir)
-    log_path = log_dir / (job.job_id.replace(":", "_") + f"_a{job.attempt}.log")
+    log_path = log_dir / (job.job_id.replace(":", "_").replace("/", "_") + f"_a{job.attempt}.log")
     ctx.logger.info("job %s (intento %d) -> %s", job.job_id, job.attempt, " ".join(cmd))
     with log_path.open("w", encoding="utf-8", errors="replace") as fh:
-        proc = subprocess.Popen(cmd, stdout=fh, stderr=subprocess.STDOUT, env=_child_env())
+        env=_child_env()
+        env['BOTRYTIS_WORKER_JOB_ID']=job.job_id
+        proc = subprocess.Popen(cmd, stdout=fh, stderr=subprocess.STDOUT, env=env)
         while True:
             try:
                 rc = proc.wait(timeout=HEARTBEAT_SECONDS)
                 break
             except subprocess.TimeoutExpired:
                 queue.heartbeat(job.job_id)
+    partial = False
     if rc != 0:
         tail = "\n".join(log_path.read_text(encoding="utf-8", errors="replace").splitlines()[-25:])
         queue.finish(job.job_id, FAILED, error=f"exit code {rc}\n{tail}", log_path=str(log_path))
     else:
-        queue.finish(job.job_id, COMPLETE, log_path=str(log_path))
+        if job.kind == 'hpo':
+            from utils.optuna_storage import load_study, budget_used
+            from utils.architectures import trials_for
+            if budget_used(load_study(get_arch(job.architecture),ctx.cfg)) < trials_for(get_arch(job.architecture),ctx.cfg):
+                queue.mark_partial_block(job.job_id)
+                partial = True
+        # Computation is durable independently of publication; never report published on failure.
+        queue.computed(job.job_id, published=False)
     if rc == 0:
         from orchestration.exchange import publish_architecture
-        publish_architecture(ctx.cfg,ctx.pc_id,job.architecture,ctx.runs_base,stage=job.kind)
-    return rc
+        try:
+            publish_architecture(ctx.cfg,ctx.pc_id,job.architecture,ctx.runs_base,stage=job.kind,complete=not partial)
+        except Exception as exc:
+            ctx.logger.exception('Computo terminado, PUBLICATION_PENDING; no repetir entrenamiento: %s', exc)
+            return 4
+        queue.computed(job.job_id, published=True)
+    return 10 if partial else rc
 
 
 def _child_env() -> dict[str, str]:
@@ -162,7 +180,7 @@ def _child_env() -> dict[str, str]:
     return env
 
 
-def main(ctx: RunContext, args: argparse.Namespace) -> None:
+def _main(ctx: RunContext, args: argparse.Namespace) -> None:
     """Bucle del worker."""
     cfg, log = ctx.cfg, ctx.logger
     registry = PCRegistry(cfg)
@@ -184,8 +202,13 @@ def main(ctx: RunContext, args: argparse.Namespace) -> None:
     if args.recover_stale or args.force_recover:
         rec = queue.recover_stale(minutes=float(cfg["pc_registry"]["stale_running_minutes"]), force=args.force_recover, pc_id=ctx.pc_id)
         log.info("jobs RUNNING huerfanos recuperados: %s", rec)
+    selected = [get_arch(a) for a in args.architectures] if args.architectures is not None else [get_arch(s) for s in registry.owned_slugs(ctx.pc_id)]
+    target = cfg.get('experiment',{}).get('architecture')
+    if target: selected = [a for a in selected if a.slug == target]
+    if any(registry.owner(a.slug) != ctx.pc_id for a in selected):
+        raise RuntimeError('Arquitectura pertenece a otra PC o esta en transferencia')
     if args.init_plan:
-        log.info("jobs nuevos en el plan: %d", queue.plan(cfg))
+        log.info("jobs nuevos en el plan: %d", queue.plan(cfg, selected))
     if args.status or args.dry_run:
         table = queue.table()
         log.info("cola de trabajos:\n%s", table.to_string(index=False) if len(table) else "(vacia)")
@@ -204,10 +227,11 @@ def main(ctx: RunContext, args: argparse.Namespace) -> None:
 
     done = 0
     max_global = int(cfg["compute"]["max_gpu_jobs_global"])
+    if args.dry_run: return
     from utils.manual_gates import require_gate
     require_gate(cfg, ctx.pc_id, "READY_FOR_EXPERIMENT")
-    assigned = set(info.preferred_slugs)
-    archs_filter = [get_arch(a).slug for a in args.architectures] if args.architectures else list(info.preferred_slugs)
+    assigned = set(registry.owned_slugs(ctx.pc_id))
+    archs_filter = [a.slug for a in selected]
     if not set(archs_filter) <= assigned:
         raise RuntimeError("Arquitectura asignada a otra PC; transferencia de propiedad requiere decision manual predeclarada")
     while args.max_jobs is None or done < args.max_jobs:
@@ -229,12 +253,23 @@ def main(ctx: RunContext, args: argparse.Namespace) -> None:
             ids = top_config_ids(cfg, job.architecture)
             log.info("HPO de %s completo; top configuraciones %s -> %d jobs nuevos", job.architecture, ids,
                      queue.expand_after_hpo(cfg, get_arch(job.architecture), ids))
+        elif rc == 10:
+            log.info('Bloque HPO terminado y pendiente de revision; presupuesto total intacto')
         elif rc != 0:
             log.error("job %s FALLO (codigo %d); ver %s", job.job_id, rc, log_dir)
         queue.export_state(cfg_path(cfg, "paths.queue_dir") / f"state_{ctx.pc_id.lower().replace('-', '')}.json")
         if args.once:
             break
     ctx.log_metrics({"jobs_ejecutados": done, "queue_counts": queue.counts()})
+
+
+def main(ctx, args):
+    from utils.durable import FileLock
+    from utils.guards import gpu_lock_path
+    if args.status or args.dry_run:
+        return _main(ctx,args)
+    with FileLock(gpu_lock_path(ctx.cfg,ctx.pc_id).with_suffix('.worker.guard')):
+        return _main(ctx,args)
 
 
 if __name__ == "__main__":

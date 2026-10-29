@@ -104,8 +104,29 @@ class PCRegistry:
                 if slug in mapping:raise ValueError("Arquitectura con dos propietarios: "+slug)
                 mapping[slug]=pc
         from utils.architectures import archs
-        if set(mapping)!={a.slug for a in archs()}:raise ValueError("Reparto incompleto de las diez arquitecturas")
+        if set(mapping)!={a.slug for a in archs()}:raise ValueError("Reparto incompleto de las siete arquitecturas")
+        path = cfg_path(self.cfg, 'paths.artifacts_dir')/'ownership.json'
+        if path.is_file():
+            import json
+            for slug, row in json.loads(path.read_text(encoding='utf-8')).items():
+                if slug not in mapping or row.get('owner') not in self.pcs:
+                    raise ValueError('Ownership invalido')
+                from utils.hashing import sha256_json
+                from utils.experiments import fingerprint
+                offer=row.get('offer',{})
+                if offer.get('fingerprint')!=fingerprint(self.cfg):raise ValueError('Ownership de otra ronda/configuracion')
+                if row.get('state')=='ACTIVE':
+                    confirmation=row.get('confirmation',{})
+                    if confirmation.get('offer_sha256')!=sha256_json(offer) or confirmation.get('target')!=row['owner'] or offer.get('target')!=row['owner']:
+                        raise ValueError('Ownership activo sin confirmacion coherente')
+                elif row.get('state') not in ('OFFERED','RECEIVED_PENDING_CONFIRMATION'):
+                    raise ValueError('Estado de ownership desconocido')
+                mapping[slug] = row['owner'] if row.get('state') == 'ACTIVE' else '__TRANSFER_PENDING__'
         return mapping
 
     def owner(self,slug):
         return self.ownership()[get_arch(slug).slug]
+
+    def owned_slugs(self, pc_id):
+        self.validate(pc_id)
+        return sorted(slug for slug, owner in self.ownership().items() if owner == pc_id)

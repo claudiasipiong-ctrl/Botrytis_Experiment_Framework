@@ -89,7 +89,7 @@ def master_table(cfg: dict[str, Any], runs_dir: Path) -> pd.DataFrame:
 
 
 def collect_hpo_tables(cfg: dict[str, Any], runs_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """``(todos los trials HPO, resumen de robustez)`` de las 10 arquitecturas."""
+    """``(todos los trials HPO, resumen de robustez)`` de las 7 arquitecturas."""
     trials, rob = [], []
     for spec in archs():
         p = runs_dir / spec.slug / "hpo" / "trials.csv"

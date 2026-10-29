@@ -51,9 +51,9 @@ class ConfigAndMetricsTests(unittest.TestCase):
     def test_config_contract(self):
         from utils.config_loader import load_config
         c=load_config();self.assertEqual(c['outer_split']['seed'],67);self.assertEqual(c['inner_hpo']['folds'],3);self.assertEqual(c['robustness']['seeds'],[17,42,73]);self.assertEqual(c['classifier']['objective'],'average_precision_positive')
-    def test_ten_models(self):
+    def test_seven_models(self):
         from utils.architectures import archs
-        self.assertEqual(len(archs('detection')),7);self.assertEqual(len(archs('classification')),3)
+        self.assertEqual(len(archs('detection')),4);self.assertEqual(len(archs('classification')),3)
         from utils.weights import registry
         self.assertEqual({s.slug for s in archs()},{r['slug'] for r in registry()['models']})
     def test_r50_block(self):
@@ -86,7 +86,7 @@ class ConfigAndMetricsTests(unittest.TestCase):
     def test_owner_mapping(self):
         from orchestration.pc_registry import PCRegistry
         from utils.config_loader import load_config
-        r=PCRegistry(load_config());self.assertEqual(len(r.ownership()),10);self.assertEqual(r.owner("yolo26s"),"PC-01");self.assertEqual(r.owner("rtdetr_r50"),"PC-03")
+        r=PCRegistry(load_config());self.assertEqual(len(r.ownership()),7);self.assertEqual(r.owner("yolov8l"),"PC-01");self.assertEqual(r.owner("rtdetr_r50"),"PC-03")
 class LoggingTests(unittest.TestCase):
     def test_redaction(self):
         from utils.bootstrap import redact

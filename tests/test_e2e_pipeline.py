@@ -81,7 +81,7 @@ def test_classification_manifest_matches_independent_pairing(pipeline_ws: Worksp
     assert (merged["label"] == merged["label_truth"]).all()
     assert set(man["label"]) == {"con_signos", "sin_signos"}
     # manifiesto duplicado en data/classification identico byte a byte
-    assert (pipeline_ws.data / "classification" / "manifest.csv").read_bytes() == (pipeline_ws.artifacts / "classification_manifest.csv").read_bytes()
+    assert (pipeline_ws.data / "derived_v4" / "classification" / "manifest.csv").read_bytes() == (pipeline_ws.artifacts / "classification_manifest.csv").read_bytes()
 
 
 def test_no_leakage_between_splits_and_folds(pipeline_ws: Workspace) -> None:
@@ -91,12 +91,12 @@ def test_no_leakage_between_splits_and_folds(pipeline_ws: Workspace) -> None:
     # cada crop existe en disco dentro de su split/clase
     for p, split, label in zip(crops["crop_path"], crops["outer_split"], crops["label"]):
         assert p.startswith(f"{split}/{label}/")
-        assert (pipeline_ws.data / "classification" / p).is_file()
+        assert (pipeline_ws.data / "derived_v4" / "classification" / p).is_file()
     # ninguna imagen fuente aparece en dos splits (en disco)
     seen: dict[str, str] = {}
-    for f in (pipeline_ws.data / "classification").rglob("*.png"):
+    for f in (pipeline_ws.data / "derived_v4" / "classification").rglob("*.png"):
         image_id = f.name.split("__f")[0]
-        split = f.relative_to(pipeline_ws.data / "classification").parts[0]
+        split = f.relative_to(pipeline_ws.data / "derived_v4" / "classification").parts[0]
         assert seen.setdefault(image_id, split) == split
     # folds: solo train, mismo fold por imagen, y en val/test vacio
     assert crops.loc[crops["outer_split"] != "train", "inner_fold"].isna().all()
@@ -114,7 +114,7 @@ def test_no_leakage_between_splits_and_folds(pipeline_ws: Workspace) -> None:
 
 
 def test_detection_dataset_is_single_class_fruit_only(pipeline_ws: Workspace) -> None:
-    det = pipeline_ws.data / "detection"
+    det = pipeline_ws.data / "derived_v4" / "detection"
     n_boxes = 0
     for lab in (det / "labels").rglob("*.txt"):
         for line in lab.read_text().splitlines():
@@ -165,7 +165,7 @@ def test_rerunning_02_is_idempotent_and_seed_change_is_refused(pipeline_ws: Work
     res = pipeline_ws.run("02_create_outer_split", "--set", "outer_split.seed=999")
     assert res.returncode == 1 and csv.read_bytes() == before
     meta = read_json(pipeline_ws.last_run("02_create_outer_split") / "metadata.json")
-    assert meta["status"] == "FAILED" and meta["error"]["type"] == "DatasetNotValidatedError"
+    assert meta["status"] == "FAILED" and meta["error"]["type"] == "FixedDecisionViolation"
 
 
 def test_tampered_manifest_blocks_downstream(pipeline_ws: Workspace, tmp_path: Path) -> None:

@@ -122,6 +122,9 @@ def ws60(tmp_path_factory: pytest.TempPathFactory) -> Workspace:
                           ("03_create_inner_folds", []), ("04_build_detection_dataset", []), ("05_build_classification_crops", [])):
         res = ws.run(script, *extra)
         assert res.returncode == 0, f"{script}:\n{res.stdout[-2500:]}\n{res.stderr[-1500:]}"
+    # Synthetic fleet metadata, not a binding or approval of physical machines.
+    shutil_source=ROOT/'configs/fleet_mapping.json'
+    (ws.artifacts/'fleet_mapping.json').write_bytes(shutil_source.read_bytes())
     return ws
 
 
@@ -129,3 +132,10 @@ def ws60(tmp_path_factory: pytest.TempPathFactory) -> Workspace:
 def cfg60(ws60: Workspace) -> dict:
     sets = [a for a in ws60.args() if "=" in a and not a.startswith("--")]
     return load_config(None, sets + ["dataset.enforce_expected_count=false"])
+
+
+@pytest.fixture(autouse=True)
+def release_test_figures():
+    yield
+    import matplotlib.pyplot as plt
+    plt.close('all')

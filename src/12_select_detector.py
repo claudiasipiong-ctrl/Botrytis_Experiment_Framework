@@ -1,7 +1,7 @@
 """12 - Seleccion del detector (Especificacion s2, sec. 22.1, 22.3).
 
 Aplica ``selection_policy.yaml`` (materializada en ``artifacts/selection_policy.yaml`` y ya inmutable) a las
-7 evaluaciones de validation externo: maximiza mAP@0.5:0.95 (sujeto a ``minimum_recall`` si se declaro) y
+4 evaluaciones de validation externo: maximiza mAP@0.5:0.95 (sujeto a ``minimum_recall`` si se declaro) y
 resuelve empates con los ``tie_breakers`` declarados (recall, luego GFLOPs). Solo usa validation externo;
 no mira el test. Genera las figuras de comparacion de detectores y ``artifacts/selected_detector.json``.
 
@@ -41,13 +41,15 @@ SCRIPT = "12_select_detector"
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
     """Argumentos propios del script."""
-    parser.add_argument("--allow-partial", action="store_true", help="permite seleccionar con menos de 7 detectores evaluados (solo pruebas)")
+    parser.add_argument("--allow-partial", action="store_true", help="permite seleccionar con menos de 4 detectores evaluados (solo pruebas)")
     parser.add_argument("--skip-env-check", action="store_true", help="no comparar el entorno con la referencia")
 
 
 def main(ctx: RunContext, args: argparse.Namespace) -> None:
     """Elige el detector aplicando la politica de seleccion predeclarada."""
     cfg, log = ctx.cfg, ctx.logger
+    if cfg['project']['profile']=='official' and args.allow_partial:
+        raise MethodologyViolation('--allow-partial no esta permitido en seleccion oficial')
     prepare_for_inference(ctx, args)
     guard_not_frozen(ctx, "12_select_detector")
     policy_path, policy_sha = materialize_policy(cfg)
@@ -57,7 +59,7 @@ def main(ctx: RunContext, args: argparse.Namespace) -> None:
     expected = [a.name for a in archs("detection")]
     missing = [a for a in expected if a not in set(df.get("architecture", []))]
     if missing and not args.allow_partial:
-        raise MethodologyViolation(f"Faltan detectores evaluados (10/11): {missing}. Se seleccionan entre los 7 en conjunto (sec. 20).")
+        raise MethodologyViolation(f"Faltan detectores evaluados (10/11): {missing}. Se seleccionan entre los 4 en conjunto (sec. 20).")
     if "recall" not in df or df["recall"].isna().all():
         raise MethodologyViolation("Faltan los umbrales afinados (11_tune_inference_thresholds.py) de los detectores")
     ranked, winner = rank_candidates(df, primary=str(pol["primary_metric"]), min_recall=pol.get("minimum_recall"), recall_col="recall",

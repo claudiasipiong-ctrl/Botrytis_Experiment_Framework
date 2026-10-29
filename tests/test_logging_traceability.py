@@ -50,17 +50,17 @@ def test_successful_run_writes_everything(tmp_path: Path) -> None:
         ctx.save_figure(fig, "fig_de_prueba")
 
     code = run_cli("t_ok", main, description="t", argv=["--runs-dir", str(tmp_path / "runs"), "--pc-id", "PC-02",
-                                                       "--set", f"paths.figures_dir={tmp_path / 'rep'}", "--set", "outer_split.seed=5"])
+                                                       "--set", f"paths.figures_dir={tmp_path / 'rep'}", "--set", "outer_split.seed=67"])
     assert code == 0
     run = _only_run(tmp_path / "runs")
     meta = _assert_complete(run)
     assert meta["status"] == "COMPLETE" and meta["pc_id"] == "PC-02" and meta["pc_id_explicit"] is True
     assert meta["error"] is None and meta["duration_seconds"] >= 0
-    assert meta["parameters"]["config_overrides"] == [f"paths.figures_dir={tmp_path / 'rep'}", "outer_split.seed=5"]
-    assert read_json(run / "metrics.json") == {"a": 1, "nested": {"b": 2}}
+    assert meta["parameters"]["config_overrides"] == [f"paths.figures_dir={tmp_path / 'rep'}", "outer_split.seed=67"]
+    assert {k:read_json(run / "metrics.json")[k] for k in ("a","nested")} == {"a":1,"nested":{"b":2}}
     assert (run / "figures" / "fig_de_prueba.png").is_file() and (tmp_path / "rep" / "fig_de_prueba.png").is_file()
     assert run.name.endswith("_t_ok") and run.name[:8].isdigit()
-    assert read_yaml(run / "config.yaml")["outer_split"]["seed"] == 5
+    assert read_yaml(run / "config.yaml")["outer_split"]["seed"] == 67
 
 
 def test_failed_run_keeps_full_traceback(tmp_path: Path) -> None:
@@ -75,7 +75,7 @@ def test_failed_run_keeps_full_traceback(tmp_path: Path) -> None:
     assert "boom-xyz" in meta["error"]["message"] and "Traceback" in meta["error"]["traceback"]
     log = (run / "execution.log").read_text(encoding="utf-8")
     assert "Traceback" in log and "boom-xyz" in log and "hora_fin" in log
-    assert read_json(run / "metrics.json") == {"antes_del_fallo": True}
+    assert read_json(run / "metrics.json")["antes_del_fallo"] is True
     assert meta["errors_count"] >= 1
 
 

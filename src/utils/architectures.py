@@ -1,4 +1,4 @@
-"""Registro de las 10 arquitecturas (7 detectores + 3 clasificadores) y nombres de estudio.
+"""Registro de las 7 arquitecturas (4 detectores + 3 clasificadores) y nombres de estudio.
 
 Un estudio Optuna POR ARQUITECTURA (sec. 10.4): nunca un ``study_global``. El nombre del estudio es
 ``<prefijo>_<slug>`` (``botrytis_yolov8n``...; sec. 17.2).
@@ -39,7 +39,7 @@ class ArchSpec:
 
     @property
     def is_detector(self) -> bool:
-        """``True`` para los 7 detectores."""
+        """``True`` para los 4 detectores."""
         return self.task == DETECTION
 
     @property
@@ -50,10 +50,7 @@ class ArchSpec:
 
 ARCHITECTURES: tuple[ArchSpec, ...] = (
     ArchSpec("YOLOv8n", "yolov8n", DETECTION, "yolov8", "yolov8n.pt", "yolov8"),
-    ArchSpec("YOLOv8m", "yolov8m", DETECTION, "yolov8", "yolov8m.pt", "yolov8"),
     ArchSpec("YOLOv8l", "yolov8l", DETECTION, "yolov8", "yolov8l.pt", "yolov8"),
-    ArchSpec("YOLO26n", "yolo26n", DETECTION, "yolo26", "yolo26n.pt", "yolo26"),
-    ArchSpec("YOLO26s", "yolo26s", DETECTION, "yolo26", "yolo26s.pt", "yolo26"),
     ArchSpec("YOLO26l", "yolo26l", DETECTION, "yolo26", "yolo26l.pt", "yolo26"),
     ArchSpec("RT-DETR-R50", "rtdetr_r50", DETECTION, "rtdetr", "rtdetr-resnet50", "rtdetr"),
     ArchSpec("ResNet50", "resnet50", CLASSIFICATION, "resnet50", "resnet50", "resnet50"),
@@ -75,7 +72,7 @@ def get_arch(name: str) -> ArchSpec:
     """Devuelve la :class:`ArchSpec` por nombre o slug (insensible a mayusculas/guiones).
 
     Raises:
-        UnknownArchitecture: Si no pertenece a las 10 arquitecturas de la metodologia.
+        UnknownArchitecture: Si no pertenece a las 7 arquitecturas de la metodologia.
     """
     key = str(name).strip()
     spec = _BY_KEY.get(key) or _BY_KEY.get(key.lower()) or _BY_KEY.get(key.lower().replace("/", "_").replace("-", "_"))

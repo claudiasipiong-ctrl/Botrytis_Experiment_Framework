@@ -106,25 +106,25 @@ class CropDataset(Dataset):
     def __init__(self, df: pd.DataFrame, root: Path, transform: Callable[[Image.Image], torch.Tensor]) -> None:
         self.df = df.reset_index(drop=True)
         self.transform = transform
-        self.images: list[Image.Image] = []
-        for rel in self.df["crop_path"]:
-            with Image.open(root / rel) as im:
-                self.images.append(im.convert("RGB").copy())
+        # Keep paths only: Windows spawn must not pickle a decoded PIL cache per worker.
+        self.paths = [root / rel for rel in self.df['crop_path']]
         self.y = self.df["y"].to_numpy(dtype=np.int64)
 
     def __len__(self) -> int:
         return len(self.df)
 
     def __getitem__(self, i: int) -> tuple[torch.Tensor, int, int]:
-        return self.transform(self.images[i]), int(self.y[i]), i
+        with Image.open(self.paths[i]) as source:
+            image = source.convert('RGB')
+            return self.transform(image), int(self.y[i]), i
 
 
-def make_loader(ds: Dataset, *, batch_size: int, shuffle: bool, seed: int, workers: int, drop_last: bool = False) -> DataLoader:
+def make_loader(ds: Dataset, *, batch_size: int, shuffle: bool, seed: int, workers: int, drop_last: bool = False, persistent_workers: bool = True) -> DataLoader:
     """``DataLoader`` reproducible (generador y ``worker_init_fn`` sembrados)."""
     return DataLoader(
         ds, batch_size=batch_size, shuffle=shuffle, num_workers=workers, drop_last=drop_last,
         generator=make_torch_generator(seed), worker_init_fn=seed_worker if workers > 0 else None,
-        persistent_workers=workers > 0, pin_memory=torch.cuda.is_available(),
+        persistent_workers=bool(persistent_workers and workers > 0), pin_memory=torch.cuda.is_available(),
     )
 
 

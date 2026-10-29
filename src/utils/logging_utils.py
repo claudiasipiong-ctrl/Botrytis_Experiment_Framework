@@ -163,7 +163,8 @@ class RunContext:
         self.cli_args: dict[str, Any] = dict(cli_args or {})
         self.argv: list[str] = list(argv if argv is not None else sys.argv)
         self.metrics: dict[str, Any] = {}
-        self.extra_metadata: dict[str, Any] = {}
+        from utils.experiments import identity
+        self.extra_metadata: dict[str, Any] = {'experiment': cfg.get('experiment',{}), 'experiment_identity': identity(cfg) if 'classes' in cfg and cfg.get('paths',{}).get('artifacts_dir') else {'state':'CONFIGURATION_INCOMPLETE'}}
         self.artifacts: list[dict[str, str]] = []
         self.checkpoints: list[dict[str, Any]] = []
         self.checkpoint_extra: dict[str, Any] = {}
@@ -191,12 +192,13 @@ class RunContext:
         self._run_lock = FileLock(self.run_dir / ".execution.lock")
         self._run_lock.__enter__()
         # Reusing a stable artifact location preserves immutable snapshots of all previous evidence.
-        old_files = [p for p in self.run_dir.iterdir() if p.is_file() and p.name != ".execution.lock"]
+        old_files = [p for p in self.run_dir.iterdir() if p.name not in (".execution.lock", "previous_attempts")]
         if old_files:
             import shutil
             previous = ensure_dir(self.run_dir / "previous_attempts" / self.execution_uuid)
             for p in old_files:
-                shutil.copy2(p, previous / p.name)
+                if p.is_dir(): shutil.copytree(p, previous / p.name)
+                else: shutil.copy2(p, previous / p.name)
         self.figures_dir = ensure_dir(self.run_dir / "figures")
         for sub in get_nested(self.cfg, "logging.run_subdirs", default=[]) or []:
             ensure_dir(self.run_dir / str(sub))
@@ -434,14 +436,15 @@ class RunContext:
 
         fmts = list(get_nested(self.cfg, "figures.formats", default=["png"]))
         dpi = int(get_nested(self.cfg, "figures.dpi", default=200))
-        paths = save_figure(fig, self.figures_dir, name, formats=fmts, dpi=dpi, close=False)
-        to_reports = get_nested(self.cfg, "figures.also_save_to_reports", default=True) if copy_to_reports is None else copy_to_reports
-        if to_reports:
-            rep = resolve_path(get_nested(self.cfg, "paths.figures_dir", default="reports/figures"))
-            paths += save_figure(fig, rep, name, formats=fmts, dpi=dpi, close=False)
         import matplotlib.pyplot as plt
-
-        plt.close(fig)
+        to_reports = get_nested(self.cfg, "figures.also_save_to_reports", default=True) if copy_to_reports is None else copy_to_reports
+        try:
+            paths = save_figure(fig, self.figures_dir, name, formats=fmts, dpi=dpi, close=False)
+            if to_reports:
+                rep = resolve_path(get_nested(self.cfg, "paths.figures_dir", default="reports/figures"))
+                paths += save_figure(fig, rep, name, formats=fmts, dpi=dpi, close=False)
+        finally:
+            plt.close(fig)
         n_points: int | None = None
         sidecar_dirs = [self.figures_dir]
         if to_reports:
@@ -725,12 +728,23 @@ def run_cli(
                 from utils.manual_gates import require_gate
                 require_gate(cfg, ctx.pc_id, "READY_FOR_EXPERIMENT")
             main(ctx, args)
+            from utils.experiments import finish_direct
+            finish_direct(ctx,success=True)
+            if script_name in ('10_evaluate_outer_validation','11_tune_inference_thresholds') and cfg.get('project',{}).get('profile')=='official':
+                from utils.experiments import finish_external
+                finish_external(cfg,'outer_validation' if script_name.startswith('10_') else 'threshold_tuning')
         set_exit(0)
         return 0
     except KeyboardInterrupt:
         set_exit(130)
         return 130
     except BaseException as exc:  # el traceback ya quedo en execution.log/metadata.json
+        from utils.experiments import finish_direct
+        if getattr(ctx,'_direct_stage_job',None):
+            from orchestration.study_queue import StudyQueue,PUBLICATION_PENDING
+            q=StudyQueue.from_cfg(ctx.cfg)
+            if q.get(ctx._direct_stage_job).status!=PUBLICATION_PENDING:
+                finish_direct(ctx,success=False)
         set_exit(1)
         print(f"[{script_name}] ERROR: {type(exc).__name__}: {exc}\n  Detalle completo en {ctx.run_dir / 'execution.log'}",
               file=sys.stderr)

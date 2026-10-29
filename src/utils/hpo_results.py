@@ -50,6 +50,14 @@ def load_best_config(cfg: Mapping[str, Any], spec: ArchSpec) -> dict[str, Any]:
     from utils.semantics import semantic_fingerprint
     if result.get("semantic_fingerprint") != semantic_fingerprint(cfg):
         raise RuntimeError("Mejor configuracion obsoleta/no trazable; repetir HPO/robustez v4")
+    if cfg.get('experiment',{}).get('round_id'):
+        from utils.experiments import fingerprint
+        accepted=cfg['experiment'].get('cohort',{}).get(spec.slug,{})
+        expected=accepted.get('fingerprint',fingerprint(cfg))
+        from utils.hashing import sha256_file
+        if accepted and accepted.get('best_sha256')!=sha256_file(p):raise RuntimeError('Candidato de cohorte alterado')
+        if result.get('experiment_fingerprint') != expected:
+            raise RuntimeError('Mejor configuracion pertenece a otra ronda/configuracion')
     return result
 
 
@@ -75,3 +83,16 @@ def checkpoint_dir(cfg: Mapping[str, Any], spec: ArchSpec) -> Path:
 def final_checkpoint(cfg: Mapping[str, Any], spec: ArchSpec) -> Path:
     """Ruta del checkpoint definitivo (``final.pt``)."""
     return checkpoint_dir(cfg, spec) / "final.pt"
+
+
+def require_final_checkpoint(cfg, spec, expected):
+    from utils.hashing import sha256_file
+    from utils.checks import MethodologyViolation
+    path=final_checkpoint(cfg,spec)
+    meta=path.with_name('final_meta.json')
+    if not path.is_file() or not meta.is_file(): raise FileNotFoundError('Checkpoint y procedencia completos obligatorios')
+    row=read_json(meta)
+    if row.get('sha256') != sha256_file(path):raise RuntimeError('Checkpoint alterado')
+    for key,value in expected.items():
+        if row.get(key) != value:raise MethodologyViolation('Checkpoint incompatible: '+key)
+    return path

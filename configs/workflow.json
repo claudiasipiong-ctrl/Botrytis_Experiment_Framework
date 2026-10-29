@@ -97,7 +97,7 @@
       "title": "Baselines, HPO, robustez y candidatos",
       "lane": "Detector + clasificador",
       "script": "src/orchestration/worker.py",
-      "command": "$assign = @{\n    'PC-01'=@('YOLOv8n','YOLOv8m','YOLO26n','YOLO26s')\n    'PC-02'=@('YOLOv8l','YOLO26l')\n    'PC-03'=@('RT-DETR-R50','ResNet50','ViT-B/16','Swin-Tiny')\n}\n$wa = @('--config','configs/local.yaml','--pc-id',$pc,'--init-plan','--architectures') + $assign[$pc]\n$wa += @('--kinds','baseline','hpo','repeat','aggregate','outer_train','outer_eval')\n& .\\scripts\\Invoke-Botrytis.ps1 -PythonPath $py -Entry 'src/orchestration/worker.py' -Arguments $wa\nif ($LASTEXITCODE -ne 0) { throw 'Worker local detenido; revisar evidencia y bloqueo, no reintentar a ciegas.' }\n",
+      "command": "$roundConfig = Read-Host 'Config local de la ronda predeclarada'\n$model = Read-Host 'Arquitectura activa propia de esta ronda'\n& .\\scripts\\Invoke-Botrytis.ps1 -PythonPath $py -Entry 'src/orchestration/worker.py' -Arguments @('--config',$roundConfig,'--pc-id',$pc,'--init-plan','--architectures',$model,'--kinds','baseline','--once')\nif ($LASTEXITCODE -ne 0) { throw 'Worker detenido; revisar estado y logs de la ronda' }\n",
       "inputs": "READY_FOR_EXPERIMENT aprobado personalmente; datos/modelos verificados",
       "outputs": "15 trials/detector, 20/clasificador; top3 × seeds17/42/73 × folds3; candidatos entrenados70%",
       "check": "Baselines con configuracion efectiva; HPO solo validacion interna. El 20% externo se evalua despues del entrenamiento de epocas fijadas.",
@@ -124,7 +124,7 @@
       "lane": "Seleccion",
       "script": "src/12_select_detector.py",
       "command": "& .\\scripts\\Invoke-Botrytis.ps1 -PythonPath $py -Entry 'src/12_select_detector.py' -Arguments @('--config','configs/local.yaml')\nif ($LASTEXITCODE -ne 0) { throw 'Comando detenido: revise runs/v4 y la evidencia antes de continuar.' }\n& .\\scripts\\Invoke-Botrytis.ps1 -PythonPath $py -Entry 'src/13_select_classifier.py' -Arguments @('--config','configs/local.yaml')\nif ($LASTEXITCODE -ne 0) { throw 'Comando detenido: revise runs/v4 y la evidencia antes de continuar.' }",
-      "inputs": "Metricas del 20% externo de los diez candidatos; sin test",
+      "inputs": "Metricas del 20% externo de los siete candidatos; sin test",
       "outputs": "selected_detector.json, selected_classifier.json, policy hash",
       "check": "mAP50:95 principal detector; AP positiva clasificador. Evidencia N real, desempates predeclarados. No mezclar HPO con validacion externa.",
       "gate": "SELECTION",
@@ -222,5 +222,7 @@
       "pc": "PC-01",
       "note": "Algunas fuentes (historial seleccionado, estratos, activaciones, ejemplos) requieren contrato explicito en docs/FIGURAS.md. No se inventan columnas ni condiciones visuales."
     }
-  ]
+  ],
+  "current_execution_guide": "docs/GUIA_EJECUCION_3PCS_FINAL.html",
+  "current_control": "tools/experiment_control.py"
 }

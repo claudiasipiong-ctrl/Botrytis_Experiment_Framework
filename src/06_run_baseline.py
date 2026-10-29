@@ -32,6 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import numpy as np  # noqa: E402
 
 from utils.architectures import section_for  # noqa: E402
+from utils.checks import MethodologyViolation
 from utils.guards import GpuJobLock  # noqa: E402
 from utils.io import read_json, write_json  # noqa: E402
 from utils.logging_utils import RunContext, run_cli  # noqa: E402
@@ -63,8 +64,12 @@ def main(ctx: RunContext, args: argparse.Namespace) -> None:
     ctx.set_seed(seed)
     k = int(cfg["inner_hpo"]["folds"])
     folds = list(args.folds) if args.folds else list(range(k))
+    if cfg['project']['profile']=='official' and folds!=list(range(k)):
+        raise MethodologyViolation('Baseline oficial exige los tres folds')
     summary_path = ctx.run_dir / "summary.json"
-    if summary_path.is_file() and not args.force:
+    if summary_path.is_file() and args.force:
+        raise MethodologyViolation("--force no sobrescribe baselines; cree una nueva ronda con repeat/new-round")
+    if summary_path.is_file():
         log.info("baseline ya ejecutado (%s): no se repite (--force para repetir)", summary_path)
         ctx.log_metrics(read_json(summary_path))
         return

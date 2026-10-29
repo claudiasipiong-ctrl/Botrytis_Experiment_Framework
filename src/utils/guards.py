@@ -67,10 +67,10 @@ def assert_one_selected_by_mean(scores_by_seed: Mapping[int, Sequence[float]], e
         raise MethodologyViolation(f"Seleccion por un unico seed/seeds incompletas: {sorted(scores_by_seed)} != {sorted(expected_seeds)}")
 
 
-def gpu_lock_path(cfg: Mapping[str, Any], pc_id: str) -> Path:
-    """Fichero de bloqueo de GPU de una PC (``artifacts/queue/gpu_<pc>.lock``)."""
-    safe = "".join(c for c in pc_id.lower() if c.isalnum())
-    return resolve_path(get_nested(cfg, "paths.queue_dir", default="artifacts/queue")) / f"gpu_{safe}.lock"
+def gpu_lock_path(cfg, pc_id):
+    """Machine-wide local lock, shared by all checkouts and experiment rounds."""
+    import tempfile
+    return Path(tempfile.gettempdir()) / 'botrytis_gpu_locks' / (str(pc_id) + '.json')
 
 
 def _pid_alive(pid: int) -> bool:
@@ -121,28 +121,20 @@ class GpuJobLock:
 
     def __enter__(self) -> "GpuJobLock":
         import json
-
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        if self.path.exists():
-            try:
-                info = json.loads(self.path.read_text(encoding="utf-8"))
-            except Exception:
-                info = {}
-            if _pid_alive(int(info.get("pid", -1))) and int(info.get("pid", -1)) != os.getpid():
-                raise MethodologyViolation(
-                    f"{self.pc_id}: ya hay un trabajo GPU en ejecucion (pid {info.get('pid')}, job {info.get('job')}). "
-                    "Maximo 1 trabajo GPU simultaneo por PC (sec. 16.1)."
-                )
-        self.path.write_text(json.dumps({"pid": os.getpid(), "job": self.job, "pc_id": self.pc_id}), encoding="utf-8")
+        from utils.durable import FileLock
+        self._lock = FileLock(self.path.with_suffix('.guard'))
+        try:
+            self._lock.__enter__()
+        except RuntimeError as exc:
+            raise MethodologyViolation(f'{self.pc_id}: otro trabajo GPU local mantiene el lock') from exc
+        self.path.write_text(json.dumps({'pid': os.getpid(), 'pc_id': self.pc_id, 'job': self.job}))
         self._held = True
         return self
 
-    def __exit__(self, *exc: Any) -> None:
+    def __exit__(self, *exc):
         if self._held:
-            try:
-                self.path.unlink()
-            except OSError:
-                pass
+            self.path.unlink(missing_ok=True)
+            self._lock.__exit__(*exc)
             self._held = False
 
 

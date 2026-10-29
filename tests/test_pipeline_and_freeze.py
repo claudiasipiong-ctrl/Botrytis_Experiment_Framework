@@ -90,7 +90,12 @@ def test_test_split_is_locked_until_the_freeze_manifest_exists(tmp_path: Path) -
     (tmp_path / "freeze_manifest.json").write_text("{}")
     with pytest.raises(TestSetLockedError, match="freeze invalido"):
         assert_split_allowed("test", "final_test", cfg)
-    cfg, _, _ = _freeze(tmp_path)
+    cfg, _, fp = _freeze(tmp_path)
+    with pytest.raises(RuntimeError,match='test cerrado'):
+        assert_split_allowed('test','final_test',cfg)
+    from utils.durable import atomic_json
+    from utils.hashing import sha256_file
+    atomic_json(tmp_path/'manual_test_release.json',dict(state='AUTORIZADO_PERSONALMENTE',freeze_sha256=sha256_file(fp),operator='SYNTHETIC_UNIT_FIXTURE',evidence='SYNTHETIC_NO_REAL_TEST'))
     assert_split_allowed("test", "final_test", cfg)
     with pytest.raises(TestSetLockedError):
         assert_split_allowed("test", "threshold_tuning", cfg)                         # el freeze no autoriza ajustar con test

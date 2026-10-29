@@ -111,12 +111,12 @@ def load_function_without_ml(filename,name):
 
 
 def test_fixed_epoch_detector_never_calls_backend_validation():
-    disable=load_function_without_ml('utils/detector_train.py','_disable_final_validation')
-    trainer=SimpleNamespace(validate=lambda:pytest.fail('validation used'),final_eval=lambda:pytest.fail('test used'))
-    disable(trainer)
+    from utils.detector_train import fixed_epoch_trainer
+    cls=fixed_epoch_trainer(get_arch('YOLOv8n'))
+    trainer=object.__new__(cls)
     assert trainer.validate()==({},0.0) and trainer.final_eval() is None
     text=(Path(__file__).parents[1]/'src'/'utils'/'detector_train.py').read_text()
-    assert 'model.add_callback("on_train_start", _disable_final_validation)' in text
+    assert "args['trainer'] = fixed_epoch_trainer(spec)" in text
     assert 'chosen = last_pt if fixed_epochs' in text
 
 
