@@ -47,7 +47,7 @@ La media±DE es dispersion observada, no intervalo de confianza. No mezclar fase
 
 ## Inicializacion y arquitecturas
 
-7 detectores: YOLOv8n/m/l, YOLO26n/s/l, RT-DETR-R50;3 clasificadores: ResNet50,ViT-B/16,Swin-Tiny.
+4 detectores: YOLOv8n/l, YOLO26l, RT-DETR-R50; 3 clasificadores: ResNet50,ViT-B/16,Swin-Tiny.
 El primario es pretrained. Inicializacion desde cero solo en experimento alternativo predeclarado y namespaces nuevos.
 Ningun loader descarga pesos. R50 completo compatible esta BLOQUEADO; consulte PESOS.md, no use RT-DETR-L.
 Los graficos CIB/MHSA entregados son referencias conceptuales, no componentes medidos. YOLO26 usa C2PSA en su YAML oficial;

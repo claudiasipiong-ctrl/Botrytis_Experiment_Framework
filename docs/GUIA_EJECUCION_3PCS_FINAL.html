@@ -1,0 +1,321 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Guía final Botrytis</title><style>body{margin:0;font:16px/1.65 system-ui,sans-serif;color:#193042;background:#f3f6f9}main{max-width:1180px;margin:auto;padding:32px}h1,h2,h3{line-height:1.25;color:#13334a}h1{font-size:2.3rem}h2{margin-top:2.4em;border-top:1px solid #cfdae4;padding-top:1em}a{color:#065a95}nav{position:sticky;top:0;background:#102f44;color:white;padding:12px 24px;z-index:1;display:flex;gap:20px;flex-wrap:wrap}nav a{color:#d5efff}pre{background:#112a3c;color:#edf6ff;padding:20px;border-radius:10px;overflow:auto;font:14px/1.65 ui-monospace,monospace}code{font-family:ui-monospace,monospace}p code,li code,td code{background:#e3edf3;padding:2px 5px;border-radius:4px}table{border-collapse:collapse;width:100%;font-size:.92rem;background:white}td,th{border:1px solid #d3dfe8;padding:10px;text-align:left;vertical-align:top}th{background:#dcecf5}.notice{border-left:5px solid #c88516;padding:18px;background:#fff3d7}details{margin:20px 0;padding:20px;background:white;border-radius:12px}summary{cursor:pointer;font-size:1.3rem;font-weight:bold}.diagram{overflow-x:auto;background:white;border:1px solid #d3dfe8}button{padding:10px 14px;margin:4px;border:1px solid #47677b;border-radius:8px;background:white;color:#193042;cursor:pointer}button:focus,button[aria-pressed=true]{outline:3px solid #2c89bc}svg text{font-family:system-ui,sans-serif}svg .lane{transition:opacity .2s}svg[data-filter] .lane{opacity:.18}svg .lane.active{opacity:1}@media print{nav,.controls{display:none}body{background:white}main{max-width:none;padding:0}pre{white-space:pre-wrap;color:black;background:#f0f0f0}details{break-inside:auto}svg{width:100%}}</style></head><body><nav><a href="GUIA_EJECUCION_3PCS_FINAL.html">Guía</a><a href="DIAGRAMA_FLUJO_3PCS_HORIZONTAL.html">Flujo</a><a href="COMANDOS_POWERSHELL_3PCS.md">Comandos</a><a href="PRUEBAS_Y_QA_PENDIENTE.md">Pruebas/QA</a><a href="CAMBIOS_Y_HALLAZGOS.md">Hallazgos</a></nav><main><h1>Guía de ejecución final · Botrytis</h1><p class="notice">Siete arquitecturas, tres PCs locales, rondas inmutables y revisiones humanas. Documento operativo para QA personal. No se ejecutó entrenamiento/HPO/test real; RT-DETR-R50 permanece bloqueado.</p><details open><summary>Flujo iterativo y estados</summary><h2>Entrenamiento iterativo supervisado</h2>
+<p>Esta guía describe operaciones futuras del usuario. No contiene resultados de entrenamiento ni mejoras medidas. Ver comandos completos en <a href="COMANDOS_POWERSHELL_3PCS.md">COMANDOS_POWERSHELL_3PCS.md</a>.</p>
+<h3>Caso de aceptación</h3>
+<ol>
+<li>Fijar el mismo commit aprobado, dependencias compatibles y base validada en las tres estaciones. Conservar sus bindings locales y aprobar QA personalmente. No hay pesos ni imágenes reales incluidos.</li>
+<li>Crear <code>yolov8n-r01</code> en PC-01, <code>yolo26l-r01</code> en PC-02 y <code>vit_b16-r01</code> en PC-03. El manifiesto de cada ronda firma protocolo, inicialización, catálogo de pesos, código/commit, dataset, split/folds y espacio HPO. Las rutas locales y el operador no alteran la identidad científica.</li>
+<li>Lanzar el worker de cada PC con <code>--init-plan --architectures</code> de su modelo y <code>--kinds baseline --once</code>. Son tres procesos locales independientes. No se ha demostrado aquí ejecución sobre tres GPUs: solo se simula la orquestación con fixtures.</li>
+<li>Al terminar YOLOv8n, su baseline pasa a <code>PENDING_REVIEW</code>, sin habilitar HPO. Otra arquitectura de PC-01, por ejemplo ResNet50 en su propia ronda, puede trabajar mientras la anterior espera revisión. La GPU local sigue teniendo un solo trabajo a la vez.</li>
+<li>Revisar <code>runs/&lt;slug&gt;/baseline/summary.json</code>, <code>fold_metrics.csv</code>, <code>history.csv</code>, logs y figuras <strong>dentro de esa ronda</strong>. Comprobar curvas, errores, AP/mAP, dispersión entre folds, recursos y datos. No descartar una arquitectura por un baseline aislado.</li>
+<li>Si se encuentra un problema, registrar diagnóstico y crear <code>yolov8n-r02</code> con <code>new-round --change ...</code>. Elegir una modificación justificada del bloque de detector; no tocar seeds, folds, trials, resolución, clases o regla de pairing para acelerar. El manifiesto conserva motivo y diferencias. No se modifica r01 ni se reentrenan los otros seis modelos.</li>
+<li>Ejecutar solo el baseline de r02 y comparar ambas rondas. No hay cifras de ejemplo que puedan confundirse con métricas observadas: las tablas y gráficos se rellenan solo a partir de archivos existentes. La comparación marca protocolos/espacios diferentes como no equivalentes. También puede comparar evidencia histórica sin afirmar que sea compatible para reanudar con código nuevo.</li>
+<li>Cuando el usuario aprueba el baseline elegido, continuar HPO. Mantener 15 trials por detector o 20 por clasificador, TPE + MedianPruner y tres folds internos. <code>trial_block_size=5</code> permite revisar bloques sin reducir el total. La aprobación de un bloque parcial devuelve el job a <code>PENDING</code>; únicamente completar todo el estudio y aprobar su revisión habilita robustez. Los trials fallidos no se maquillan como completos ni se mezclan con otra ronda.</li>
+<li>Ejecutar top-3 configuraciones distintas × semillas <code>[17,42,73]</code> × tres folds. Revisar media y dispersión; aprobar <code>aggregate</code> antes de entrenar el candidato con el 70 %. No seleccionar la mejor seed individual. Las semillas de una arquitectura permanecen en su propietario; paralelismo entre arquitecturas, no copias concurrentes del mismo estudio.</li>
+<li>Elegir personalmente una ronda por arquitectura antes de abrir el 20 %. <code>authorize-external</code> predeclara esa elección. Validación y calibración se consumen una vez por arquitectura/experimento; una nueva ronda no libera otra exploración externa. Una operación fallida sin resultado publicado admite recuperación explícita auditada; un resultado existente bloquea retuning.</li>
+<li>Importar snapshots verificados, ensamblar una cohorte de siete candidatos completos y ejecutar selección e integración. <code>assemble</code> no ejecuta inferencia ni entrenamiento. Conserva fingerprints de origen, hashes de checkpoints y evidencia; rechaza duplicados, faltantes o datos/splits/código diferentes. Los cambios de protocolo requieren una aceptación explícita de no equivalencia, sin convertirla en equivalencia.</li>
+<li>Revisar integración con crops de bounding boxes <strong>predichas</strong>; freeze íntegro y autorización personal posterior; recién entonces test final del 10 % una vez. No hay atajo por un fixture aprobado, un ZIP importado o la existencia de <code>freeze_manifest.json</code>.</li>
+</ol>
+<h3>Qué significa cada acción</h3>
+<table>
+<tr><th>Acción</th><th>Uso</th><th>Historial y límites</th></tr>
+<tr><td>Resume</td><td>Continuar un job RUNNING interrumpido y compatible</td><td>Verifica identidad y locks locales; no recupera procesos vivos ni cambia HP. Los checkpoints propios necesitan recibo SHA; GPU/AMP/RNG de workers Windows requieren QA.</td></tr>
+<tr><td>Retry</td><td>Repetir un intento FAILED de la misma configuración</td><td>Intento nuevo, logs previos conservados; folds completos verificados se reutilizan. No confundir con cambiar configuración.</td></tr>
+<tr><td>Repeat</td><td>Repetir una configuración completa</td><td>Nueva ronda/ID, conserva ambas ejecuciones; no admite <code>--change</code>.</td></tr>
+<tr><td>New round</td><td>Cambiar configuración o espacio de búsqueda</td><td>Directorios y SQLite independientes, motivo/operador/diferencias firmados; código/espacio/configuración incompatibles no se reanudan.</td></tr>
+<tr><td>Publish</td><td>Reintentar la publicación de un cómputo terminado</td><td><code>PUBLICATION_PENDING</code> no ejecuta el entrenamiento otra vez.</td></tr>
+<tr><td>Approve</td><td>Aprobar una transición de una etapa revisada</td><td>Operador y evidencia persistentes; no aprueba QA físico, freeze ni test.</td></tr>
+</table>
+<h3>Estados que no deben confundirse</h3>
+<p><code>PENDING</code> → <code>RUNNING</code> → <code>PUBLICATION_PENDING</code> → <code>PENDING_REVIEW</code> → <code>COMPLETE</code> (cuando corresponda aprobación). Un fallo de cómputo produce <code>FAILED</code>; un bloqueo de pesos o insumos deja el trabajo sin reclamar. <code>COMPLETE</code> no significa «ZIP exportado y recibido»: la exportación tiene checksum/recibo y el import tiene ledger/journal propios. Nunca se infiere una aprobación de un código de salida.</p>
+<p>El modo <code>automatic</code> se declara explícitamente con <code>new-round --mode automatic</code>; omite las revisiones entre fases completas, pero conserva integridad, ownership, presupuesto, gates y test cerrado. Cambiar de modo no autoriza por sí solo un gate científico. El modo predeterminado es <code>supervised</code>.</p>
+<h3>Reasignar sin servidor</h3>
+<p>No existe una cola global transaccional. Una oferta bloquea el origen, entrega snapshot + SHA + estado autorizado de la ronda, la receptora queda bloqueada hasta recibo y confirmación, y solo después activa ownership. El origen pierde autoridad y conserva su histórico. Nunca se transfiere RUNNING. Importar un ZIP ordinario no concede autoridad, no fusiona estados extranjeros sobre jobs locales y no actualiza una SQLite activa.</p>
+<p>Una copia antigua de disco puede contener un ownership anterior: no restaurarlo para forzar avance. Conservar ofertas, recibos, confirmaciones y sus hashes, verificar físicamente ausencia de procesos y reconciliar manualmente ante pérdida de máquina. El protocolo no puede garantizar exclusión distribuida frente a restauraciones no coordinadas o ejecución fuera del framework.</p>
+<h3>Qué puede y qué no puede cambiarse</h3>
+<p>Los datos derivados mantienen el sello semántico v4: fruto físico clase 0, sospecha clase 1, auxiliar clase 2, pairing IoU 0,50. Cambiar configuración de entrenamiento no regenera el split. Copiar los manifiestos firmados a una ronda nueva conserva sus bytes. Cambios de datos/split/folds quedan bloqueados por hashes; la diferencia histórica 324/328/329 necesita inventario y decisión personal, no ajuste automático.</p>
+<p>Las optimizaciones computacionales que afecten números deben predeclararse, poder desactivarse y someterse a QA. Los datasets de crops cargan rutas en lugar de multiplicar cachés PIL por worker Windows. Se mantiene el batch nominal; fallback por OOM queda desactivado por defecto hasta contar con <code>compute.microbatch_qa_evidence</code>, porque acumulación y BatchNorm no garantizan equivalencia numérica. El contrato registra microbatch/acumulación/LR efectivos expuestos por el backend. No se midió ahorro de tiempo o RAM.</p></details><details><summary>Instalación y comandos completos por PC</summary><h2>Comandos PowerShell para las tres estaciones</h2>
+<p>Estado: código para QA personal. Ningún comando de entrenamiento, adquisición de pesos, aprobación o test fue ejecutado por el agente. Los ejemplos se ejecutan <strong>personalmente</strong>, después de revisar sus precondiciones. El proyecto trabaja con siete arquitecturas; RT-DETR-R50 permanece bloqueado. PowerShell nativo de Windows 10; rutas locales fuera de OneDrive/Drive/NAS. No usar SQLite compartida.</p>
+<h3>1. Clonar y fijar un commit aprobado, en cada PC</h3>
+<p>El SHA debe ser el commit de código revisado del PR, no el nombre mutable de una rama. No actualizar código con procesos activos.</p>
+<pre><code class="powershell">$ErrorActionPreference = &#x27;Stop&#x27;
+$Base = Read-Host &#x27;Carpeta LOCAL de trabajo, fuera de carpetas sincronizadas&#x27;
+$ApprovedCommit = Read-Host &#x27;SHA completo de 40 caracteres del commit aprobado&#x27;
+if ($ApprovedCommit -notmatch &#x27;^[0-9a-fA-F]{40}$&#x27;) { throw &#x27;SHA completo obligatorio&#x27; }
+$RepoUrl = &#x27;https://github.com/claudiasipiong-ctrl/Botrytis_Experiment_Framework.git&#x27;
+$Branch = &#x27;fix/botrytis-supervised-seven-models&#x27;
+$root = Join-Path $Base &#x27;Botrytis_Experiment_Framework&#x27;
+if (Test-Path -LiteralPath $root) { throw &#x27;Carpeta existente: preservar cambios y verificarla; no sobrescribir&#x27; }
+git clone --branch $Branch -- $RepoUrl $root
+if ($LASTEXITCODE -ne 0) { throw &#x27;git clone fallo&#x27; }
+Set-Location -LiteralPath $root
+git checkout --detach $ApprovedCommit
+if ($LASTEXITCODE -ne 0) { throw &#x27;Commit no disponible; no sustituirlo por otro&#x27; }
+if ((git rev-parse HEAD).Trim() -ne $ApprovedCommit.ToLower()) { throw &#x27;Commit distinto&#x27; }
+if (git status --porcelain) { throw &#x27;Checkout con cambios&#x27; }
+py -3.12 -m venv .venv
+if ($LASTEXITCODE -ne 0) { throw &#x27;Python 3.12 no disponible&#x27; }
+$py = Join-Path $root &#x27;.venv\Scripts\python.exe&#x27;
+$env:PYTHONIOENCODING = &#x27;utf-8&#x27;
+$env:PYTHONUTF8 = &#x27;1&#x27;
+$Utf8 = New-Object System.Text.UTF8Encoding($false)
+[Console]::OutputEncoding = $Utf8
+$OutputEncoding = $Utf8</code></pre>
+<p>Instalación candidata reproducible: la pareja 2.14.1/0.29.1 fue ejecutada en CPU; se verificó resolución de paquetes para Windows y metadatos de sus builds cu126. Esto no acredita driver, CUDA ni ejecución Windows. Antes de instalar cu126, comprobar personalmente compatibilidad del driver con la matriz oficial de PyTorch/NVIDIA. Usar exactamente el mismo build en las tres PCs; si es necesario otro build, acordarlo y verificarlo en todas, sin modificarlo silenciosamente.</p>
+<pre><code class="powershell">&amp; $py -m pip install &#x27;torch==2.14.1&#x27; &#x27;torchvision==0.29.1&#x27; --index-url https://download.pytorch.org/whl/cu126
+if ($LASTEXITCODE -ne 0) { throw &#x27;Instalacion PyTorch detenida; no cambiar versiones automaticamente&#x27; }
+&amp; $py -m pip install -r requirements.txt -r requirements-dev.txt -c requirements-ml.txt
+if ($LASTEXITCODE -ne 0) { throw &#x27;Dependencias incompatibles&#x27; }
+&amp; $py -m pip check
+if ($LASTEXITCODE -ne 0) { throw &#x27;pip check fallo&#x27; }</code></pre>
+<h3>2. Identidad explícita en cada PC</h3>
+<p>Ejecutar <strong>solo</strong> el bloque de la estación física correspondiente. El hostname se conserva y verifica; nunca determina la identidad por sí solo.</p>
+<h4>PC-01</h4>
+<pre><code class="powershell">$pc = &#x27;PC-01&#x27;
+$machine = &#x27;i21315&#x27;
+$models = @(&#x27;YOLOv8n&#x27;, &#x27;YOLOv8l&#x27;, &#x27;ResNet50&#x27;)
+$first = &#x27;YOLOv8n&#x27;
+$firstRound = &#x27;yolov8n-r01&#x27;</code></pre>
+<h4>PC-02</h4>
+<pre><code class="powershell">$pc = &#x27;PC-02&#x27;
+$machine = &#x27;i21314&#x27;
+$models = @(&#x27;YOLO26l&#x27;, &#x27;Swin-Tiny&#x27;)
+$first = &#x27;YOLO26l&#x27;
+$firstRound = &#x27;yolo26l-r01&#x27;</code></pre>
+<h4>PC-03</h4>
+<pre><code class="powershell">$pc = &#x27;PC-03&#x27;
+$machine = &#x27;i21313&#x27;
+$models = @(&#x27;RT-DETR-R50&#x27;, &#x27;ViT-B/16&#x27;)
+$first = &#x27;ViT-B/16&#x27;
+$firstRound = &#x27;vit_b16-r01&#x27;</code></pre>
+<p>En cada PC, después de su bloque:</p>
+<pre><code class="powershell">$env:BOTRYTIS_PC_ID = $pc
+$operator = Read-Host &#x27;Nombre del operador presente&#x27;
+$dataset = Read-Host &#x27;Raiz LOCAL activa del dataset con images, labels y classes.txt&#x27;
+&amp; $py tools/prepare_machine.py --pc-id $pc --machine-id $machine --dataset-dir $dataset
+if ($LASTEXITCODE -ne 0) { throw &#x27;Preparacion local detenida; conservar configuracion anterior&#x27; }
+&amp; .\scripts\Invoke-Botrytis.ps1 -PythonPath $py -Entry &#x27;src/00_check_environment.py&#x27; -Arguments @(&#x27;--config&#x27;,&#x27;configs/local.yaml&#x27;,&#x27;--pc-id&#x27;,$pc,&#x27;--require-gpu&#x27;,&#x27;--require-ml&#x27;,&#x27;--gpu-selftest&#x27;)
+if ($LASTEXITCODE -ne 0) { throw &#x27;Entorno/CUDA no validados&#x27; }</code></pre>
+<p>Solo PC-01 escribe una referencia después de revisarla personalmente. Las otras PCs reciben la base firmada y comparan su entorno. Esta operación no aprueba ningún gate.</p>
+<pre><code class="powershell">if ($pc -eq &#x27;PC-01&#x27;) {
+    &amp; $py src/00_check_environment.py --config configs/local.yaml --pc-id $pc --require-gpu --require-ml --gpu-selftest --write-reference
+    if ($LASTEXITCODE -ne 0) { throw &#x27;Referencia no verificada&#x27; }
+}</code></pre>
+<h3>3. Inventario, etiquetas, split y derivados</h3>
+<p>No existen imágenes reales en este repositorio. La referencia 329 no resuelve las menciones históricas de 324/328. Ejecutar inventario, revisar huérfanos, duplicados, anomalías y exclusiones. Si el conteo difiere, <strong>detenerse</strong>: una decisión documental personal debe fijar el inventario activo y <code>dataset.n_images_expected</code> en la configuración acordada, sin inventar muestras, activar <code>_off</code> ni desactivar la comprobación. Actualizar las tres configuraciones de manera consistente. La clase 0 es fruto físico; 1 sospecha positiva por pairing; 2 auxiliar. IoU 0,50 no es porcentaje enfermo.</p>
+<pre><code class="powershell">&amp; $py src/19_audit_labels.py --dataset $dataset --output reports/v4/label_audit --min-iou 0.50
+if ($LASTEXITCODE -ne 0) { throw &#x27;Auditoria de labels pendiente&#x27; }
+&amp; $py src/01_validate_dataset.py --config configs/local.yaml --pc-id $pc
+if ($LASTEXITCODE -ne 0) { throw &#x27;Inventario/anotaciones no validos; no continuar&#x27; }</code></pre>
+<p>Solo PC-01 crea el split, una vez. Si ya es válido, el script lo verifica y conserva sus bytes. No usar <code>--force</code> para sortear otro split. Las otras PCs importan la base después de validar localmente el mismo dataset.</p>
+<pre><code class="powershell">if ($pc -eq &#x27;PC-01&#x27;) {
+    &amp; $py src/02_create_outer_split.py --config configs/local.yaml --pc-id $pc
+    if ($LASTEXITCODE -ne 0) { throw &#x27;Split detenido&#x27; }
+    &amp; $py src/03_create_inner_folds.py --config configs/local.yaml --pc-id $pc
+    if ($LASTEXITCODE -ne 0) { throw &#x27;Folds detenidos&#x27; }
+    &amp; $py src/orchestration/sync.py pack-base --config configs/local.yaml --out base_v4.zip
+    if ($LASTEXITCODE -ne 0) { throw &#x27;Exportacion base detenida&#x27; }
+}</code></pre>
+<p>Copiar manualmente <code>base_v4.zip</code> y su <code>.zip.sha256</code> a PC-02/03. El ZIP base no contiene imágenes ni vinculaciones personales. No importar sobre una SQLite compartida. En cada receptora, tras su validación local:</p>
+<pre><code class="powershell">if ($pc -ne &#x27;PC-01&#x27;) {
+    $baseZip = Read-Host &#x27;Ruta LOCAL de base_v4.zip con su checksum&#x27;
+    &amp; $py src/orchestration/sync.py verify --config configs/local.yaml --zip $baseZip
+    if ($LASTEXITCODE -ne 0) { throw &#x27;ZIP base no verificado&#x27; }
+    &amp; $py src/orchestration/sync.py unpack --config configs/local.yaml --zip $baseZip
+    if ($LASTEXITCODE -ne 0) { throw &#x27;Hashes/configuracion distintos; no usar --force&#x27; }
+}
+&amp; $py src/04_build_detection_dataset.py --config configs/local.yaml --pc-id $pc
+if ($LASTEXITCODE -ne 0) { throw &#x27;Dataset detector detenido&#x27; }
+&amp; $py src/05_build_classification_crops.py --config configs/local.yaml --pc-id $pc
+if ($LASTEXITCODE -ne 0) { throw &#x27;Crops detenidos&#x27; }</code></pre>
+<h3>4. Pesos y QA: decisión y ejecución personales</h3>
+<p>Inventariar no descarga. Antes de adquirir un archivo, revisar su procedencia/licencia en el catálogo y sus hashes. RT-DETR-R50 sigue bloqueado: el R50-vd oficial y el grafo Ultralytics actual no son intercambiables. No sustituir por RT-DETR-L ni entrenar scratch dentro del experimento oficial preentrenado.</p>
+<pre><code class="powershell">&amp; $py tools/manage_weights.py inventory
+if ($LASTEXITCODE -ne 0) { throw &#x27;Inventario de pesos detenido&#x27; }</code></pre>
+<p>Adquisición opcional de <strong>un modelo</strong>, únicamente por decisión personal. El siguiente bloque pide consentimiento adicional; no ejecutarlo para RT-DETR-R50 bloqueado. El catálogo aporta checksums/tamaño cuando están disponibles; un SHA independiente puede especificarse si procede. No existe descarga automática al construir modelos.</p>
+<pre><code class="powershell">&amp; $py tools/manage_weights.py --help
+if ((Read-Host &#x27;Tras revisar licencia/procedencia, escriba ADQUIRIR para adquirir el modelo elegido&#x27;) -ceq &#x27;ADQUIRIR&#x27;) {
+    &amp; $py tools/manage_weights.py acquire --architecture $first --allow-network --accept-license
+    if ($LASTEXITCODE -ne 0) { throw &#x27;Adquisicion no verificada; conservar .partial&#x27; }
+}</code></pre>
+<p>Alternativa para un archivo ya transferido localmente, solo después de aceptar su licencia y disponer de SHA fiable. El archivo se verifica antes de publicarse en el almacenamiento del catálogo; no se sobrescriben pesos previos distintos.</p>
+<pre><code class="powershell">$weightFile = Read-Host &#x27;Ruta LOCAL existente del archivo transferido&#x27;
+$weightSha = Read-Host &#x27;SHA256 completo obtenido de fuente fiable/recibo verificado&#x27;
+&amp; $py tools/manage_weights.py verify --architecture $first --file $weightFile --sha256 $weightSha --accept-license
+if ($LASTEXITCODE -ne 0) { throw &#x27;Pesos no verificados&#x27; }
+&amp; $py tools/qa.py --config configs/local.yaml --machine-id $machine
+if ($LASTEXITCODE -ne 0) { throw &#x27;QA tecnico pendiente; revisar logs_qa&#x27; }</code></pre>
+<p>El informe técnico no aprueba gates. Registrar únicamente comprobaciones realmente completadas, una por una. <code>READY_FOR_EXPERIMENT</code> exige los ocho gates previos. No ejecutar este ejemplo hasta contar con evidencia personal:</p>
+<pre><code class="powershell">$gate = Read-Host &#x27;Gate realmente completado (consultar tools/manual_gates.py --help)&#x27;
+$evidence = Read-Host &#x27;Ruta o identificador de la evidencia personal&#x27;
+&amp; $py tools/manual_gates.py record --config configs/local.yaml --pc-id $pc --gate $gate --operator $operator --evidence $evidence --confirm-personal-execution
+if ($LASTEXITCODE -ne 0) { throw &#x27;Gate no registrado&#x27; }</code></pre>
+<h3>5. Crear y ejecutar una sola arquitectura</h3>
+<p>Los bloques siguientes sirven con los valores <code>$first</code> y <code>$firstRound</code> específicos de cada PC de la sección 2. Así se reproduce el caso YOLOv8n / YOLO26l / ViT-B/16 simultáneos, cada uno desde su disco. No ejecutarlos hasta completar QA y verificar pesos del modelo.</p>
+<pre><code class="powershell">$roundConfig = (&amp; $py tools/experiment_control.py --config configs/local.yaml new-round --round-id $firstRound --architecture $first --operator $operator --reason &#x27;Primera ronda predeclarada&#x27; | ConvertFrom-Json)
+if ($LASTEXITCODE -ne 0) { throw &#x27;Ronda no creada; no reutilizar un ID existente&#x27; }
+&amp; $py tools/experiment_control.py --config $roundConfig status
+if ($LASTEXITCODE -ne 0) { throw &#x27;Estado no disponible&#x27; }
+&amp; .\scripts\Invoke-Botrytis.ps1 -PythonPath $py -Entry &#x27;src/orchestration/worker.py&#x27; -Arguments @(&#x27;--config&#x27;,$roundConfig,&#x27;--pc-id&#x27;,$pc,&#x27;--init-plan&#x27;,&#x27;--architectures&#x27;,$first,&#x27;--kinds&#x27;,&#x27;baseline&#x27;,&#x27;--once&#x27;)
+if ($LASTEXITCODE -ne 0) { throw &#x27;Baseline detenido; revisar logs y estado&#x27; }
+&amp; $py tools/experiment_control.py --config $roundConfig status</code></pre>
+<p><code>--init-plan --architectures</code> crea solo los modelos solicitados y propios. Una ronda está ligada a una arquitectura: otros modelos requieren sus propias rondas. Es posible dejar todos los demás pendientes. Al terminar baseline: <code>PENDING_REVIEW</code>. Un fallo de publicación deja <code>PUBLICATION_PENDING</code>, nunca aprobación implícita.</p>
+<p>Para otro modelo independiente de la misma PC, repetir <code>new-round</code> con ID nuevo, arquitectura activa propia y su motivo. Se puede ejecutar mientras el primero espera revisión, <strong>secuencialmente</strong> en esa GPU. Cada worker termina antes de lanzar otro worker local; el lock de proceso bloquea solapamientos. No se puede mover un modelo solo cambiando <code>pc_registry.first_batch</code>: usar la transferencia de la sección 9.</p>
+<h3>6. Revisar, aprobar y continuar por fases</h3>
+<p>Copiar el ID completo del job mostrado por <code>status</code> (incluye experimento/ronda). La evidencia debe describir resultados reales de esa etapa. Estos ejemplos <strong>no</strong> aprueban QA físico, freeze ni test.</p>
+<pre><code class="powershell">$jobId = Read-Host &#x27;ID completo del job PENDING_REVIEW&#x27;
+$evidence = Read-Host &#x27;Evidencia revisada y decision&#x27;
+&amp; $py tools/experiment_control.py --config $roundConfig approve --job-id $jobId --operator $operator --evidence $evidence
+if ($LASTEXITCODE -ne 0) { throw &#x27;Etapa no aprobada&#x27; }
+&amp; .\scripts\Invoke-Botrytis.ps1 -PythonPath $py -Entry &#x27;src/orchestration/worker.py&#x27; -Arguments @(&#x27;--config&#x27;,$roundConfig,&#x27;--pc-id&#x27;,$pc,&#x27;--architectures&#x27;,$first,&#x27;--kinds&#x27;,&#x27;hpo&#x27;,&#x27;--once&#x27;)
+if ($LASTEXITCODE -ne 0) { throw &#x27;HPO detenido&#x27; }</code></pre>
+<p>El presupuesto total sigue siendo 15 trials/detector o 20/clasificador y tres folds. Para bloques, <strong>predeclarar</strong> <code>experiment.trial_block_size</code> con <code>--set</code> del worker; es una opción de ejecución, no modifica el presupuesto ni el espacio. Por ejemplo, sustituir el lanzamiento anterior por:</p>
+<pre><code class="powershell">&amp; .\scripts\Invoke-Botrytis.ps1 -PythonPath $py -Entry &#x27;src/orchestration/worker.py&#x27; -Arguments @(&#x27;--config&#x27;,$roundConfig,&#x27;--pc-id&#x27;,$pc,&#x27;--set&#x27;,&#x27;experiment.trial_block_size=5&#x27;,&#x27;--architectures&#x27;,$first,&#x27;--kinds&#x27;,&#x27;hpo&#x27;,&#x27;--once&#x27;)
+if ($LASTEXITCODE -ne 0) { throw &#x27;Bloque HPO detenido&#x27; }</code></pre>
+<p>Un bloque parcial queda en revisión; <code>approve</code> vuelve a <code>PENDING</code>, no <code>COMPLETE</code>. Repetir el mismo comando tras revisar cada bloque hasta completar 15/20. Un cambio del espacio HPO o configuración científica exige nueva ronda, no <code>--n-trials</code> ni <code>--allow-budget-override</code> oficial. El estudio es secuencial y local.</p>
+<p>Después del HPO completo, aprobar su job y ejecutar robustez. Se conserva top-3 × semillas 17/42/73 × tres folds; no distribuir el mismo estudio entre PCs sin la transferencia completa de ownership.</p>
+<pre><code class="powershell">&amp; .\scripts\Invoke-Botrytis.ps1 -PythonPath $py -Entry &#x27;src/orchestration/worker.py&#x27; -Arguments @(&#x27;--config&#x27;,$roundConfig,&#x27;--pc-id&#x27;,$pc,&#x27;--architectures&#x27;,$first,&#x27;--kinds&#x27;,&#x27;repeat&#x27;,&#x27;aggregate&#x27;)
+if ($LASTEXITCODE -ne 0) { throw &#x27;Robustez detenida&#x27; }
+&amp; $py tools/experiment_control.py --config $roundConfig status</code></pre>
+<p>Al terminar <code>aggregate</code>, revisar y aprobar ese job. Solo entonces puede ejecutarse <code>outer_train</code>, con el 70 % completo y épocas fijadas por folds internos, sin validar externamente cada época.</p>
+<pre><code class="powershell">&amp; .\scripts\Invoke-Botrytis.ps1 -PythonPath $py -Entry &#x27;src/orchestration/worker.py&#x27; -Arguments @(&#x27;--config&#x27;,$roundConfig,&#x27;--pc-id&#x27;,$pc,&#x27;--architectures&#x27;,$first,&#x27;--kinds&#x27;,&#x27;outer_train&#x27;,&#x27;--once&#x27;)
+if ($LASTEXITCODE -ne 0) { throw &#x27;Candidato detenido&#x27; }</code></pre>
+<h3>7. Nueva ronda, repeat, retry, resume y publicación</h3>
+<p>Nueva ronda: cambia configuración con motivo explícito, sin tocar rondas previas. El siguiente ejemplo es una <strong>decisión ilustrativa de configuración</strong>, no una mejora medida ni recomendación de LR:</p>
+<pre><code class="powershell">$newConfig = (&amp; $py tools/experiment_control.py --config $roundConfig new-round --round-id ($firstRound + &#x27;-revision2&#x27;) --architecture $first --operator $operator --reason &#x27;Problema diagnosticado y cambio predeclarado; ver evidencia&#x27; --change &#x27;detector.baseline.lr0=0.002&#x27; | ConvertFrom-Json)
+if ($LASTEXITCODE -ne 0) { throw &#x27;Nueva ronda detenida&#x27; }</code></pre>
+<p>Para clasificadores usar una clave de <code>classifier</code>, no el LR de detector del ejemplo. <code>repeat</code> crea otro ID conservando configuración; no acepta cambios. Repetir un baseline completo requiere nueva ronda, nunca <code>--force</code>.</p>
+<pre><code class="powershell">$repeatConfig = (&amp; $py tools/experiment_control.py --config $roundConfig repeat --round-id ($firstRound + &#x27;-repeat&#x27;) --architecture $first --operator $operator --reason &#x27;Repeticion explicita preservando ambas ejecuciones&#x27; | ConvertFrom-Json)
+if ($LASTEXITCODE -ne 0) { throw &#x27;Repeat detenido&#x27; }
+$jobId = Read-Host &#x27;ID de job FAILED, RUNNING interrumpido o PUBLICATION_PENDING&#x27;
+$evidence = Read-Host &#x27;Diagnostico del fallo y evidencia de procesos detenidos&#x27;</code></pre>
+<p>Elegir <strong>solo una</strong> acción según el estado. <code>retry</code> para FAILED (máximo tres intentos automáticos); <code>resume</code> para RUNNING interrumpido exige locks locales libres; <code>publish</code> reintenta publicar sin recalcular. Nunca usar <code>resume</code> con procesos vivos. Los folds completos y compatibles se conservan y verifican antes de reutilizarse. Los checkpoints de época requieren su recibo y configuración exacta; recuperación numérica de GPU/AMP/DataLoader de Windows pendiente de QA, no prometer equivalencia bit a bit.</p>
+<pre><code class="powershell">&amp; $py tools/experiment_control.py --config $roundConfig retry --job-id $jobId --operator $operator --evidence $evidence</code></pre>
+<pre><code class="powershell">&amp; $py tools/experiment_control.py --config $roundConfig resume --job-id $jobId --operator $operator --evidence $evidence</code></pre>
+<pre><code class="powershell">&amp; $py tools/experiment_control.py --config $roundConfig publish --job-id $jobId --operator $operator --evidence $evidence</code></pre>
+<p>Después de retry/resume, invocar el worker de la misma ronda, etapa y modelo. Para preparar una reanudación de checkpoint propio (no ejecuta sin consentimiento adicional):</p>
+<pre><code class="powershell">$checkpoint = Read-Host &#x27;Ruta local real del checkpoint de epoca con .resume.json&#x27;
+&amp; $py tools/resume_local.py --config $roundConfig --architecture $first --checkpoint $checkpoint --entry src/06_run_baseline.py
+if ($LASTEXITCODE -ne 0) { throw &#x27;Checkpoint incompatible; no inventar uno&#x27; }</code></pre>
+<h3>8. Comparar rondas sin reentrenar</h3>
+<pre><code class="powershell">$compareOut = Read-Host &#x27;Carpeta local NUEVA para comparacion&#x27;
+&amp; $py tools/experiment_control.py compare --configs $roundConfig $newConfig --output $compareOut
+if ($LASTEXITCODE -ne 0) { throw &#x27;Comparacion detenida&#x27; }</code></pre>
+<p><code>comparison.json</code>, <code>.csv</code> y <code>.png</code> conservan diferencias, métricas existentes, tiempos y VRAM. Si no hay datos, se indica pendiente; no se inventan. Revisar <code>methodologically_equivalent</code> y hashes de protocolo/espacio; una comparación visual no equivale a comparabilidad científica.</p>
+<h3>9. Transferencia manual de ownership (estudio/ronda completo)</h3>
+<p>Requiere misma versión Git, misma ronda/configuración científica y mismos hashes de datos/split/folds en ambas copias locales. En la receptora, usar <code>mirror-round</code> con el config y manifiesto originales de la ronda y su configuración base local validada. Esto conserva identidad científica y hashes declarados de pesos, con rutas/binding locales. No se necesitan pesos preentrenados para importar solo resultados; sí se verifican antes de entrenar allí. Verificar coincidencia con la oferta. No ejecutar la ronda receptora antes de activar. Detener procesos; nunca transferir RUNNING. Solo se transfiere la arquitectura completa de esa ronda, no trials sueltos entre dos dueños.</p>
+<p>Copiar también los metadatos originales <code>config.yaml</code> y <code>manifest.json</code> de la ronda, sin editarlos. En la receptora, antes de recibir:</p>
+<pre><code class="powershell">$sourceConfig = Read-Host &#x27;Config original de la ronda recibida&#x27;
+$sourceManifest = Read-Host &#x27;Manifest original de esa ronda&#x27;
+$roundConfig = (&amp; $py tools/experiment_control.py --config configs/local.yaml mirror-round --source-config $sourceConfig --source-manifest $sourceManifest --operator $operator --reason &#x27;Espejo local para importacion/transferencia autorizada&#x27; | ConvertFrom-Json)
+if ($LASTEXITCODE -ne 0) { throw &#x27;Metadatos, base o codigo incompatibles&#x27; }</code></pre>
+<p>Origen, con snapshot ya publicable y motivo documentado:</p>
+<pre><code class="powershell">$bundle = Read-Host &#x27;Ruta LOCAL NUEVA para transferencia.zip&#x27;
+$target = Read-Host &#x27;PC receptora (PC-01, PC-02 o PC-03)&#x27;
+&amp; $py tools/experiment_control.py --config $roundConfig transfer-offer --architecture $first --pc-id $pc --target $target --bundle $bundle --operator $operator --evidence &#x27;Reasignacion pendiente autorizada presencialmente&#x27;
+if ($LASTEXITCODE -ne 0) { throw &#x27;Oferta detenida&#x27; }</code></pre>
+<p>El origen queda bloqueado <strong>antes de entregar la oferta</strong>. Copiar manualmente ZIP + <code>.zip.sha256</code> + <code>.offer.json</code>. La receptora no obtiene autoridad al importar solamente el ZIP. Usar su <code>$roundConfig</code> local correspondiente, <code>$first</code> del modelo transferido y <code>$pc</code> receptor:</p>
+<pre><code class="powershell">$offer = [IO.Path]::ChangeExtension($bundle, &#x27;.offer.json&#x27;)
+$receipt = Read-Host &#x27;Ruta local nueva para recibo.json&#x27;
+&amp; $py tools/experiment_control.py --config $roundConfig transfer-receive --architecture $first --pc-id $pc --bundle $bundle --offer $offer --receipt $receipt --operator $operator
+if ($LASTEXITCODE -ne 0) { throw &#x27;Recepcion detenida; no entrenar&#x27; }</code></pre>
+<p>Copiar recibo al origen. Confirmar allí; copiar confirmación a la receptora. Mantener los archivos como evidencia y no restaurar snapshots antiguos del archivo ownership.</p>
+<pre><code class="powershell">$confirmation = Read-Host &#x27;Ruta local nueva para confirmacion.json&#x27;
+&amp; $py tools/experiment_control.py --config $roundConfig transfer-confirm --architecture $first --receipt $receipt --confirmation $confirmation --operator $operator
+if ($LASTEXITCODE -ne 0) { throw &#x27;Confirmacion detenida&#x27; }</code></pre>
+<pre><code class="powershell">&amp; $py tools/experiment_control.py --config $roundConfig transfer-activate --architecture $first --receipt $receipt --confirmation $confirmation --operator $operator
+if ($LASTEXITCODE -ne 0) { throw &#x27;Activacion detenida&#x27; }
+&amp; $py src/orchestration/worker.py --config $roundConfig --pc-id $pc --init-plan --architectures $first --status
+if ($LASTEXITCODE -ne 0) { throw &#x27;Plan receptor detenido&#x27; }</code></pre>
+<p>Los estados extranjeros del ZIP son evidencia, nunca actualizan una cola local automáticamente. La oferta de transferencia, a diferencia de un ZIP ordinario, lleva una instantánea autorizada de jobs, trials y revisiones de esa arquitectura: la receptora conserva esas etapas y no repite un baseline ya aprobado. Una cola local con trabajo propio diferente bloquea la adopción. No marcar jobs como COMPLETE por copiar una SQLite. Ante corte entre pasos, conservar el origen bloqueado y revisar oferta/recibo/confirmación; no borrar ownership ni cambiar YAML para forzar avance. No existe garantía transaccional global ante restauración de discos o copias antiguas no controladas.</p>
+<h3>10. Exportar/importar resultados sin transferir ownership</h3>
+<pre><code class="powershell">$exportZip = Read-Host &#x27;Ruta local NUEVA del ZIP de resultados&#x27;
+&amp; $py src/orchestration/sync.py pack-results --config $roundConfig --pc-id $pc --out $exportZip --with-checkpoints
+if ($LASTEXITCODE -ne 0) { throw &#x27;Exportacion detenida; revisar PUBLICATION_PENDING&#x27; }</code></pre>
+<p>Copiar manualmente ZIP y checksum. En la receptora, usar configuración local de <strong>esa misma ronda</strong>, con su binding local; si aún no existe, usar <code>mirror-round</code> con los metadatos originales después de validar la misma base.</p>
+<pre><code class="powershell">$importZip = Read-Host &#x27;Ruta LOCAL del ZIP recibido&#x27;
+&amp; $py src/orchestration/sync.py verify --config $roundConfig --zip $importZip
+if ($LASTEXITCODE -ne 0) { throw &#x27;ZIP no verificado&#x27; }
+&amp; $py src/orchestration/sync.py unpack --config $roundConfig --zip $importZip
+if ($LASTEXITCODE -ne 0) { throw &#x27;Conflicto/hash distinto: conservar archivos; no usar --force&#x27; }</code></pre>
+<p><code>recover-import</code> completa un journal interrumpido; verificar argumentos con <code>--help</code>. Nunca resolver conflictos eliminando archivos locales diferentes. La exportación usa snapshots publicados entre jobs, no pesos mutando en entrenamiento. Los checkpoints de época solo se publican con un recibo SHA válido. GitHub transporta exclusivamente código/documentación/configuración versionable.</p>
+<h3>11. Validación externa, cohorte, selección, integración, freeze y test</h3>
+<p>Iterar únicamente en folds internos del 70 %. Antes de abrir el 20 %, elegir personalmente una ronda por arquitectura. Predeclarar una única autorización externa por arquitectura en el registro del experimento. Ni un cambio de ronda ni una nueva configuración permiten reutilizarla para explorar.</p>
+<pre><code class="powershell">&amp; $py tools/experiment_control.py --config $roundConfig authorize-external --operator $operator --evidence &#x27;Ronda elegida con folds internos; politica de calibracion/seleccion predeclarada&#x27;
+if ($LASTEXITCODE -ne 0) { throw &#x27;Validacion externa no autorizada&#x27; }
+&amp; $py src/orchestration/worker.py --config $roundConfig --pc-id $pc --architectures $first --kinds outer_eval thresholds
+if ($LASTEXITCODE -ne 0) { throw &#x27;Evaluacion/calibracion detenida&#x27; }</code></pre>
+<p>Una operación externa STARTED que falló sin resultado publicado puede recuperarse mediante <code>retry-external --stage outer_validation</code> o <code>threshold_tuning</code>, con operador/evidencia. Si ya existe resultado, se bloquea una segunda optimización; conservarlo y diagnosticar, no borrar el ledger.</p>
+<p>PC-01 reúne por ZIP los resultados de las siete rondas elegidas. Sus configuraciones locales y artefactos deben estar disponibles. RT-DETR bloqueado impide completar la cohorte oficial: no omitirlo ni usar <code>--allow-partial</code>.</p>
+<pre><code class="powershell">$candidateConfigs = @(Read-Host &#x27;Config local YOLOv8n&#x27;; Read-Host &#x27;Config local YOLOv8l&#x27;; Read-Host &#x27;Config local YOLO26l&#x27;; Read-Host &#x27;Config local RT-DETR-R50&#x27;; Read-Host &#x27;Config local ResNet50&#x27;; Read-Host &#x27;Config local ViT-B/16&#x27;; Read-Host &#x27;Config local Swin-Tiny&#x27;)
+$cohortConfig = (&amp; $py tools/experiment_control.py assemble --configs $candidateConfigs --round-id cohorte-final-01 --operator $operator --reason &#x27;Siete candidatos elegidos antes de consultar test&#x27; | ConvertFrom-Json)
+if ($LASTEXITCODE -ne 0) { throw &#x27;Cohorte incompleta o incompatible&#x27; }
+&amp; $py src/12_select_detector.py --config $cohortConfig --pc-id PC-01
+if ($LASTEXITCODE -ne 0) { throw &#x27;Seleccion detector detenida&#x27; }
+&amp; $py src/13_select_classifier.py --config $cohortConfig --pc-id PC-01
+if ($LASTEXITCODE -ne 0) { throw &#x27;Seleccion clasificador detenida&#x27; }
+&amp; $py src/14_validate_integrated_pipeline.py --config $cohortConfig --pc-id PC-01
+if ($LASTEXITCODE -ne 0) { throw &#x27;Pipeline detenido&#x27; }</code></pre>
+<p>Si <code>assemble</code> señala protocolos no equivalentes, revisar la comparación; solo una decisión explícita documentada puede aceptar <code>--accept-non-equivalent</code>, que queda registrada y no convierte los protocolos en equivalentes. El pipeline emplea bounding boxes predichas y crops predichos, no reutiliza crops GT como predicciones.</p>
+<p>El freeze exige decisiones metodológicas personalmente confirmadas en la configuración de cohorte y gates pendientes. Estos comandos son para la fase final del usuario, no fueron ejecutados:</p>
+<pre><code class="powershell">&amp; $py src/15_freeze_experiment.py --config $cohortConfig --pc-id PC-01
+if ($LASTEXITCODE -ne 0) { throw &#x27;Freeze no valido; revisar decisiones y evidencias&#x27; }
+&amp; $py tools/manual_gates.py record --config $cohortConfig --pc-id PC-01 --gate FREEZE --operator $operator --evidence &#x27;Freeze revisado personalmente y checklist firmado&#x27; --confirm-personal-execution
+if ($LASTEXITCODE -ne 0) { throw &#x27;Gate FREEZE no registrado&#x27; }
+&amp; $py tools/manual_gates.py release-test --config $cohortConfig --pc-id PC-01 --operator $operator --evidence &#x27;Autorizacion posterior al freeze, firmada personalmente&#x27; --confirm-personal-execution
+if ($LASTEXITCODE -ne 0) { throw &#x27;TEST_RELEASE no autorizado&#x27; }
+&amp; $py src/16_evaluate_test.py --config $cohortConfig --pc-id PC-01
+if ($LASTEXITCODE -ne 0) { throw &#x27;Test final detenido; no reiniciar ni borrar sus controles&#x27; }
+&amp; $py src/17_benchmark_latency.py --config $cohortConfig --pc-id PC-01
+if ($LASTEXITCODE -ne 0) { throw &#x27;Benchmark detenido&#x27; }
+&amp; $py src/18_export_master_results.py --config $cohortConfig --pc-id PC-01
+if ($LASTEXITCODE -ne 0) { throw &#x27;Exportacion maestra detenida&#x27; }</code></pre>
+<h3>12. Actualización controlada de código</h3>
+<p>En cada estación, después de detener y verificar todos sus procesos, exportar snapshots y respaldar artefactos locales. No ejecutar <code>git pull</code> automáticamente ni resetear cambios del usuario. La nueva versión invalida identidades incompatibles; crear nueva ronda y repetir QA de compatibilidad antes de reanudar.</p>
+<pre><code class="powershell">if (git status --porcelain) { throw &#x27;Preservar cambios locales antes de actualizar&#x27; }
+$NewApprovedCommit = Read-Host &#x27;Nuevo SHA completo revisado y aprobado&#x27;
+if ($NewApprovedCommit -notmatch &#x27;^[0-9a-fA-F]{40}$&#x27;) { throw &#x27;SHA invalido&#x27; }
+git fetch origin $Branch
+if ($LASTEXITCODE -ne 0) { throw &#x27;Fetch fallo&#x27; }
+git checkout --detach $NewApprovedCommit
+if ($LASTEXITCODE -ne 0) { throw &#x27;Checkout detenido&#x27; }
+if ((git rev-parse HEAD).Trim() -ne $NewApprovedCommit.ToLower()) { throw &#x27;Version distinta&#x27; }
+&amp; $py -m pip install -r requirements.txt -r requirements-dev.txt -c requirements-ml.txt
+if ($LASTEXITCODE -ne 0) { throw &#x27;Dependencias no verificadas&#x27; }
+&amp; $py -m pip check
+if ($LASTEXITCODE -ne 0) { throw &#x27;Entorno incompatible&#x27; }</code></pre></details><details><summary>Planificación y calibración personal</summary><h2>Planificación de siete modelos y tres RTX 6000 Ada</h2>
+<p><strong>No hay tiempos GPU medidos.</strong> El hardware declarado por el usuario es Windows 10, Xeon w7-2495X 2,50 GHz, 256 GB RAM y una RTX 6000 Ada por PC (~47 GB VRAM disponible). No se inspeccionaron esas estaciones. Este archivo es una plantilla de planificación, no un benchmark ni una fecha prometida.</p>
+<h3>Reparto inicial y cifras exclusivamente ilustrativas</h3>
+<p>Las cifras provienen de los supuestos de <code>ESTIMACION_TIEMPOS.md</code> de la auditoría adjunta. No se ejecutaron entrenamientos ni calibración para obtenerlas.</p>
+<table>
+<tr><th>Modelo</th><th>Propietario inicial</th><th>Total ilustrativo GPU-h</th></tr>
+<tr><td>YOLOv8n</td><td>PC-01 / i21315</td><td>7,1</td></tr>
+<tr><td>YOLOv8l</td><td>PC-01 / i21315</td><td>20,1</td></tr>
+<tr><td>ResNet50</td><td>PC-01 / i21315</td><td>3,9</td></tr>
+<tr><td>YOLO26l</td><td>PC-02 / i21314</td><td>23,2</td></tr>
+<tr><td>Swin-Tiny</td><td>PC-02 / i21314</td><td>7,8</td></tr>
+<tr><td>RT-DETR-R50</td><td>PC-03 / i21313</td><td>26,2 — bloqueado</td></tr>
+<tr><td>ViT-B/16</td><td>PC-03 / i21313</td><td>7,0</td></tr>
+</table>
+<p>Sumas ilustrativas secuenciales por estación: <strong>31,1 / 31,0 / 33,2 h</strong>. La suma redondeada es 95,3 GPU-h; el máximo sería 33,2 h de cómputo continuo únicamente bajo esos supuestos y si se desbloquea RT-DETR-R50. No incluye espera de revisiones, adquisición de pesos, QA, datos, transferencias, fallos, disponibilidad del laboratorio o nuevas rondas. Actualmente no puede estimarse una finalización oficial con RT-DETR bloqueado.</p>
+<h3>Fórmula que debe sustituirse con mediciones</h3>
+<p>Por arquitectura, modelar por separado:</p>
+<ul>
+<li>Baseline: <code>3 × épocas_baseline × segundos_por_época</code> (100 épocas detector / 50 clasificador, con la paciencia ya declarada).</li>
+<li>HPO: <code>trials × 3 folds × épocas_máximas × fracción_ejecutada × segundos_por_época</code>. Trials 15/20, máximos 60/40 según configuración vigente. Registrar pruning y early stopping reales; no suponer siempre que se ejecuta el máximo.</li>
+<li>Robustez: <code>3 configuraciones × 3 seeds × 3 folds × épocas_máximas × fracción_ejecutada × segundos_por_época</code>.</li>
+<li>Candidato: épocas derivadas del criterio predeclarado de robustez, con todo el 70 %. No fijar artificialmente una fracción del máximo para acelerar.</li>
+<li>Preparación, validación, escritura de checkpoints, figuras, sincronización e inferencia: medir por separado; sumarlas, no deducirlas de FPS de COCO.</li>
+</ul>
+<p>La auditoría anterior usó una fracción 0,65, un margen 15 %, épocas finales ilustradas como 75 % del máximo y tasas arbitrarias de 7/20/23/26/5/9/10 s por época para los siete modelos anteriores. <strong>No son parámetros del framework ni recomendaciones para reducir el experimento.</strong> Las nuevas rondas añaden coste y no sustituyen resultados anteriores.</p>
+<h3>Calibración que el usuario debe ejecutar personalmente</h3>
+<ol>
+<li>Verificar seguridad térmica y sensores con fuentes oficiales del equipo, identidad/UUID, driver, CUDA y versiones exactamente iguales. No inventar límites térmicos.</li>
+<li>Revisar licencias y pesos locales verificados; RT-DETR-R50 no entra hasta resolver la decisión de backend/representación. No sustituir por L.</li>
+<li>Usar un experimento de QA identificado, separado del científico, dentro del 70 % y sin abrir validation externo ni test. Medir con la resolución y batch oficiales; no extrapolar de una resolución reducida sin etiquetar esa diferencia.</li>
+<li>Medir tiempo de inicialización, carga de datos, warm-up y tiempos por época/batch por separado. Registrar PC, modelo exacto, commit, hashes de datos/folds/espacio, seed, AMP, transformaciones, batch nominal, microbatch/acumulación efectivos, workers/persistent_workers/pinned memory, RSS del proceso y descendientes, VRAM pico, temperatura y estado de seguridad.</li>
+<li>Comparar workers 0/2/4 y persistencia de workers en QA separado. No adoptar una variante oficial hasta verificar corrección, determinismo/comparabilidad y consumo; guardar evidencia. Registrar RAM total de árbol de procesos Windows, no solo del padre.</li>
+<li>Registrar filas reales en una tabla local <code>pc_id,architecture,phase,fold,seed,epoch,seconds,batches,vram_peak_mb,ram_tree_mb,commit,configuration_hash</code>. Datos ausentes permanecen vacíos, nunca cero inventado.</li>
+<li>Reemplazar tasas/fracciones por medianas y dispersión observadas, separando las tres PCs y fases. Construir escenarios con cuantiles o rangos medidos, no porcentajes de confianza ficticios.</li>
+<li>Actualizar el reparto mediante transferencia explícita de trabajos pendientes, conservando protocolo y dueño único. Mover una arquitectura no cambia GPU-horas necesarias; puede mejorar utilización del calendario, pero debe medirse.</li>
+</ol>
+<p>Usar <code>tools/qa.py --help</code> para opciones de pruebas opt-in y <code>tools/qa_training_smoke.py --help</code> para su alcance reducido; estos comandos no fueron ejecutados con entrenamiento por el agente. El smoke sintético de QA no mide el rendimiento científico de todas las arquitecturas. Las mediciones reales y sus resultados pesados se conservan localmente/ZIP, fuera de Git.</p></details></main></body></html>

@@ -1,0 +1,67 @@
+{
+  "recorded_at_utc": "2026-10-29T21:58:56.470184+00:00",
+  "branch": "fix/botrytis-supervised-seven-models",
+  "base_commit": "75ba51d8c22eab7a3231c383957a921cd026b00c",
+  "scope": "CPU_SYNTHETIC_NO_TRAINING_NO_HPO_NO_REAL_TEST",
+  "full_suite": {
+    "tests": 320,
+    "passed": 311,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 9,
+    "seconds": 1123.635,
+    "skip_reasons": {
+      "Training tests require explicit BOTRYTIS_ALLOW_TRAINING_TESTS=1; task forbids training": 5,
+      "generador de tareas de este perfil requiere Windows": 2,
+      "Place the external launcher beside the project as delivered": 1,
+      "Project raw images absent; real dataset requires personal audit; official crops/checkpoints pending": 1
+    },
+    "warnings": 2,
+    "warning_reason": "Two plot-construction tests open more than 20 figures before caller cleanup; no warnings suppressed."
+  },
+  "post_review_suite": {
+    "tests": 156,
+    "passed": 154,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 2,
+    "seconds": 69.133,
+    "skip_reasons": {
+      "generador de tareas de este perfil requiere Windows": 2
+    }
+  },
+  "final_smoke": {
+    "passed": 2,
+    "deselected": 31,
+    "seconds": 4.58
+  },
+  "final_source_sha256": "7013ae1b97b4d3e71779eae64eeab2e478e398f35e61ba3d0977490bd562c47a",
+  "static": {
+    "python_ast_files": 131,
+    "new_modules_pyflakes": "PASS",
+    "powershell_version": "7.5.4",
+    "powershell_documentation_blocks": 37,
+    "powershell_parser": "PASS",
+    "cli_help_commands": 20,
+    "html_structure_and_local_links": "PASS",
+    "javascript_syntax": "PASS",
+    "svg_static_render": "PASS",
+    "full_browser_execution": "NOT_RUN_CHROMIUM_UNAVAILABLE"
+  },
+  "not_executed": [
+    "ML training",
+    "HPO optimization",
+    "GPU benchmark",
+    "real dataset inference",
+    "weight/dataset acquisition",
+    "real test access",
+    "personal QA approval",
+    "native Windows/CUDA execution"
+  ],
+  "post_review_changes": [
+    "Sanitize scoped job ID in log filename",
+    "Separate comparison objectives and preserve stored historical fingerprint",
+    "Fit SVG review labels and HPO description",
+    "Remove unused import"
+  ]
+}

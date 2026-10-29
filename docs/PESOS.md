@@ -27,7 +27,7 @@ Alternativas para decision manual, sin ejecutar ninguna ahora:
 2. Predeclarar variante Ultralytics ResNet50 scratch en experimento separado, con initialization.scratch_decision
    e initialization.rtdetr_variant_decision. Compararla solo bajo un protocolo de scratch comun/documentado;
    no llamarla reproduccion exacta de R50-vd COCO. No altera silenciosamente la definicion primaria.
-Mientras se decide, la seleccion oficial de los siete detectores y el freeze completo permanecen bloqueados.
+Mientras se decide, la seleccion oficial de los cuatro detectores y el freeze completo permanecen bloqueados.
 
 ## Clasificadores
 
