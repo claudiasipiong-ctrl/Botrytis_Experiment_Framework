@@ -237,7 +237,7 @@ def _train_once(spec: ArchSpec, hp: Mapping[str, Any], cfg: Mapping[str, Any], *
     batch_contract = []
     def record_batch(tr):
         row = dict(epoch=int(tr.epoch), micro_batch=micro_batch,
-                   nominal_batch=int(d['nominal_batch_size']), accumulate=getattr(tr,'accumulate',None),
+                   nominal_batch=int(cfg["detector"]["nominal_batch_size"]), accumulate=getattr(tr,'accumulate',None),
                    learning_rates=[float(g['lr']) for g in tr.optimizer.param_groups])
         if not batch_contract or row != batch_contract[-1]: batch_contract.append(row)
     model.add_callback('on_train_batch_end',record_batch)
