@@ -90,7 +90,7 @@ class SafetyMonitor:
                 p = cfg_path(self.cfg, name)
                 while not p.exists():
                     p = p.parent
-                free = psutil.disk_usage(p).free
+                free = psutil.disk_usage(str(p)).free
                 result[name + ".free_bytes"] = free
                 if not observe and free < policy["min_free_disk_bytes"]:
                     raise RuntimeError("Disco por debajo de la reserva verificada")

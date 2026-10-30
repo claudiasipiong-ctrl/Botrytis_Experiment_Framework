@@ -43,7 +43,13 @@ def test_observation_records_hot_hardware_and_low_resources_without_threshold_st
     monkeypatch.setattr(safety.subprocess, "run", lambda *a, **k: SimpleNamespace(stdout="GPU-SYNTHETIC"))
     monkeypatch.setattr(safety, "gpu_reading", lambda _: {"name": "SYNTHETIC", "temperature.gpu": 99})
     monkeypatch.setattr(psutil, "virtual_memory", lambda: SimpleNamespace(available=0))
-    monkeypatch.setattr(psutil, "disk_usage", lambda _: SimpleNamespace(free=0))
+    disk_paths = []
+    def windows_disk_usage(path):
+        if not isinstance(path, str):
+            raise TypeError("argument 1 must be str, not WindowsPath")
+        disk_paths.append(path)
+        return SimpleNamespace(free=0)
+    monkeypatch.setattr(psutil, "disk_usage", windows_disk_usage)
     monkeypatch.setattr(psutil, "cpu_percent", lambda **kw: 100)
     monkeypatch.setattr(psutil, "sensors_temperatures", lambda: {"cpu": [SimpleNamespace(current=105)]} if cpu_sensor else {}, raising=False)
     report = SafetyMonitor(cfg, tmp_path / "telemetry.jsonl").check()
@@ -51,6 +57,9 @@ def test_observation_records_hot_hardware_and_low_resources_without_threshold_st
     assert report["cpu_thermal_protection_verified"] is False
     assert report["gpu"]["temperature.gpu"] == 99
     assert report["available_ram_bytes"] == 0
+    assert len(disk_paths) == 2
+    assert report["paths.artifacts_dir.free_bytes"] == 0
+    assert report["paths.runs_dir.free_bytes"] == 0
     assert report["cpu_temperatures_c"] == ([105] if cpu_sensor else [])
     assert json.loads((tmp_path / "telemetry.jsonl").read_text())["mode"] == "observe"
 

@@ -88,7 +88,7 @@ def main():
         from utils.reproducibility import collect_environment
         env = collect_environment(cfg=cfg, project_root=ROOT)
         env["ram_available_bytes"] = psutil.virtual_memory().available
-        env["disk"] = {k: psutil.disk_usage(ROOT)._asdict() for k in ["project_volume"]}
+        env["disk"] = {k: psutil.disk_usage(str(ROOT))._asdict() for k in ["project_volume"]}
         env["cpu_count_logical"] = psutil.cpu_count()
         env["cpu_count_physical"] = psutil.cpu_count(logical=False)
         dump(a.output / "hardware.json", env)
