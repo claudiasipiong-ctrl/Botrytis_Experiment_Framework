@@ -7,6 +7,7 @@ se registran como ``None`` (asi ``00_check_environment.py`` funciona antes de in
 from __future__ import annotations
 
 import ctypes
+import math
 import os
 import platform
 import random
@@ -30,6 +31,11 @@ TRACKED_PACKAGES: tuple[str, ...] = (
 
 #: Campos del entorno que NO forman parte del ``environment_hash`` (son datos/codigo, no entorno).
 _NON_ENV_FIELDS = {"git_commit", "code_hash", "dataset_hash", "split_hash"}
+
+# OS-visible RAM can differ slightly because of hardware/firmware reservations.
+# Require both bounds; a different memory capacity must still be rejected.
+RAM_COMPARISON_MAX_DIFFERENCE_MIB = 64
+RAM_COMPARISON_MAX_RELATIVE_DIFFERENCE = 0.001
 
 
 # --------------------------------------------------------------------------- #
@@ -366,12 +372,24 @@ def compare_environments(
 
     Cada elemento: ``{"field", "reference", "candidate"}``. Una lista vacia => comparables.
     Se ignoran campos ausentes en AMBOS lados.
+    Solo RAM utilizable admite hasta 64 MiB y 0.1 % de diferencia; los valores
+    originales y sus hashes permanecen intactos. Los otros campos son exactos.
     """
     diffs: list[dict[str, Any]] = []
     for f in fields:
         a, b = reference.get(f), candidate.get(f)
         if a is None and b is None:
             continue
+        if f == "ram_total_mb" and all(
+            type(value) in (int, float) and math.isfinite(value) and value > 0
+            for value in (a, b)
+        ):
+            tolerance = min(
+                RAM_COMPARISON_MAX_DIFFERENCE_MIB,
+                min(a, b) * RAM_COMPARISON_MAX_RELATIVE_DIFFERENCE,
+            )
+            if abs(a - b) <= tolerance:
+                continue
         if a != b:
             diffs.append({"field": f, "reference": a, "candidate": b})
     return diffs
