@@ -60,7 +60,13 @@ def build_classifier(
         exact_model = implementation_model or (entry_for(spec, cfg)["implementation_model"] if cfg else spec.weights)
         model = timm.create_model(exact_model, pretrained=False, num_classes=1000 if source else 2, **kwargs)
         if source:
-            model.load_state_dict(torch.load(source, map_location="cpu", weights_only=True), strict=True)
+            state = torch.load(source, map_location="cpu", weights_only=True)
+            if spec.family == "swin":
+                # Use timm's checkpoint adapter: older Swin files contain derived
+                # attention masks/indices that current models regenerate locally.
+                from timm.models.swin_transformer import checkpoint_filter_fn
+                state = checkpoint_filter_fn(state, model)
+            model.load_state_dict(state, strict=True)
             model.reset_classifier(2)
         pc = getattr(model, "pretrained_cfg", {}) or {}
         mean = tuple(float(v) for v in pc.get("mean", (0.485, 0.456, 0.406)))
