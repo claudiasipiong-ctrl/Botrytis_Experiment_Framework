@@ -1,4 +1,4 @@
-"""Supervision conservadora; no modifica potencia, reloj, voltaje ni protecciones."""
+"""Supervision configurable; no modifica potencia, reloj, voltaje ni protecciones del hardware."""
 from __future__ import annotations
 import csv
 import json
@@ -21,6 +21,15 @@ def read_policy(cfg):
     if not p.is_file():
         raise FileNotFoundError(f"Falta politica verificada: {p}; vea GUIA_EJECUCION_3PCs.md")
     policy = json.loads(p.read_text(encoding="utf-8"))
+    mode = policy.get("mode", "enforce")
+    if mode not in ("enforce", "observe"):
+        raise ValueError("Modo de supervision desconocido")
+    if mode == "observe":
+        if not all(policy.get(k) for k in ("gpu_uuid", "gpu_model", "configured_by", "configured_at")):
+            raise ValueError("Politica de observacion incompleta")
+        if policy.get("user_requested_observation_only") is not True:
+            raise ValueError("Solo registro requiere una decision explicita del usuario")
+        return policy
     required = ("gpu_uuid", "gpu_model", "max_gpu_temperature_c", "gpu_limit_source",
                 "min_available_ram_bytes", "min_free_disk_bytes", "cpu_protection_source")
     if any(policy.get(k) in (None, "", 0) for k in required):
@@ -55,7 +64,10 @@ class SafetyMonitor:
     def check(self):
         import psutil
         policy = self.policy
-        result = {"time": datetime.now(timezone.utc).isoformat(), "status": "PASS"}
+        observe = policy.get("mode", "enforce") == "observe"
+        result = {"time": datetime.now(timezone.utc).isoformat(), "status": "PASS",
+                  "mode": "observe" if observe else "enforce", "resource_limits_enforced": not observe,
+                  "cpu_thermal_protection_verified": policy.get("cpu_thermal_protection_verified") is True}
         try:
             selected = str(self.cfg.get("compute", {}).get("device", "auto"))
             selected = "0" if selected == "auto" else selected
@@ -67,12 +79,12 @@ class SafetyMonitor:
             result["gpu"] = gpu
             if gpu["name"] != policy["gpu_model"]:
                 raise RuntimeError("Modelo GPU distinto de la politica")
-            if gpu["temperature.gpu"] >= policy["max_gpu_temperature_c"]:
+            if not observe and gpu["temperature.gpu"] >= policy["max_gpu_temperature_c"]:
                 raise RuntimeError("Temperatura GPU alcanzo el limite verificado")
             vm = psutil.virtual_memory()
             result["available_ram_bytes"] = vm.available
             result["cpu_utilization_percent"] = psutil.cpu_percent(interval=None)
-            if vm.available < policy["min_available_ram_bytes"]:
+            if not observe and vm.available < policy["min_available_ram_bytes"]:
                 raise RuntimeError("RAM disponible por debajo de la reserva verificada")
             for name in ("paths.artifacts_dir", "paths.runs_dir"):
                 p = cfg_path(self.cfg, name)
@@ -80,14 +92,19 @@ class SafetyMonitor:
                     p = p.parent
                 free = psutil.disk_usage(p).free
                 result[name + ".free_bytes"] = free
-                if free < policy["min_free_disk_bytes"]:
+                if not observe and free < policy["min_free_disk_bytes"]:
                     raise RuntimeError("Disco por debajo de la reserva verificada")
             temperatures = getattr(psutil, "sensors_temperatures", lambda: {})()
             cpu = [r.current for key, rows in temperatures.items()
                    if any(n in key.lower() for n in ("coretemp", "k10temp", "cpu"))
                    for r in rows if r.current is not None]
             result["cpu_temperatures_c"] = cpu
-            if cpu:
+            if observe:
+                result["cpu_temperature_status"] = (
+                    "OBSERVACION: temperaturas registradas sin umbral de parada"
+                    if cpu else "NO OBSERVABLE: protecciones OEM no verificadas por esta lectura"
+                )
+            elif cpu:
                 limit = policy.get("max_cpu_temperature_c")
                 if not isinstance(limit, (float, int)) or limit <= 0:
                     raise RuntimeError("CPU con sensores sin limite configurado")
