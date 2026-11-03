@@ -27,6 +27,27 @@ def dump(path, data):
     Path(path).write_text(json.dumps(data, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
     print(json.dumps(data, indent=2, ensure_ascii=False, default=str))
 
+def directory_source_inventory(images, labels, extensions, expected):
+    """OFF/_off images are excluded; their retained labels are audited, not active."""
+    images, labels = Path(images), Path(labels)
+    extensions = {e.casefold() for e in extensions}
+    names = [p for p in images.iterdir() if p.is_file() and p.suffix.casefold() in extensions]
+    labs = [p for p in labels.glob("*.txt") if p.name.casefold() != "classes.txt"]
+    active = {p.stem.casefold() for p in names}
+    label_ids = {p.stem.casefold() for p in labs}
+    ignored_paths = [p for root in images.parent.iterdir()
+                     if root.is_dir() and root.name.casefold() in {"off", "_off"}
+                     for p in root.rglob("*") if p.is_file() and p.suffix.casefold() in extensions]
+    ignored = {p.stem.casefold() for p in ignored_paths} - active
+    ignored_labels = label_ids & ignored
+    return {"source": "directorio activo local, ZIP no requerido", "images": len(names),
+            "labels": len(labs), "active_labels": len(labs) - sum(p.stem.casefold() in ignored_labels for p in labs),
+            "ignored_labels": sorted(ignored_labels),
+            "ignored_image_paths": sorted(str(p) for p in ignored_paths if p.stem.casefold() in ignored_labels),
+            "without_label": sorted(active - label_ids),
+            "without_image": sorted(label_ids - active - ignored_labels), "expected_reference": expected}
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("check")
@@ -112,14 +133,14 @@ def main():
         b = read_binding(cfg)
         zip_path = Path(b["dataset_zip"]) if b.get("dataset_zip") else None
         if zip_path is None:
-            images=cfg_path(cfg,"paths.raw_images_dir")
-            labels=cfg_path(cfg,"paths.raw_labels_dir")
-            names=[p for p in images.iterdir() if p.is_file() and p.suffix.lower() in set(cfg["dataset"]["image_extensions"])]
-            labs=[p for p in labels.glob("*.txt") if p.name!="classes.txt"]
-            im={p.stem.casefold() for p in names};la={p.stem.casefold() for p in labs}
-            dump(a.output/"dataset_source.json",{"source":"directorio activo local, ZIP no requerido", "images":len(names),"labels":len(labs),"without_label":sorted(im-la),"without_image":sorted(la-im),"expected_reference":cfg["dataset"]["n_images_expected"]})
-            if im!=la:return 1
-            return 10 if len(names)!=int(cfg["dataset"]["n_images_expected"]) else 0
+            details = directory_source_inventory(cfg_path(cfg, "paths.raw_images_dir"),
+                                                 cfg_path(cfg, "paths.raw_labels_dir"),
+                                                 cfg["dataset"]["image_extensions"],
+                                                 int(cfg["dataset"]["n_images_expected"]))
+            dump(a.output / "dataset_source.json", details)
+            if details["without_label"] or details["without_image"]:
+                return 1
+            return 10 if details["images"] != details["expected_reference"] else 0
         from orchestration.exchange import _safe_name
         details = {"zip": str(zip_path), "zip_sha256": sha256_file(zip_path)}
         errors = []
@@ -133,7 +154,7 @@ def main():
             if bad:
                 errors.append("CRC: " + bad)
             roots = {i.filename.rsplit("/images/", 1)[0] for i in infos if "/images/" in i.filename
-                     and not i.is_dir() and not any(part.startswith("_") for part in Path(i.filename).parts)}
+                     and not i.is_dir() and not any(part.startswith("_") or part.casefold() == "off" for part in Path(i.filename).parts)}
             if len(roots) != 1:
                 raise ValueError(f"Raiz images activa ambigua: {roots}")
             prefix = roots.pop() + "/"
@@ -160,8 +181,13 @@ def main():
                 errors.append("Conteo real distinto del esperado; no se cambia automaticamente")
             image_stems = {Path(n).stem for n in images}
             label_stems = {Path(n).stem for n in labels}
-            if image_stems != label_stems:
-                errors.append(f"Sin label: {sorted(image_stems-label_stems)}; labels sin imagen: {sorted(label_stems-image_stems)}")
+            off_stems = {Path(i.filename).stem.casefold() for i in infos if not i.is_dir()
+                         and Path(i.filename).suffix.lower() in extensions
+                         and any(part.casefold() in {"off", "_off"} for part in Path(i.filename).parts)}
+            ignored_labels = {n for n in label_stems - image_stems if n.casefold() in off_stems}
+            details["ignored_labels"] = sorted(ignored_labels)
+            if image_stems != label_stems - ignored_labels:
+                errors.append(f"Sin label: {sorted(image_stems-label_stems)}; labels sin imagen activa ni OFF: {sorted(label_stems-image_stems-ignored_labels)}")
             for names, key in ((images, "paths.raw_images_dir"), (labels, "paths.raw_labels_dir")):
                 local = cfg_path(cfg, key)
                 import hashlib
