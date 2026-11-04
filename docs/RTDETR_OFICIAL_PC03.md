@@ -59,3 +59,7 @@ La ronda incorpora un catálogo/backend distinto del placeholder de las rondas a
 Se adjunta `test_r50.py`/`dev_tests/test_r50_official_adapter.py`. Usa el backend y checkpoint oficiales descargados en las rutas indicadas por `R50_TEST_SOURCE`, `R50_TEST_WEIGHT` y `R50_TEST_ARCHIVE` (por defecto la cache local `r50`). Las pruebas de orquestación sustituyen explícitamente el trainer costoso por uno sintético; las de carga, criterio, forward/backward y datos usan las implementaciones reales. No se simuló una mejora de mAP ni entrenamiento real del dataset.
 
 La ejecución operativa necesita conectividad con los dos enlaces oficiales durante la primera adquisición y aceptación explícita mediante `--allow-network --accept-license`, como el gestor original. Una vez adquiridos y verificados se reutilizan los archivos. No se necesitan tokens en los comandos ni acceso remoto a Drive.
+
+## Correccion de adquisicion 2026-11-04
+
+La version inicial intentaba descargar despues de importar el framework, cuyo bootstrap impide sockets durante ejecuciones locales. La adquisicion ahora sucede expresamente antes de cualquier import del framework y requiere ambos flags de red/licencia. No se elimina, parchea ni desactiva ningun audit hook. Una prueba de HTTP local en un proceso nuevo demuestra descarga correcta y el rechazo posterior de conexiones por el bootstrap real. Se conserva el ejecutor inicial usando un nombre nuevo al entregar esta version. El entrenamiento y sus hashes no han cambiado salvo la identidad declarada del ejecutor corregido.

@@ -15,6 +15,7 @@ import subprocess
 import sys
 import time
 import types
+import tempfile
 import urllib.request
 import uuid
 import warnings
@@ -50,8 +51,32 @@ def canonical(value):
     return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':'),default=str).encode()).hexdigest()
 
 
+def acquisition_json(path,data):
+    """Acquisition must remain stdlib-only: training bootstrap forbids sockets."""
+    path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
+    fd,temp=tempfile.mkstemp(prefix='.acq-',suffix='.tmp',dir=path.parent)
+    try:
+        with os.fdopen(fd,'w',encoding='utf-8') as f:
+            json.dump(data,f,ensure_ascii=False,indent=2,allow_nan=False);f.flush();os.fsync(f.fileno())
+        os.replace(temp,path)
+    finally:
+        if os.path.exists(temp):os.unlink(temp)
+
+
+def acquire_before_framework(store,allow_network,accept_license):
+    """Explicit acquisition, before any framework import installs its local-only audit.
+
+    No audit hook is removed/overridden. After acquisition the normal framework
+    bootstrap still rejects sockets during training. Fixed official URLs/hashes.
+    """
+    if allow_network and not accept_license:raise RuntimeError('Adquisicion requiere --allow-network y --accept-license')
+    source=acquire_source(store,allow_network)
+    weight=download(WEIGHT_URL,Path(store)/'weights/rtdetr_r50vd_6x_coco_from_paddle.pth',WEIGHT_SHA,allow_network)
+    if weight.stat().st_size!=WEIGHT_SIZE:raise RuntimeError('Tamano del checkpoint oficial incorrecto')
+    return source,weight
+
+
 def download(url,path,expected,allow_network):
-    from utils.durable import atomic_json
     path=Path(path)
     if path.is_file():
         if sha(path)!=expected:raise RuntimeError('Archivo existente incompatible, se conserva: '+str(path))
@@ -68,13 +93,12 @@ def download(url,path,expected,allow_network):
         out.flush();os.fsync(out.fileno())
     if sha(temp)!=expected:raise RuntimeError('SHA256 incorrecto, descarga conservada: '+str(temp))
     os.replace(temp,path)
-    atomic_json(path.with_suffix(path.suffix+'.source.json'),dict(url=url,sha256=expected,
+    acquisition_json(path.with_suffix(path.suffix+'.source.json'),dict(url=url,sha256=expected,
         checksum_basis='Hash calculado durante la verificacion de esta integracion; no se afirma publicado por upstream'))
     return path
 
 
 def acquire_source(base,allow_network=False):
-    from utils.durable import atomic_json
     base=Path(base);archive=download(SOURCE_URL,base/'official.zip',SOURCE_SHA,allow_network)
     root=base/'official';marker=root/'source.json'
     if not root.exists():
@@ -87,7 +111,7 @@ def acquire_source(base,allow_network=False):
                 if rel.is_absolute() or '..' in rel.parts:raise RuntimeError('Ruta insegura en archivo oficial')
                 dest=root/rel;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(z.read(item))
         manifest={p.relative_to(root).as_posix():sha(p) for p in root.rglob('*') if p.is_file()}
-        atomic_json(marker,dict(revision=REV,archive_sha256=SOURCE_SHA,files=manifest))
+        acquisition_json(marker,dict(revision=REV,archive_sha256=SOURCE_SHA,files=manifest))
     if not marker.is_file():raise RuntimeError('Extraccion previa incompleta: '+str(root))
     m=read(marker)
     if m['revision']!=REV or m['archive_sha256']!=SOURCE_SHA:raise RuntimeError('Otra fuente oficial; se conserva')
@@ -655,6 +679,9 @@ def main():
     os.chdir(project);sys.path.insert(0,str(project/'src'))
     os.environ.update(PYTHONUTF8='1',PYTHONIOENCODING='utf-8',MPLBACKEND='Agg',BOTRYTIS_BOOTSTRAP_DIR=str(Path.home()/'btlog'))
     os.environ.setdefault('CUBLAS_WORKSPACE_CONFIG',':4096:8')
+    if os.environ.get('USERNAME','').casefold()!='i21313':raise RuntimeError('Este ejecutor es exclusivo de PC-03 / I21313')
+    store=Path.home()/'r50';store.mkdir(exist_ok=True)
+    source,weight=acquire_before_framework(store,args.allow_network,args.accept_license)
     from utils.config_loader import load_config
     from utils.durable import FileLock,atomic_json
     from utils.guards import gpu_lock_path,GpuJobLock

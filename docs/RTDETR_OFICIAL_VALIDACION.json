@@ -1,10 +1,10 @@
 {
-  "tests": 32,
+  "tests": 35,
   "failures": 0,
   "errors": 0,
   "skipped": 0,
-  "duration_seconds": 42.341,
-  "adapter_sha256": "01808e19836ac8c179b01a462f1409c565685a9025a3f430cf4b5304d085847e",
+  "duration_seconds": 39.004,
+  "adapter_sha256": "e62e47fdc4cdbe6648d0830a8efac9701ab04ae82b77757d4a0880ec73381df7",
   "official_revision": "df2a96c8c3a098567a1149bf0248da6efe6d495d",
   "weight_sha256": "dfaafa5a3d29958a360c35f1fad553a6f287bfae9967e8ee007e65cff21ddf45",
   "scope": "CPU: strict official checkpoint loading, complete forward640, backward160, real data/criterion/metrics, checkpoint and native queue/three-fold recovery with synthetic training fixtures",
@@ -16,5 +16,6 @@
     "HPO"
   ],
   "local_gpu_selftest_required": true,
-  "old_experiments_modified": false
+  "old_experiments_modified": false,
+  "network_regression": "Actual localhost HTTP acquisition before framework imports; actual native bootstrap socket block verified afterwards"
 }

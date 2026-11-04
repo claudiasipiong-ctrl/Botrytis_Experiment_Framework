@@ -413,3 +413,54 @@ def test_queue_recovery_requires_dead_matching_owner_not_heartbeat_age(tmp_path,
     monkeypatch.setattr(psutil,'Process',absent)
     bt.recover_owned_baseline(q,job,owner)
     assert q.get(job.job_id).status=='PENDING' and q.get(job.job_id).attempt==job.attempt
+
+
+def test_acquisition_download_before_bootstrap_then_training_still_blocks_network(tmp_path):
+    """Real HTTP regression in a fresh process; importing a trainer must not leak permissions."""
+    import subprocess,sys,textwrap
+    code=textwrap.dedent('''
+        import hashlib,importlib.util,os,sys,threading,socket
+        from pathlib import Path
+        from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
+        module_path,output,project=sys.argv[1:]
+        spec=importlib.util.spec_from_file_location('adapter',module_path)
+        bt=importlib.util.module_from_spec(spec);spec.loader.exec_module(bt)
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200);self.end_headers();self.wfile.write(b'OFFICIAL_FIXTURE')
+            def log_message(self,*a):pass
+        server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
+        worker=threading.Thread(target=server.serve_forever,daemon=True);worker.start()
+        try:
+            assert 'utils.bootstrap' not in sys.modules
+            bt.download('http://127.0.0.1:'+str(server.server_port),Path(output)/'verified.bin',hashlib.sha256(b'OFFICIAL_FIXTURE').hexdigest(),True)
+            assert 'utils.bootstrap' not in sys.modules
+            assert (Path(output)/'verified.bin').read_bytes()==b'OFFICIAL_FIXTURE'
+            sys.path.insert(0,str(Path(project)/'src'))
+            os.environ['BOTRYTIS_BOOTSTRAP_DIR']=str(Path(output)/'logs')
+            from utils import bootstrap
+            bootstrap.install('r50_training.py',Path(project))
+            with socket.socket() as sock:
+                try:sock.connect(('127.0.0.1',server.server_port))
+                except PermissionError as error:assert 'bloqueada' in str(error)
+                else:raise AssertionError('Training network guard was disabled')
+            print('ACQUISITION_OK_TRAINING_STILL_BLOCKED')
+        finally:
+            server.shutdown();server.server_close()
+    ''')
+    result=subprocess.run([sys.executable,'-c',code,str(source),str(tmp_path),str(PROJECT_ROOT)],capture_output=True,text=True,timeout=30)
+    assert result.returncode==0,result.stdout+result.stderr
+    assert 'ACQUISITION_OK_TRAINING_STILL_BLOCKED' in result.stdout
+
+
+def test_explicit_acquisition_requires_license(tmp_path,monkeypatch):
+    monkeypatch.setattr(bt,'acquire_source',lambda *a:pytest.fail('No authorized acquisition'))
+    with pytest.raises(RuntimeError,match='accept-license'):bt.acquire_before_framework(tmp_path,True,False)
+
+
+def test_main_acquires_before_any_framework_import():
+    import ast
+    tree=ast.parse(source.read_text());main=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='main')
+    acquisition=next(n.lineno for n in ast.walk(main) if isinstance(n,ast.Call) and isinstance(n.func,ast.Name) and n.func.id=='acquire_before_framework')
+    first=min(n.lineno for n in ast.walk(main) if isinstance(n,ast.ImportFrom) and (n.module or '').startswith(('utils','orchestration')))
+    assert acquisition<first
