@@ -1,0 +1,302 @@
+{
+  "decision": "D_EVIDENCIA_INSUFICIENTE_PARA_AUTORIZACION_LOCAL",
+  "tables": {
+    "folds": [
+      {
+        "fold": 0,
+        "epochs": 23,
+        "best_epoch": 3,
+        "best_mAP50_95": 0.1337566803548636,
+        "last_mAP50_95": 0.048052059,
+        "best_before60_observed": 0.13375668,
+        "at60_observed": null,
+        "early_stopping_consistent": true,
+        "n_train": 151,
+        "n_val": 76,
+        "metrics_at_best": {
+          "map50": 0.21854477,
+          "map50_95": 0.13375668,
+          "precision": 0.17899223,
+          "recall": 0.58916479,
+          "f1": 0.27456866
+        },
+        "losses": {
+          "train_loss": {
+            "first": 3.5756028,
+            "at_best": 2.5948355,
+            "last": 1.9310152,
+            "min": 1.9303865,
+            "max": 3.5756028
+          },
+          "val_loss": {
+            "first": 2.4762465,
+            "at_best": 2.1732684,
+            "last": 2.0236545,
+            "min": 1.9634988,
+            "max": 3.1064027
+          },
+          "optimization_loss_total": {
+            "first": 46.523714,
+            "at_best": 29.690837,
+            "last": 22.262101,
+            "min": 20.620319,
+            "max": 46.523714
+          },
+          "train/vfl_loss": {
+            "first": 0.3392235,
+            "at_best": 1.1251002,
+            "last": 1.4865043,
+            "min": 0.3392235,
+            "max": 1.8310476
+          },
+          "train/bbox_loss": {
+            "first": 1.2757436,
+            "at_best": 0.45996413,
+            "last": 0.12556738,
+            "min": 0.089195711,
+            "max": 1.2757436
+          },
+          "train/giou_loss": {
+            "first": 1.9606357,
+            "at_best": 1.0097711,
+            "last": 0.31894349,
+            "min": 0.2448884,
+            "max": 1.9606357
+          },
+          "val/vfl_loss": {
+            "first": 0.60175595,
+            "at_best": 1.0620182,
+            "last": 1.6800969,
+            "min": 0.60175595,
+            "max": 2.0909999
+          },
+          "val/bbox_loss": {
+            "first": 0.71554738,
+            "at_best": 0.39905066,
+            "last": 0.11656275,
+            "min": 0.07537943,
+            "max": 0.71554738
+          },
+          "val/giou_loss": {
+            "first": 1.1589432,
+            "at_best": 0.71219953,
+            "last": 0.22699481,
+            "min": 0.14160115,
+            "max": 1.1589432
+          }
+        },
+        "zero_detection_metric_epochs": []
+      },
+      {
+        "fold": 1,
+        "epochs": 100,
+        "best_epoch": 100,
+        "best_mAP50_95": 0.7826096947114208,
+        "last_mAP50_95": 0.78260969,
+        "best_before60_observed": 0.67371006,
+        "at60_observed": 0.67371006,
+        "early_stopping_consistent": true,
+        "n_train": 151,
+        "n_val": 76,
+        "metrics_at_best": {
+          "map50": 0.86064581,
+          "map50_95": 0.78260969,
+          "precision": 0.79502631,
+          "recall": 0.83673034,
+          "f1": 0.81534539
+        },
+        "losses": {
+          "train_loss": {
+            "first": 3.5840315,
+            "at_best": 0.61284469,
+            "last": 0.61284469,
+            "min": 0.59251277,
+            "max": 3.5840315
+          },
+          "val_loss": {
+            "first": 2.3039128,
+            "at_best": 0.82255304,
+            "last": 0.82255304,
+            "min": 0.81001766,
+            "max": 2.7521993
+          },
+          "optimization_loss_total": {
+            "first": 46.9466,
+            "at_best": 7.7175251,
+            "last": 7.7175251,
+            "min": 7.5218997,
+            "max": 46.9466
+          },
+          "train/vfl_loss": {
+            "first": 0.35775948,
+            "at_best": 0.46969171,
+            "last": 0.46969171,
+            "min": 0.35775948,
+            "max": 1.9081333
+          },
+          "train/bbox_loss": {
+            "first": 1.3475737,
+            "at_best": 0.039379822,
+            "last": 0.039379822,
+            "min": 0.038122967,
+            "max": 1.3475737
+          },
+          "train/giou_loss": {
+            "first": 1.8786983,
+            "at_best": 0.10377317,
+            "last": 0.10377317,
+            "min": 0.091480047,
+            "max": 1.8786983
+          },
+          "val/vfl_loss": {
+            "first": 0.7054332,
+            "at_best": 0.55803517,
+            "last": 0.55803517,
+            "min": 0.55803517,
+            "max": 2.2243237
+          },
+          "val/bbox_loss": {
+            "first": 0.59700682,
+            "at_best": 0.084483947,
+            "last": 0.084483947,
+            "min": 0.073252498,
+            "max": 0.59700682
+          },
+          "val/giou_loss": {
+            "first": 1.0014728,
+            "at_best": 0.18003393,
+            "last": 0.18003393,
+            "min": 0.16383191,
+            "max": 1.0014728
+          }
+        },
+        "zero_detection_metric_epochs": []
+      },
+      {
+        "fold": 2,
+        "epochs": 100,
+        "best_epoch": 93,
+        "best_mAP50_95": 0.5009877346034163,
+        "last_mAP50_95": 0.47795798,
+        "best_before60_observed": 0.31657358,
+        "at60_observed": 0.24731586,
+        "early_stopping_consistent": true,
+        "n_train": 152,
+        "n_val": 75,
+        "metrics_at_best": {
+          "map50": 0.59949472,
+          "map50_95": 0.50098773,
+          "precision": 0.56969318,
+          "recall": 0.55211701,
+          "f1": 0.56076741
+        },
+        "losses": {
+          "train_loss": {
+            "first": 3.8715308,
+            "at_best": 1.1970536,
+            "last": 1.2318097,
+            "min": 1.168015,
+            "max": 3.8715308
+          },
+          "val_loss": {
+            "first": 4.3699004,
+            "at_best": 1.3288455,
+            "last": 1.389516,
+            "min": 1.3055267,
+            "max": 4.3699004
+          },
+          "optimization_loss_total": {
+            "first": 53.095809,
+            "at_best": 13.233714,
+            "last": 12.783733,
+            "min": 12.783733,
+            "max": 53.095809
+          },
+          "train/vfl_loss": {
+            "first": 0.34614105,
+            "at_best": 0.95431246,
+            "last": 1.01357,
+            "min": 0.0043125573,
+            "max": 2.0754508
+          },
+          "train/bbox_loss": {
+            "first": 1.3993047,
+            "at_best": 0.071118208,
+            "last": 0.06533835,
+            "min": 0.06533835,
+            "max": 1.3993047
+          },
+          "train/giou_loss": {
+            "first": 2.126085,
+            "at_best": 0.17162292,
+            "last": 0.15290131,
+            "min": 0.15290131,
+            "max": 2.2456792
+          },
+          "val/vfl_loss": {
+            "first": 0.48669031,
+            "at_best": 1.0075458,
+            "last": 1.0717565,
+            "min": 0.0010700236,
+            "max": 2.4742161
+          },
+          "val/bbox_loss": {
+            "first": 1.5578548,
+            "at_best": 0.10344647,
+            "last": 0.10221121,
+            "min": 0.084869108,
+            "max": 1.5578548
+          },
+          "val/giou_loss": {
+            "first": 2.3253553,
+            "at_best": 0.21785327,
+            "last": 0.21554826,
+            "min": 0.20608053,
+            "max": 2.3253553
+          }
+        },
+        "zero_detection_metric_epochs": [
+          1,
+          2,
+          3
+        ]
+      }
+    ],
+    "score_mean": 0.4724513698899003,
+    "score_sd": 0.3253664113629352,
+    "numeric_integrity": true,
+    "variable_fold_count": {
+      "at_epoch1": 3,
+      "after23": 2,
+      "last_available_fold_mean": 0.630283835,
+      "warning": "La figura original cambia de 3 a 2 folds; no equivale al promedio CV de los tres mejores checkpoints."
+    },
+    "truncated100_curve_mean_before60": 0.3746801066666667,
+    "truncation_is_not_60_epoch_training": true,
+    "learning_rates_logged": false,
+    "gradient_norms_logged": false,
+    "overfit": "No demostrado: las perdidas totales train y validation bajan; VFL usa targets de calidad dependientes de IoU y no exige monotonia."
+  },
+  "scope": "Adjuntos y codigo real; no acceso al disco de PC-03. La coherencia numerica es compatible con B. Falta validar localmente checkpoints, datos y cola.",
+  "confirmed": [
+    "No NaN/inf en 223 epocas, 3 folds",
+    "Early stopping23=best3+20",
+    "Figura media cambia de3a2 folds desdeepoca24"
+  ],
+  "missing": [
+    "checkpoint entrenado y recibos originales",
+    "manifiestos e imagenes locales",
+    "estado actual cola y Optuna",
+    "metadatos originales e identidad efectiva"
+  ],
+  "training_executed": false,
+  "human_approval_registered": false,
+  "details": "AUDITORIA.md",
+  "code_checked": {
+    "approved_commit": "b706f176c8e308969fd3a885d66045ffea027c7e",
+    "adapter_sha256": "e62e47fdc4cdbe6648d0830a8efac9701ab04ae82b77757d4a0880ec73381df7",
+    "official_source": "df2a96c8c3a098567a1149bf0248da6efe6d495d",
+    "strict_Coco_load_and_params": 42729027,
+    "training_executed": false
+  }
+}

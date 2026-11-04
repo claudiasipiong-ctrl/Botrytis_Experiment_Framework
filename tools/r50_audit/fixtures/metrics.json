@@ -1,0 +1,58 @@
+{
+  "architecture": "RT-DETR-R50",
+  "slug": "rtdetr_r50",
+  "task": "detection",
+  "stage": "baseline",
+  "objective": "map50_95",
+  "hp": {
+    "optimizer": "AdamW",
+    "lr0": 0.001,
+    "backbone_lr_ratio": 0.1,
+    "weight_decay": 0.0001
+  },
+  "config_id": "cfg_72e59f57",
+  "seed": 42,
+  "folds": [
+    0,
+    1,
+    2
+  ],
+  "fold_scores": [
+    0.1337566803548636,
+    0.7826096947114208,
+    0.5009877346034163
+  ],
+  "score_mean": 0.4724513698899003,
+  "score_sd": 0.3253664113629352,
+  "best_epochs": [
+    3,
+    100,
+    93
+  ],
+  "epochs_run": [
+    23,
+    100,
+    100
+  ],
+  "train_seconds": 6116.270321000002,
+  "vram_peak_mb": 14175.59521484375,
+  "params_m": 42.729027,
+  "gflops": 136.7113216,
+  "max_epochs": 100,
+  "patience": 20,
+  "convergence_checks": {
+    "score_above_zero": true,
+    "train_loss_decreased_in_all_folds": true,
+    "metrics_finite": true,
+    "all_folds_completed": true
+  },
+  "used_to_discard_architectures": false,
+  "dataset_hash": "f9cc08785271eecb6566669e1eff7fc1dcb821b8a8a407592a6153fe248018ed",
+  "split_hash": "617a3fc380835763c6f43f84e770df586d96d06aab7de9101a10c44b072ee64b",
+  "pc_id": "PC-03",
+  "semantic_fingerprint": "2a46be71c4726bec11ec3da1abb6c583c7be5a6eeb844df84ec320acf05ddbda",
+  "schema_version": 4,
+  "experiment_fingerprint": "8aa24ae8da9a178a3d864f3e447667f52be6bbda55691abc585dff3d8c654352",
+  "experiment_id": "botrytis_v4",
+  "round_id": "r50vd_01"
+}
