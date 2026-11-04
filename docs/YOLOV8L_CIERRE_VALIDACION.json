@@ -1,0 +1,12 @@
+{
+  "tests": 15,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "duration_seconds": 10.644,
+  "executor_sha256": "e55d44b2d8c480296717fdb0c59ea17a96b10b97216c9429be585bc36b2c5dc9",
+  "scope": "CPU synthetic fixtures: reproduced exact original 06 error and recovered using real native 06 and signed fold caches with all trainers forbidden",
+  "actual_user_pc_accessed": false,
+  "gpu_training_executed": false,
+  "hpo_started": false
+}
