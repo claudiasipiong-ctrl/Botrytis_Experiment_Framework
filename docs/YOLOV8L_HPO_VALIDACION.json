@@ -1,0 +1,14 @@
+{
+  "tests_unique": 24,
+  "full_suite_failures": 0,
+  "full_suite_errors": 0,
+  "full_suite_skipped": 0,
+  "duration_seconds": 72.378,
+  "focused_immutable_approval_tests": 1,
+  "focused_failures": 0,
+  "focused_errors": 0,
+  "executor_sha256": "b73ce092342fc6aaef5147b72d2d7085e3838de7826452b6936fdbadcdd8d246",
+  "scope": "Real native 07/Optuna/queue and fold caches with an explicitly synthetic detector: HPO15x3, retained weights and optimizer snapshots, no baseline replay, no robustness, idempotence. Also corruption blockers, optional diagnostics, real approval, sampler and partial recovery.",
+  "real_user_gpu_training_executed": false,
+  "remote_pc01_sqlite_accessed": false
+}
