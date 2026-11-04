@@ -1,0 +1,23 @@
+{
+  "tests": 24,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "duration_seconds": 161.016,
+  "adapter_sha256": "9bd2b91683e3d2140cd15aa3297fe01f8d86ed4e4b4b9fab511df44b974cf83d",
+  "validation": [
+    "Baseline three-fold receipts and read-only validation",
+    "Mandatory AP/loss corruption blockers",
+    "Interactive approval and evidence TOCTOU protection",
+    "Native queue dependency and exact HPO-only execution",
+    "Sampler continuation and corruption rejection",
+    "Native CPU training with interruption/resume reproducing weights and curves",
+    "Real 07 plus Optuna 20x3 with synthetic trainer: retained checkpoints, PENDING_REVIEW and 13 unlaunched jobs",
+    "Second invocation does not train"
+  ],
+  "not_executed": [
+    "Actual PC-02 Windows CMD",
+    "Actual PC-02 live SQLite accessed remotely",
+    "Real Swin-Tiny dataset GPU training"
+  ]
+}
