@@ -1,0 +1,20 @@
+{
+  "tests": 32,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "duration_seconds": 42.341,
+  "adapter_sha256": "01808e19836ac8c179b01a462f1409c565685a9025a3f430cf4b5304d085847e",
+  "official_revision": "df2a96c8c3a098567a1149bf0248da6efe6d495d",
+  "weight_sha256": "dfaafa5a3d29958a360c35f1fad553a6f287bfae9967e8ee007e65cff21ddf45",
+  "scope": "CPU: strict official checkpoint loading, complete forward640, backward160, real data/criterion/metrics, checkpoint and native queue/three-fold recovery with synthetic training fixtures",
+  "not_executed": [
+    "Actual Windows CMD",
+    "Actual PC-03 environment",
+    "CUDA training",
+    "Actual dataset baseline",
+    "HPO"
+  ],
+  "local_gpu_selftest_required": true,
+  "old_experiments_modified": false
+}
