@@ -33,3 +33,5 @@ Correccion del comparador YOLO y epocas reales: ver CORRECCION_CSV_V2.md.
 PC-03: la version v3 corrige la comparacion de ap_per_iou serializado; ver CORRECCION_R50_CSV_V3.md y VALIDACION.json. Las pruebas de 72 casos corresponden a la entrega v2; esta correccion tiene 49 pruebas CPU y 2 integraciones adicionales.
 
 PC-03: v4 comprueba los pares checkpoint/recibo y el linaje antes de recuperar; ver CORRECCION_R50_RECOVERY_V4.md. No repetir intentos si falta una evidencia critica.
+
+PC-03 v5: reanudacion de clasificadores con estados RNG CUDA restaurados como ByteTensor CPU, sin cambiar bytes/semillas/checkpoints. Para dedicar la PC solo a ViT: `--expected-pc PC-03 --only-model vit_b16`. Ver CORRECCION_VIT_RNG_V5.md y VALIDACION.json. Esta entrega no reanuda el HPO ni la robustez de RT-DETR al usar ese alcance.

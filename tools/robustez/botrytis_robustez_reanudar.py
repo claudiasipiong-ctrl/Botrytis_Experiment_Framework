@@ -21,7 +21,7 @@ HERE = Path(__file__).resolve().parent
 SELF = Path(__file__).resolve()
 SHA = hashlib.sha256(SELF.read_bytes()).hexdigest()
 DEPENDENCIES = {
-    'botrytis_robustez_base.py': '16322184a3aa12a432d6f81d216009a5cccbd8695ec51c47d4f48174b17f100d',
+    'botrytis_robustez_base.py': 'c32ae2d4d5c1025add5e5a4863f2924ef3835a0fba419eaeb4697caf8bc8fec6',
     'botrytis_r50_auditoria.py': '432881891c91bc6e20becc7fec97d245a657ce5c7e6f1677fb99c224d344149e',
     'botrytis_r50_hpo_pc03.py': '6ea86a71eea01b5d03640594427b87fc3f12e6340c4ec2a3846f61a0346ff092',
     'botrytis_r50_oficial_pinned.py': 'e62e47fdc4cdbe6648d0830a8efac9701ab04ae82b77757d4a0880ec73381df7',
@@ -377,6 +377,8 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--expected-pc', choices=list(MODELS))
     p.add_argument('--project')
+    p.add_argument('--only-model', choices=sorted({m for models in MODELS.values() for m in models}),
+                   help='Ejecutar solo este modelo de la PC; conservar los demas sin procesarlos')
     p.add_argument('--_stage', choices=['worker', 'repeat', 'aggregate'], help=argparse.SUPPRESS)
     p.add_argument('--state-dir', help=argparse.SUPPRESS)
     p.add_argument('--executor-sha', help=argparse.SUPPRESS)
@@ -404,17 +406,24 @@ def main():
     binding = read_binding(cfg)
     if pc != args.expected_pc or os.environ.get('USERNAME', '').casefold() != USERS.get(pc) or binding['pc_id'] != pc or binding['machine_id'].casefold() != USERS[pc]:
         raise bt.Stop('Usuario, binding, configuracion y --expected-pc no coinciden')
+    if args.only_model and args.only_model not in MODELS[pc]:
+        raise bt.Stop('El modelo solicitado no pertenece a esta PC')
+    models = [args.only_model] if args.only_model else MODELS[pc]
+    deferred = [m for m in MODELS[pc] if m not in models]
+    bt.emit('ALCANCE_ROBUSTEZ', pc=pc, models=models, deferred_models=deferred,
+            hpo_launched=False, test_opened=False)
     index = bt.read(Path.home() / 'bt-hoy-20261103/rondas.json')
     out = Path.home() / 'bg' / uuid.uuid4().hex[:8]; out.mkdir(parents=True)
     results, errors = [], []
     with controller_lock(cfg, pc), wait_idle(cfg, pc):
-        for model in MODELS[pc]:
+        for model in models:
             try:
                 results.append(process_model(project, cfg, pc, model, index, out))
             except (Exception, bt.RecoveryStop) as exc:
                 errors.append(dict(model=model, error=str(exc)))
                 bt.emit('ARQUITECTURA_DETENIDA', model=model, error=str(exc), results_preserved=True)
     bt.atomic_json(out / 'resumen.json', dict(pc=pc, completed=results, errors=errors,
+                   models=models, deferred_models=deferred,
                    test_opened=False, protocol_changed=False, baseline_or_hpo_launched=False))
     bt.emit('FIN_ROBUSTEZ', report=str(out / 'resumen.json'), errors=errors)
     return 2 if errors else 0

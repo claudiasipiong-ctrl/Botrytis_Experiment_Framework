@@ -7,6 +7,7 @@ funciones y el worker reales del proyecto. No simula inspeccion visual humana.
 """
 from __future__ import annotations
 import argparse
+import contextlib
 import copy
 from datetime import datetime, timezone
 import hashlib
@@ -63,6 +64,46 @@ def atomic_json(p, data): atomic_bytes(p, (json.dumps(data, ensure_ascii=False, 
 
 def emit(message, **fields):
     print(message + (' ' + json.dumps(fields, ensure_ascii=False, default=str) if fields else ''), flush=True)
+
+
+def classifier_cuda_rng_cpu(states, device_count, torch_module=None):
+    """Restore the original RNG bytes, never reseed or coerce invalid dtypes.
+
+    Native classifier torch.load(map_location=device) also maps CUDA RNG state
+    tensors onto the GPU. CUDA generators require their state as CPU ByteTensor.
+    Validate every state before installing any of them; no checkpoint is edited.
+    """
+    if torch_module is None:
+        import torch as torch_module
+    torch = torch_module
+    if not isinstance(states, (list, tuple)) or len(states) != device_count or device_count < 1:
+        raise Stop('RNG CUDA de checkpoint ausente o numero de dispositivos incompatible')
+    for state in states:
+        if (not isinstance(state, torch.Tensor) or state.dtype != torch.uint8
+                or state.layout != torch.strided or state.ndim != 1 or state.numel() == 0):
+            raise Stop('RNG CUDA de checkpoint invalido: se exige vector ByteTensor, sin conversion de dtype')
+    return [state.detach().cpu().contiguous() for state in states]
+
+
+@contextlib.contextmanager
+def classifier_rng_restore(event):
+    """Scoped compatibility hook for an already verified classifier checkpoint."""
+    import torch
+    original = torch.cuda.set_rng_state_all
+
+    def restore(states):
+        normalized = classifier_cuda_rng_cpu(states, torch.cuda.device_count(), torch)
+        original(normalized)
+        event('CLASSIFIER_RNG_RESTORE_CPU', devices=len(normalized),
+              state_sha256=[hashlib.sha256(s.numpy().tobytes()).hexdigest() for s in normalized],
+              original_devices=[str(s.device) for s in states], reseeded=False,
+              checkpoint_modified=False)
+
+    torch.cuda.set_rng_state_all = restore
+    try:
+        yield
+    finally:
+        torch.cuda.set_rng_state_all = original
 
 class OSLock:
     """Nonblocking OS lock; a crash releases it without deleting someone else's lock."""
@@ -699,6 +740,8 @@ class RuntimeHooks:
         if cp:
             runtime['classifier']['resume_checkpoint'] = str(cp)
             self.event('CHECKPOINT_RESUME', model=spec.slug, fold=fold, checkpoint=str(cp), sha256=digest(cp))
+            with classifier_rng_restore(self.event):
+                return original(spec, hp, runtime, train_df, val_df, **kwargs)
         return original(spec, hp, runtime, train_df, val_df, **kwargs)
 
     def detector(self, original, spec, hp, cfg, **kwargs):

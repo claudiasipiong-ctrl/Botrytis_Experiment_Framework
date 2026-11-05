@@ -1,5 +1,5 @@
 {
-  "tests_passed": 79,
+  "tests_passed": 152,
   "gpu_training_executed": false,
   "operational_windows_executed": false,
   "source_commit": "b706f176c8e308969fd3a885d66045ffea027c7e",
@@ -9,13 +9,17 @@
     "botrytis_r50_auditoria.py": "432881891c91bc6e20becc7fec97d245a657ce5c7e6f1677fb99c224d344149e",
     "botrytis_r50_hpo_pc03.py": "6ea86a71eea01b5d03640594427b87fc3f12e6340c4ec2a3846f61a0346ff092",
     "botrytis_r50_oficial_pinned.py": "e62e47fdc4cdbe6648d0830a8efac9701ab04ae82b77757d4a0880ec73381df7",
-    "botrytis_robustez_base.py": "16322184a3aa12a432d6f81d216009a5cccbd8695ec51c47d4f48174b17f100d",
-    "botrytis_robustez_reanudar.py": "6988f830e8f4ae54b7a86d76b2d796a8f4657e1677cd3ce5c4117ae3af48d42a"
+    "botrytis_robustez_base.py": "c32ae2d4d5c1025add5e5a4863f2924ef3835a0fba419eaeb4697caf8bc8fec6",
+    "botrytis_robustez_reanudar.py": "ae39692639db6cd33e7e7057e28efeb9079b507043c6363cb0a1f6f57312ae79"
   },
-  "correction": "Verified checkpoint publication pairs; inherited retry progress; preflight before job claim; closed recovery lineage for historical FAIL states; mirror FAILED reconciliation",
+  "correction": "Scoped classifier CUDA RNG restore with identical CPU ByteTensor bytes; --only-model routing; no checkpoint or native-source edits",
   "live_pc01_files_verified": false,
-  "previous_delivery_tests_passed": 51,
+  "previous_delivery_tests_passed": 79,
   "previous_csv_subtests_passed": 36,
   "GPU_executed": false,
-  "live_pc03_disks_inspected": false
+  "live_pc03_disks_inspected": false,
+  "tests_skipped": 1,
+  "csv_subtests_passed": 36,
+  "new_rng_tests_passed": 17,
+  "scope": "PC-03 ViT robustness only; RT-DETR deferred"
 }
