@@ -1,0 +1,26 @@
+{
+  "tests_passed": 110,
+  "tests_skipped": 1,
+  "csv_subtests_passed": 36,
+  "new_continuation_tests_passed": 22,
+  "gpu_training_executed": false,
+  "windows_operational_execution": false,
+  "client_disks_verified_here": false,
+  "source_commit": "b706f176c8e308969fd3a885d66045ffea027c7e",
+  "native_stages": [
+    "09_train_outer_candidate.py",
+    "10_evaluate_outer_validation.py"
+  ],
+  "methods_changed": false,
+  "source_checkout_changed": false,
+  "test_opened": false,
+  "rtdetr_deferred": true,
+  "files": {
+    "botrytis_r50_auditoria.py": "432881891c91bc6e20becc7fec97d245a657ce5c7e6f1677fb99c224d344149e",
+    "botrytis_r50_hpo_pc03.py": "6ea86a71eea01b5d03640594427b87fc3f12e6340c4ec2a3846f61a0346ff092",
+    "botrytis_r50_oficial_pinned.py": "e62e47fdc4cdbe6648d0830a8efac9701ab04ae82b77757d4a0880ec73381df7",
+    "botrytis_robustez_base.py": "c32ae2d4d5c1025add5e5a4863f2924ef3835a0fba419eaeb4697caf8bc8fec6",
+    "botrytis_robustez_reanudar.py": "ae39692639db6cd33e7e7057e28efeb9079b507043c6363cb0a1f6f57312ae79",
+    "botrytis_train_val_continuar.py": "9ac8f782a2d44f74e9d189ed8ae0a0c3dbca4b457fcfebccf72d001640577e11"
+  }
+}
