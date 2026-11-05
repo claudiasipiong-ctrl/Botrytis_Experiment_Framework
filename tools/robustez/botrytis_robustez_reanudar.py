@@ -122,6 +122,12 @@ def wait_idle(cfg, pc):
         time.sleep(15)
 
 
+def controller_lock(cfg, pc):
+    from utils.durable import FileLock
+    from utils.guards import gpu_lock_path
+    return FileLock(gpu_lock_path(cfg, pc).with_suffix('.robustez-controller.guard'))
+
+
 def baseline_evidence(source_cfg, cfg, spec, code, commit):
     """Verify baseline closure without assuming every component must decrease."""
     from utils.config_loader import cfg_path, load_config
@@ -372,7 +378,7 @@ def main():
     index = bt.read(Path.home() / 'bt-hoy-20261103/rondas.json')
     out = Path.home() / 'bg' / uuid.uuid4().hex[:8]; out.mkdir(parents=True)
     results, errors = [], []
-    with wait_idle(cfg, pc):
+    with controller_lock(cfg, pc), wait_idle(cfg, pc):
         for model in MODELS[pc]:
             try:
                 results.append(process_model(project, cfg, pc, model, index, out))

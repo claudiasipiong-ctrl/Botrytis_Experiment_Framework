@@ -107,6 +107,17 @@ def test_active_process_wait_has_no_mutation(tmp_path, monkeypatch):
     assert list(tmp_path.rglob('*')) == before
 
 
+def test_second_controller_cannot_wait_against_first(tmp_path, monkeypatch):
+    import utils.guards as guards
+    monkeypatch.setattr(guards, 'gpu_lock_path', lambda cfg, pc: tmp_path / 'PC-02.json')
+    with resume.controller_lock({}, 'PC-02'):
+        with pytest.raises(RuntimeError, match='ocupado'):
+            with resume.controller_lock({}, 'PC-02'):
+                pytest.fail('Duplicate controller acquired lock')
+    with resume.controller_lock({}, 'PC-02'):
+        pass  # Descriptor release, no deletion of the guard file.
+
+
 def test_official_backend_never_uses_yolo_wrapper(tmp_path, monkeypatch):
     import utils.hpo_runner as runner
     calls = []

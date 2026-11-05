@@ -8,7 +8,7 @@ Conservar juntos los cinco archivos Python. Ejecutar solo botrytis_robustez_rean
 
 Mantiene las tres mejores configuraciones HPO, semillas 17/42/73 y tres folds por semilla. Solo habilita repeat y aggregate del script nativo 08. No ejecuta baseline/HPO ni entrenamiento final, validacion externa, thresholds, freeze o TEST. No crea rondas ni inicia ResNet50, que sigue pendiente de preparacion/entrenamiento por separado.
 
-Espera a que terminen otros procesos Python y a que se liberen los bloqueos originales. No envia senales, mata procesos ni borra locks. Mientras espera no altera colas. Una vez libre, comprueba identidad, codigo b706f176, config inmutable, datos/splits, preparacion, evidencia baseline y HPO y separacion de particiones. La revision de HPO PENDING_REVIEW se presenta al operador para escribir APROBAR. Rechazar conserva el estado. Esto no afirma inspeccion visual ni ausencia de sobreajuste.
+Espera a que terminen otros procesos Python y a que se liberen los bloqueos originales. Durante la espera no envia senales, mata procesos ni borra locks. Un segundo controlador de robustez se rechaza mediante bloqueo del sistema operativo. Mientras espera no altera colas. Una vez libre, comprueba identidad, codigo b706f176, config inmutable, datos/splits, preparacion, evidencia baseline y HPO y separacion de particiones. La revision de HPO PENDING_REVIEW se presenta al operador para escribir APROBAR. Rechazar conserva el estado. Esto no afirma inspeccion visual ni ausencia de sobreajuste.
 
 Restaura exclusivamente repeat/aggregate BLOCKED cuyo marcador y recibo original demuestran POSPUESTO_POR_PRIORIDAD; conserva bloqueos ajenos y estados activos. Hace backup SQLite previo. Los trabajos posteriores siguen pendientes o bloqueados; no se marcan completados. La agregacion permanece PENDING_REVIEW cuando asi lo exige la cola.
 
@@ -24,6 +24,6 @@ ROBUSTEZ_COMPLETA acredita la matriz completa y la agregacion verificada, no un 
 
 ## Validacion del entregable
 
-48 tests CPU aprobados, incluidos fixtures del 08 nativo para 27 combinaciones, cache idempotente, agregacion, rechazo de matriz incompleta, restauracion selectiva/transaccional, HPO activo, aprobacion presencial, backend oficial, firmas y CSV opcionales/no finitos/corruptos. 36 subtests adicionales en la suite CSV. No se entrenaron modelos en GPU ni se verificaron en vivo los discos de las PCs Windows. La evidencia real se comprueba localmente al ejecutar.
+49 tests CPU aprobados, incluidos fixtures del 08 nativo para 27 combinaciones, cache idempotente, agregacion, rechazo de matriz incompleta, restauracion selectiva/transaccional, HPO activo, aprobacion presencial, backend oficial, firmas y CSV opcionales/no finitos/corruptos. 36 subtests adicionales en la suite CSV. No se entrenaron modelos en GPU ni se verificaron en vivo los discos de las PCs Windows. La evidencia real se comprueba localmente al ejecutar.
 
 Comando de pruebas (desde un checkout del framework, con sus dependencias): PYTHONPATH=src python -m pytest tools/robustez/test_robustez.py -q
