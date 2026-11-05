@@ -1,0 +1,21 @@
+{
+  "tests_passed": 32,
+  "hpo_tests": 24,
+  "pipeline_tests": 8,
+  "source": "b706f176c8e308969fd3a885d66045ffea027c7e",
+  "gpu_training_executed": false,
+  "windows_execution": false,
+  "old_models_launched": false,
+  "test_opened": false,
+  "files": {
+    "botrytis_prioridad.py": "121271e1cf116f71c262b2a952afb2a799a4d69b8e3dbd995b34b3d998a23c74",
+    "botrytis_r50_auditoria.py": "432881891c91bc6e20becc7fec97d245a657ce5c7e6f1677fb99c224d344149e",
+    "botrytis_r50_hpo_pc03.py": "6ea86a71eea01b5d03640594427b87fc3f12e6340c4ec2a3846f61a0346ff092",
+    "botrytis_r50_oficial_pinned.py": "e62e47fdc4cdbe6648d0830a8efac9701ab04ae82b77757d4a0880ec73381df7",
+    "botrytis_resnet50_pc01.py": "870a8adaac98fbd1ec0057a1950b20f319c1a3658d37f78042d50c2fe5d21c93",
+    "botrytis_resnet_hpo_pc01.py": "7bca7dd5a7f4b516c12830f5597b472fb6fd0175d0c3621b412f4070554a7593",
+    "botrytis_robustez_base.py": "c32ae2d4d5c1025add5e5a4863f2924ef3835a0fba419eaeb4697caf8bc8fec6",
+    "botrytis_robustez_reanudar.py": "ae39692639db6cd33e7e7057e28efeb9079b507043c6363cb0a1f6f57312ae79",
+    "botrytis_train_val_continuar.py": "08c7a256c2b2d3a66baa73877790a463609cb27332e413f814b5806c799b9088"
+  }
+}
