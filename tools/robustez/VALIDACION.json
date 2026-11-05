@@ -1,5 +1,5 @@
 {
-  "tests_passed": 49,
+  "tests_passed": 72,
   "csv_subtests_passed": 36,
   "gpu_training_executed": false,
   "operational_windows_executed": false,
@@ -10,7 +10,9 @@
     "botrytis_r50_auditoria.py": "432881891c91bc6e20becc7fec97d245a657ce5c7e6f1677fb99c224d344149e",
     "botrytis_r50_hpo_pc03.py": "160ce95cb02e3ce2a4decf4a2698e5646032b05bbfcbb6b0887b0a8bfef806e7",
     "botrytis_r50_oficial_pinned.py": "e62e47fdc4cdbe6648d0830a8efac9701ab04ae82b77757d4a0880ec73381df7",
-    "botrytis_robustez_base.py": "453f82b038fac5662a1ec83886e79b5a88ea032778f34d197e4f5d6aa81c699f",
-    "botrytis_robustez_reanudar.py": "23872c6486fe45737cdca362a2637ed6386c1490b9700f12d8a23a9164da6fd5"
-  }
+    "botrytis_robustez_base.py": "16322184a3aa12a432d6f81d216009a5cccbd8695ec51c47d4f48174b17f100d",
+    "botrytis_robustez_reanudar.py": "2e273e3e8eade1020a8f52683f9559b67b81a7262ea06277db6035fb73ea69c5"
+  },
+  "correction": "YOLO final_eval after early stopping; strict provenance and prefix checks; derived training epochs for new aggregation",
+  "live_pc01_files_verified": false
 }

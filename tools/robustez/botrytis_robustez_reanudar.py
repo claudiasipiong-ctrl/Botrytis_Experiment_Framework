@@ -21,7 +21,7 @@ HERE = Path(__file__).resolve().parent
 SELF = Path(__file__).resolve()
 SHA = hashlib.sha256(SELF.read_bytes()).hexdigest()
 DEPENDENCIES = {
-    'botrytis_robustez_base.py': '453f82b038fac5662a1ec83886e79b5a88ea032778f34d197e4f5d6aa81c699f',
+    'botrytis_robustez_base.py': '16322184a3aa12a432d6f81d216009a5cccbd8695ec51c47d4f48174b17f100d',
     'botrytis_r50_auditoria.py': '432881891c91bc6e20becc7fec97d245a657ce5c7e6f1677fb99c224d344149e',
     'botrytis_r50_hpo_pc03.py': '160ce95cb02e3ce2a4decf4a2698e5646032b05bbfcbb6b0887b0a8bfef806e7',
     'botrytis_r50_oficial_pinned.py': 'e62e47fdc4cdbe6648d0830a8efac9701ab04ae82b77757d4a0880ec73381df7',
@@ -216,7 +216,7 @@ def validate_existing_partials(cfg, spec, job):
             bt.validate_checkpoint(cp, spec.slug, cfg, seed=job['payload']['seed'], hp=hp, fold=fold)
 
 
-def verify_closed_hpo(study, cfg, spec, hpo):
+def verify_closed_hpo(study, cfg, spec, hpo, evidence_dir=None):
     from utils.architectures import trials_for
     counts = bt.study_counts(study)
     if len(study.trials) != trials_for(spec, cfg) or counts['RUNNING'] or counts['WAITING'] or counts['FAIL']:
@@ -232,7 +232,26 @@ def verify_closed_hpo(study, cfg, spec, hpo):
         folder = bt.allowed_trial_folder(cfg, spec, trial)
         for fold in range(3):
             receipt = bt.read(folder / f'fold{fold}/completed_fold.json')
-            curves.append(curve_evidence(folder / f'fold{fold}/completed_history.csv', spec.is_detector, receipt['row']['best_epoch']))
+            try:
+                curves.append(curve_evidence(folder / f'fold{fold}/completed_history.csv', spec.is_detector, receipt['row']['best_epoch']))
+            except Exception as exc:
+                if evidence_dir is not None:
+                    import csv
+                    diagnostics=dict(status='DISCREPANCIA_NO_APROBADA',trial=trial.number,fold=fold,error=str(exc),
+                                     originals_modified=False,training_started=False,files=[])
+                    for name in ('results.csv','completed_history.csv'):
+                        path=folder/f'fold{fold}'/name
+                        item=dict(path=str(path),exists=path.is_file())
+                        if path.is_file():
+                            item['sha256']=bt.digest(path)
+                            try:
+                                with path.open(encoding='utf-8-sig',newline='') as f:rows=list(csv.reader(f,strict=True))
+                                item.update(header=rows[:1],data_rows=max(0,len(rows)-1),last_records=rows[-2:])
+                            except Exception as parse_error:item['parse_error']=str(parse_error)
+                        diagnostics['files'].append(item)
+                    target=Path(evidence_dir)/'csv_discrepancia.json';bt.atomic_json(target,diagnostics)
+                    bt.emit('EVIDENCIA_DISCREPANCIA_GUARDADA',path=str(target),error=str(exc))
+                raise
     return dict(trials=verified, curves=curves, absence_of_overfitting_certified=False)
 
 
@@ -285,7 +304,7 @@ def process_model(project, base, pc, model, index, out):
     bt.snapshot_sqlite(db, evidence / 'study-before.sqlite')
     bt.snapshot_sqlite(cfg_path(cfg, 'paths.queue_dir') / 'queue.sqlite', evidence / 'queue-before.sqlite')
     study = load_study(spec, cfg)
-    record['hpo_verified'] = verify_closed_hpo(study, cfg, spec, hpo)
+    record['hpo_verified'] = verify_closed_hpo(study, cfg, spec, hpo, evidence)
     cands = top_configs(study, 3); record['top_configs'] = cands
     bt.validate_queue_plan(cfg, spec, cands, jobs, allow_missing=True)
     queue.expand_after_hpo(cfg, spec, [c['config_id'] for c in cands])
@@ -314,6 +333,13 @@ def process_model(project, base, pc, model, index, out):
         job = next((j for j in remaining if all(byid[d]['status'] == 'COMPLETE' for d in j['depends_on'])), None)
         if job is None:
             raise bt.Stop('Dependencias no habilitadas; no se omiten: ' + str(remaining))
+        if job['kind'] == 'aggregate':
+            repeats = [j for j in jobs if j['kind'] == 'repeat']
+            if len(repeats) != 9 or any(j['status'] != 'COMPLETE' for j in repeats):
+                raise bt.Stop('Agregacion sin nueve repeticiones COMPLETE verificables')
+            candidates = {c['config_id']:c for c in cands}
+            for repeat in repeats:
+                bt.validate_repeat(cfg, spec, repeat, candidates[repeat['payload']['config_id']])
         if job['kind'] == 'aggregate' and job['status'] == 'PENDING_REVIEW':
             record['aggregate'] = bt.validate_aggregate(cfg, spec, cands, jobs)
             break  # Keep review intact; never fall through into 09 or TEST.

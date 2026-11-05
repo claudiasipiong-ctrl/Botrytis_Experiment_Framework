@@ -1202,6 +1202,70 @@ def yolo_csv_inspection(path, complete=True):
                    raw_csv_modified=False)
 
 
+def yolo_final_callback_evidence(raw, signed, h, sh):
+    """Recognize the b706/8.4.170 early-stop final_eval callback, never a CSV truncation.
+
+    No input is edited. The signed receipt, producer versions, full matching
+    prefix and unchanged last training losses bind the extra validation event.
+    """
+    import numpy as np
+    folder = Path(signed).parent
+    n = len(h)
+    if len(sh) != n + 1 or n < 1:
+        raise Stop(f'CSV original truncado/no concuerda con historial firmado: {raw}; raw={n}, firmado={len(sh)}')
+    receipt = read(folder/'completed_fold.json'); row = receipt.get('row', {})
+    meta = read(folder.parent/'metadata.json'); env = read(folder.parent/'environment.json')
+    if (receipt.get('history_sha256') != digest(signed) or row.get('epochs_run') != len(sh)
+            or meta.get('status') != 'COMPLETE'
+            or meta.get('git_commit') != 'b706f176c8e308969fd3a885d66045ffea027c7e'
+            or meta.get('code_hash') != 'e11f772d86f45e5dc3687fce3faa23443a6fcf16146484b3d5f38534cc7695df'
+            or env.get('ultralytics') != '8.4.170'):
+        raise Stop('Fila adicional sin procedencia final_eval comprobable; no se acepta: '+str(raw))
+    from utils.config_loader import load_config
+    from utils.architectures import get_arch, section_for
+    from utils.experiments import fingerprint
+    cfg = load_config(folder.parent/'config.yaml')
+    slug = cfg['experiment']['architecture']; spec = get_arch(slug); sec = section_for(spec, cfg)
+    if not spec.is_detector or spec.family == 'rtdetr':
+        raise Stop('Callback adicional de otro backend; no se acepta como YOLO')
+    if meta.get('dataset_hash') != env.get('dataset_hash') or meta.get('split_hash') != env.get('split_hash'):
+        raise Stop('Proveniencia dataset/splits contradictoria en callback final')
+    if not meta.get('dataset_hash') or not meta.get('split_hash'):
+        raise Stop('Faltan hashes dataset/splits del productor del historial')
+    hp = meta.get('extra', {}).get('hp', meta.get('hp')); seed = meta.get('seed'); fold = row.get('fold')
+    if not isinstance(hp, dict) or seed is None or fold not in (0,1,2):
+        raise Stop('Falta contrato de fold/hp/seed para callback adicional')
+    signature = fold_signature(fingerprint(cfg), slug, hp, seed, fold,
+                               int(sec['max_epochs']), int(sec['early_stopping_patience']))
+    if (receipt.get('signature') != signature or not n < int(sec['max_epochs'])
+            or row.get('stopped_early') is not (len(sh) < int(sec['max_epochs']))):
+        raise Stop('Callback adicional incompatible con firma/presupuesto del fold')
+    train = [c for c in h if c.startswith('train/') and c.endswith('_loss') and c in sh]
+    if not train or any(not np.isfinite(sh[c].iloc[-2:]).all()
+                        or not math.isclose(float(sh[c].iloc[-1]),float(sh[c].iloc[-2]),rel_tol=0,abs_tol=1e-10)
+                        for c in train):
+        raise Stop('La fila adicional contiene entrenamiento distinto; no es final_eval verificable')
+    for name in ('map50_95','map50','precision','recall'):
+        aliases = YOLO_METRIC_COLUMNS[name]
+        if not any(c in h for c in aliases) or not any(c in sh for c in aliases):
+            raise Stop('Faltan metricas para comprobar callback final: '+name)
+    metric = next(c for c in YOLO_METRIC_COLUMNS['map50_95'] if c in sh)
+    peak = float(sh[metric].iloc[:n].max())
+    peak_events = sh.index[:n][sh[metric].iloc[:n] == peak]
+    stopper_epoch = int(sh.loc[peak_events[0],'epoch'])
+    # Ultralytics keeps the first improving epoch in its stopper; best.pt is
+    # rewritten on ties. Both are derived from actual signed training rows.
+    checkpoint_epoch = int(sh.loc[peak_events[-1],'epoch'])
+    if n - stopper_epoch != int(sec['early_stopping_patience']):
+        raise Stop('La parada temprana no se explica por la paciencia original')
+    return dict(kind='VERIFIED_POST_TRAIN_BEST_CHECKPOINT_VALIDATION', raw_training_epochs=n,
+                signed_events=len(sh), extra_event_index=n+1, extra_event_is_training_epoch=False,
+                checkpoint_training_epoch=checkpoint_epoch, online_training_peak=peak,
+                final_validation_objective=float(sh[metric].iloc[-1]),
+                historical_hpo_score_preserved=True, raw_csv_modified=False,
+                receipt_sha256=digest(folder/'completed_fold.json'), producer_ultralytics=env['ultralytics'])
+
+
 def curve_evidence(path, detector, selected_epoch=None):
     if not detector:
         return _classification_curve_evidence(path, False, selected_epoch)
@@ -1212,31 +1276,44 @@ def curve_evidence(path, detector, selected_epoch=None):
     source = raw if raw.is_file() else path
     h, inspection = yolo_csv_inspection(source)
     signed_sha = digest(signed) if signed.is_file() else digest(path)
+    final_callback = None
+    objective_history = h
     if signed.is_file() and signed != source:
         sh, signed_inspection = yolo_csv_inspection(signed)
+        compare = sh
         if h.epoch.tolist() != sh.epoch.tolist():
-            raise Stop('CSV original truncado/no concuerda con historial firmado: ' + str(source))
+            final_callback = yolo_final_callback_evidence(source, signed, h, sh)
+            compare = sh.iloc[:len(h)]
+            if h.epoch.tolist() != compare.epoch.tolist():
+                raise Stop('Epocas originales desalineadas con prefijo firmado: '+str(source))
         for name, aliases in YOLO_METRIC_COLUMNS.items():
             a = next((c for c in aliases if c in h), None)
-            b = next((c for c in aliases if c in sh), None)
-            if a and b and not np.allclose(h[a], sh[b], rtol=0, atol=1e-5):
+            b = next((c for c in aliases if c in compare), None)
+            if a and b and not np.allclose(h[a], compare[b], rtol=0, atol=1e-5):
                 raise Stop('Metrica original discrepa del historial firmado: ' + str(source) + ' ' + name)
         for col in (c for c in h if c.startswith('train/') and c in sh):
-            if not np.allclose(h[col], sh[col], rtol=1e-4, atol=1e-5):
+            if not np.allclose(h[col], compare[col], rtol=1e-4, atol=1e-5):
                 raise Stop('Loss de entrenamiento discrepa del historial firmado: ' + str(source) + ' ' + col)
         inspection['signed_csv_sha256'] = signed_inspection['sha256']
-    objective = next(c for c in YOLO_METRIC_COLUMNS['map50_95'] if c in h)
-    values = h[objective]
+        if final_callback:
+            objective_history = sh
+            inspection['warnings'].append({**final_callback, 'kind':'EXTRA_FINAL_VALIDATION_EVENT'})
+            emit('CSV_CALLBACK_FINAL_VERIFICADO',path=str(source),training_epochs=len(h),signed_events=len(sh))
+    objective = next(c for c in YOLO_METRIC_COLUMNS['map50_95'] if c in objective_history)
+    values = objective_history[objective]
     maximum_index = values.idxmax()
     bi = maximum_index
     if selected_epoch is not None:
-        candidates = h.index[h.epoch == selected_epoch]
+        candidates = objective_history.index[objective_history.epoch == selected_epoch]
         if len(candidates) != 1:
             raise Stop('Epoca del checkpoint ausente de la curva: ' + str(source))
         bi = candidates[0]
         if not math.isclose(float(values.loc[bi]), float(values.max()), rel_tol=0, abs_tol=1e-5):
             raise Stop('Epoca seleccionada incompatible con maximo registrado')
-    best = h.loc[bi]
+    best = objective_history.loc[bi]
+    selected_event = int(best.epoch)
+    checkpoint_epoch = (final_callback['checkpoint_training_epoch'] if final_callback and selected_event > len(h)
+                        else selected_event)
     result = dict(path=str(source), sha256=inspection['sha256'], signed_history_sha256=signed_sha, epochs=len(h),
                   losses={}, flags=[], csv_inspection=inspection, loss_availability=inspection['loss_availability'],
                   warnings=inspection['warnings'], train_validation_metric_gap=None,
@@ -1255,9 +1332,12 @@ def curve_evidence(path, detector, selected_epoch=None):
         if val in result['losses'] and result['losses'][train]['final_window'] < result['losses'][train]['previous_window'] and result['losses'][val]['final_window'] > result['losses'][val]['previous_window']:
             result['flags'].append(dict(kind='POSSIBLE_LATE_OVERFIT', train_component=train, validation_component=val,
                                         conclusion='Senal orientativa con ventanas completas, no prueba unica de sobreajuste.'))
-    result.update(objective=objective, best_epoch=int(best.epoch), best_value=float(values.max()), last_value=float(values.iloc[-1]),
-                  maximum_metric_epoch=int(h.loc[maximum_index, 'epoch']), selected_checkpoint_epoch=selected_epoch,
-                  drop_best_to_last=float(values.max()-values.iloc[-1]),
+    raw_objective = next(c for c in YOLO_METRIC_COLUMNS['map50_95'] if c in h)
+    result.update(objective=objective, best_epoch=checkpoint_epoch, best_value=float(values.max()), last_value=float(h[raw_objective].iloc[-1]),
+                  maximum_metric_event=int(objective_history.loc[maximum_index, 'epoch']), selected_checkpoint_epoch=selected_epoch,
+                  best_checkpoint_training_epoch=checkpoint_epoch, final_callback=final_callback,
+                  maximum_metric_epoch=(None if final_callback and maximum_index>=len(h) else int(h.loc[maximum_index,'epoch'])),
+                  drop_best_to_last=float(values.max()-float(h[raw_objective].iloc[-1])),
                   metrics_at_same_best_epoch={name:metric_number(best, aliases) for name, aliases in YOLO_METRIC_COLUMNS.items()})
     result['overfit_limitations'] = ('No se puede comparar train/validation loss donde falten componentes. Se conservan las curvas y caida de mAP, variabilidad entre folds y brecha del checkpoint final; ninguna demuestra por si sola generalizacion.')
     return result
@@ -1445,7 +1525,9 @@ def validate_repeat(cfg,spec,job,cand):
     if result.get('fold_scores')!=scores or result.get('best_epochs')!=best_epochs or not math.isclose(float(result['score']),sum(scores)/3,abs_tol=1e-8):raise Stop('Media/epocas robustez incorrectas')
     entries=verify_checkpoint_entries(cfg,spec,folder)
     if set(entries)!={'fold0_best','fold1_best','fold2_best'}:raise Stop('Faltan recibos de pesos de robustez: '+str(folder))
-    return dict(config_id=cand['config_id'],seed=j['payload']['seed'],scores=scores,mean=sum(scores)/3,best_epochs=best_epochs,curves=curves,
+    training_epochs = [c.get('best_checkpoint_training_epoch', e) for c,e in zip(curves,best_epochs)]
+    return dict(config_id=cand['config_id'],seed=j['payload']['seed'],scores=scores,mean=sum(scores)/3,best_epochs=training_epochs,
+                legacy_recorded_best_epochs=best_epochs,curves=curves,
                 result_sha256=digest(folder/'result.json'),checkpoints=entries)
 
 
@@ -1671,12 +1753,39 @@ def child_entry(kind,root,native_args,state_dir):
         source_cfg=load_config(a.config)
         baseline_summary=__import__('utils.config_loader',fromlist=['cfg_path']).cfg_path(source_cfg,'paths.runs_dir')/spec.slug/'baseline/summary.json'
         def aggregate_with_baseline(*pos,**kw):
-            result=original_aggregate(*pos,**kw)
+            original_read = module.read_json
+            epoch_corrections = []
+            def interpreted_result(path):
+                row = original_read(path)
+                path = Path(path)
+                if (spec.is_detector and spec.family != 'rtdetr' and path.name=='result.json'
+                        and path.parent.name.startswith('seed_') and path.parent.parent.name.startswith('cfg_')
+                        and inside(path, pos[4])):
+                    corrected = []
+                    for fold, old_epoch in enumerate(row['best_epochs']):
+                        curve = curve_evidence(path.parent/f'fold{fold}/completed_history.csv',True,old_epoch)
+                        corrected.append(curve['best_checkpoint_training_epoch'])
+                    if corrected != row['best_epochs']:
+                        epoch_corrections.append(dict(source=str(path),sha256=digest(path),
+                            recorded_callback_events=list(row['best_epochs']),training_checkpoint_epochs=corrected,
+                            scores_unchanged=True,source_modified=False))
+                        row = dict(row,best_epochs=corrected)
+                return row
+            module.read_json = interpreted_result
+            try:result=original_aggregate(*pos,**kw)
+            finally:module.read_json=original_read
+            changed = False
             if result.get('baseline_score_mean') is None and baseline_summary.is_file():
-                from utils.io import write_json
-                from utils.hpo_results import best_config_path
                 result['baseline_score_mean']=read(baseline_summary)['score_mean']
                 result['baseline_source_sha256']=digest(baseline_summary)
+                changed = True
+            if epoch_corrections:
+                result['post_training_callback_epoch_interpretations']=epoch_corrections
+                result['final_epoch_rule']='Media nativa de mejores epocas reales; final_eval no cuenta como entrenamiento'
+                changed = True
+            if changed:
+                from utils.io import write_json
+                from utils.hpo_results import best_config_path
                 write_json(best_config_path(cfg,spec),result)
                 summary_path=pos[4]/'summary.json';summary=read(summary_path);summary['selected']=result;write_json(summary_path,summary)
             return result

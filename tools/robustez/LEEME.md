@@ -24,6 +24,8 @@ ROBUSTEZ_COMPLETA acredita la matriz completa y la agregacion verificada, no un 
 
 ## Validacion del entregable
 
-49 tests CPU aprobados, incluidos fixtures del 08 nativo para 27 combinaciones, cache idempotente, agregacion, rechazo de matriz incompleta, restauracion selectiva/transaccional, HPO activo, aprobacion presencial, backend oficial, firmas y CSV opcionales/no finitos/corruptos. 36 subtests adicionales en la suite CSV. No se entrenaron modelos en GPU ni se verificaron en vivo los discos de las PCs Windows. La evidencia real se comprueba localmente al ejecutar.
+72 tests CPU aprobados, incluidos fixtures del 08 nativo para 27 combinaciones, cache idempotente, agregacion, rechazo de matriz incompleta, restauracion selectiva/transaccional, HPO activo, aprobacion presencial, backend oficial, firmas y CSV opcionales/no finitos/corruptos. 36 subtests adicionales en la suite CSV. No se entrenaron modelos en GPU ni se verificaron en vivo los discos de las PCs Windows. La evidencia real se comprueba localmente al ejecutar.
 
 Comando de pruebas (desde un checkout del framework, con sus dependencias): PYTHONPATH=src python -m pytest tools/robustez/test_robustez.py -q
+
+Correccion del comparador YOLO y epocas reales: ver CORRECCION_CSV_V2.md.
