@@ -2,7 +2,7 @@
 Un ZIP por PC; datos de entrada TRAIN/VAL solo en PC-01 para evitar triplicarlos.
 """
 from __future__ import annotations
-import argparse,csv,hashlib,io,json,os,shutil,sqlite3,subprocess,sys,tempfile,uuid,zipfile
+import argparse,contextlib,csv,hashlib,io,json,os,shutil,sqlite3,subprocess,sys,tempfile,uuid,zipfile
 from pathlib import Path
 from datetime import datetime,timezone
 
@@ -62,6 +62,13 @@ def export_csv(path,test_ids):
     rows=list(csv.DictReader(io.StringIO(text),strict=True));header=next(csv.reader(io.StringIO(text)),[])
     if not header:return raw,0,'original'
     if len(header)!=len(set(header)) or any(None in row or any(v is None for v in row.values()) for row in rows):
+        # Preserve raw training curves for analysis, including irregular headers.
+        # Never apply this exception to sample/label/prediction tables.
+        fields={c.strip().casefold() for c in header}
+        if (path.name=='results.csv' and path.parent.name=='train' and 'epoch' in fields
+            and any(c.startswith('train/') for c in fields)
+            and not fields.intersection({'image_id','stem','outer_split','split','evaluated_on','y_true','prob','prob_positive'})):
+            return raw,0,'curve_csv_structure_warning_original_preserved'
         raise ValueError('CSV con columnas duplicadas o registros incompletos; revisar fuente')
     if {'image_id','outer_split'}<=set(header) and path.name=='split_manifest.csv':
         keep=['image_id','outer_split'];out=io.StringIO(newline='');w=csv.DictWriter(out,fieldnames=keep,lineterminator='\n');w.writeheader()
@@ -98,9 +105,12 @@ def export_json(path,test_ids):
 
 
 def snapshot(db,dest):
-    with sqlite3.connect(db.resolve().as_uri()+'?mode=ro',uri=True,timeout=15) as src:
-        with sqlite3.connect(dest) as out:src.backup(out)
-    with sqlite3.connect(dest) as check:
+    # Connection context managers commit/rollback but do NOT close connections.
+    # Explicit close is required before TemporaryDirectory cleanup on Windows.
+    with contextlib.closing(sqlite3.connect(db.resolve().as_uri()+'?mode=ro',uri=True,timeout=15)) as src:
+        with contextlib.closing(sqlite3.connect(dest)) as out:
+            src.backup(out);out.commit()
+    with contextlib.closing(sqlite3.connect(dest)) as check:
         if check.execute('PRAGMA integrity_check').fetchone()[0]!='ok':raise RuntimeError('Snapshot SQLite no integro')
 
 
@@ -245,6 +255,7 @@ def build(project,home,pc,output,*,include_inputs):
     packet.z.writestr('00_INDICES/FALTANTES.json',json.dumps(missing,indent=2,ensure_ascii=False))
     packet.z.writestr('00_INDICES/EXCLUIDOS.json',json.dumps(packet.excluded,indent=2,ensure_ascii=False))
     packet.z.writestr('00_INDICES/ERRORES.json',json.dumps(packet.errors,indent=2,ensure_ascii=False))
+    packet.z.writestr('00_INDICES/ADVERTENCIAS.json',json.dumps([r for r in packet.rows if 'warning' in r['operation']],indent=2,ensure_ascii=False))
     manifest=dict(pc=pc,created_utc=stamp,status='INCOMPLETO_REVISAR_ERRORES' if packet.errors else 'EXPORTACION_COMPLETADA',
         files=len(packet.rows),code_exporter_sha256=digest(Path(__file__)),split_sources=splits,
         inputs_train_val_included=include_inputs,input_counts={k:len(v) for k,v in input_ids.items()},test_inputs_exported=False,test_inference_executed=False,

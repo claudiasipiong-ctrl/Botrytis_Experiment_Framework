@@ -105,3 +105,53 @@ def test_test_only_json_is_not_packaged(tmp_path):
     p=tmp_path/'something.json';p.write_text('{"evaluated_on":"test","map":0.99}')
     packet=e.Packet(tmp_path/'json.zip','PC-01',set());packet.add(p,'data/something.json');packet.z.close()
     assert packet.rows==[] and len(packet.excluded)==1
+
+
+def test_snapshot_closes_every_connection_before_temporary_cleanup(tmp_path,monkeypatch):
+    real_connect=sqlite3.connect;connections=[]
+    class Tracked(sqlite3.Connection):
+        closed=False
+        def close(self):
+            self.closed=True
+            return super().close()
+    def connect(*args,**kw):
+        c=real_connect(*args,**kw,factory=Tracked);connections.append(c);return c
+    db=tmp_path/'queue.sqlite'
+    c=real_connect(db);c.execute('create table jobs(id)');c.commit();c.close()
+    monkeypatch.setattr(e.sqlite3,'connect',connect)
+    pack=e.Packet(tmp_path/'packet.zip','PC-02',set())
+    pack.add(db,'02_RONDAS/queue.sqlite');pack.z.close()
+    assert len(connections)==3 and all(c.closed for c in connections)
+
+
+@pytest.mark.parametrize('body',['epoch,train/cls_loss,train/cls_loss\n1,.3,.4\n',
+                                 'epoch,train/cls_loss\n1\n'])
+def test_irregular_final_training_curve_preserved_with_warning(tmp_path,body):
+    path=tmp_path/'train/results.csv';path.parent.mkdir();path.write_text(body)
+    raw,n,op=e.export_csv(path,set())
+    assert raw==path.read_bytes() and n==0 and 'warning' in op
+
+
+def test_curve_exception_never_applies_to_sample_table(tmp_path):
+    path=tmp_path/'train/results.csv';path.parent.mkdir()
+    path.write_text('epoch,train/cls_loss,image_id,image_id\n1,.3,a,c\n')
+    with pytest.raises(ValueError):e.export_csv(path,{'c'})
+
+
+def test_cleanup_failure_occurs_after_sqlite_and_inventory_are_written(tmp_path,monkeypatch):
+    import tempfile
+    real_temp=tempfile.TemporaryDirectory
+    class FailedCleanup:
+        def __enter__(self):
+            self.inner=real_temp();return self.inner.__enter__()
+        def __exit__(self,*args):
+            self.inner.__exit__(*args)
+            raise PermissionError('[WinError 32] snapshot.sqlite')
+    folder=tmp_path/'source';folder.mkdir();db=folder/'queue.sqlite'
+    c=sqlite3.connect(db);c.execute('CREATE TABLE jobs(id)');c.commit();c.close()
+    monkeypatch.setattr(e.tempfile,'TemporaryDirectory',FailedCleanup)
+    target=tmp_path/'packet.zip';pack=e.Packet(target,'PC-03',set())
+    pack.tree(folder,'02_RONDAS');pack.z.close()
+    assert len(pack.errors)==1 and len(pack.rows)==1
+    with zipfile.ZipFile(target) as z:
+        assert hashlib.sha256(z.read(pack.rows[0]['archive'])).hexdigest()==pack.rows[0]['export_sha256']

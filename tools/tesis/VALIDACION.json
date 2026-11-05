@@ -1,7 +1,24 @@
 {
-  "tests_passed": 19,
-  "training_executed": false,
-  "windows_client_disks_inspected": false,
-  "tests": "CSV/JSON TEST filtering, SQLite WAL snapshot, complete ZIP fixture, content hashes, input filtering, final weights, long paths and idle-process refusal",
-  "sha256": "4df73954225dc0fe781bd01b451e958ceed6c16db9a5bad96917364a358ad150"
+  "tests_passed": 40,
+  "tests_failed": 0,
+  "platform": "Linux CPU",
+  "windows_execution_tested": false,
+  "real_client_zips_inspected": false,
+  "training_started": false,
+  "test_opened": false,
+  "coverage": [
+    "explicit SQLite connection closure",
+    "cleanup failure after archive write",
+    "23 SQLite incidents + 1 original CSV recovery for PC-02",
+    "21 archived SQLite incidents for PC-03",
+    "archive and source byte preservation",
+    "hash or integrity failures remain unresolved",
+    "unknown errors remain unresolved",
+    "raw curve warning without imputation",
+    "TEST table filtering preserved"
+  ],
+  "sha256": {
+    "botrytis_exportar_tesis.py": "6d7ec8b4044498c4f81ff562ae9908883f3d1b8d830e321b69ff6f55a951202f",
+    "botrytis_reparar_zip_tesis.py": "647a13f5a97c9ce42bb3c995d5f2cb94ad8c05ff7e754f784bf2710b7db86b71"
+  }
 }

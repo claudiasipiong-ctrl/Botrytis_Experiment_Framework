@@ -15,3 +15,36 @@ FALTANTES enumera salidas de etapas aun no generadas. No significa que hayan fal
 Drive sugerido: Botrytis_Tesis/01_Paquetes_originales/PC-01, PC-02, PC-03; 02_Datos_para_analisis; 03_Graficos_editables; 04_Tablas_tesis; 05_Texto_experimentacion_resultados. Mantenga ZIP originales por fecha y analice copias extraidas en carpetas por PC/ronda; no mezcle CSV homonimos. No sube archivos automaticamente a Drive.
 
 19 pruebas portables aprobadas; sin entrenamientos ni ejecucion Windows real en la nube.
+# Correccion de exportaciones v1 en Windows
+
+`botrytis_reparar_zip_tesis.py` corresponde a los ZIP de PC-02 y PC-03 creados con
+el exportador de 997b437. No ejecuta entrenamiento, evaluacion o TEST, ni modifica
+el ZIP original o las fuentes. Usa solo la biblioteca estandar.
+
+El contexto `with sqlite3.connect(...)` de v1 no cerraba las conexiones. En Windows
+la limpieza del directorio temporal podia fallar DESPUES de escribir el snapshot
+y su fila de inventario en el ZIP. El reparador verifica la huella del ZIP completo,
+y SHA256 + `PRAGMA integrity_check` de cada SQLite afectado que ya esta archivado.
+No consulta ni sustituye las bases actuales. Si una copia falta o no supera las
+comprobaciones, la incidencia sigue pendiente; no se descarta a ciegas.
+
+En PC-02 solo se recupera, si falta, la fuente exacta
+`bf/52c7988b/r/yolo26l/final/train/results.csv`. Se conserva byte por byte, se informa
+de encabezados duplicados/filas de longitud irregular y queda una advertencia.
+No se deduplican columnas, imputan valores ni certifican las metricas del CSV.
+El informe aclara que esta copia se obtuvo durante la reparacion.
+
+Salida: `COMPLEMENTO_TESIS_PC-XX_...zip`, huella y LEEME junto al ZIP original.
+Compartir AMBOS ZIP y sus huellas. Extraer primero el original y despues el
+complemento en la misma carpeta corta de analisis, reemplazando los indices
+exportados. Nunca extraer sobre el repositorio de entrenamiento.
+El complemento no es un paquete completo por si solo. `REPARACION.json` conserva
+todos los errores originales y sus resoluciones. `FALTANTES.json` no se altera:
+un HPO o etapa pendiente no pasa a ser completo por reparar la exportacion.
+
+El exportador actualizado cierra explicitamente las tres conexiones SQLite antes
+de eliminar el temporal. Conserva las curvas `train/results.csv` irregulares con
+advertencia en `ADVERTENCIAS.json`; mantiene el rechazo de tablas ambiguas de
+muestras/predicciones. Las pruebas son CPU en Linux, con seguimiento explicito
+del cierre de conexiones y simulacion del fallo de limpieza; no se han ejecutado
+en las PCs Windows ni se han inspeccionado sus ZIP reales desde aqui.
