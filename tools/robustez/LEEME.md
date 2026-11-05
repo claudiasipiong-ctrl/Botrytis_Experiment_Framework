@@ -31,3 +31,5 @@ Comando de pruebas (desde un checkout del framework, con sus dependencias): PYTH
 Correccion del comparador YOLO y epocas reales: ver CORRECCION_CSV_V2.md.
 
 PC-03: la version v3 corrige la comparacion de ap_per_iou serializado; ver CORRECCION_R50_CSV_V3.md y VALIDACION.json. Las pruebas de 72 casos corresponden a la entrega v2; esta correccion tiene 49 pruebas CPU y 2 integraciones adicionales.
+
+PC-03: v4 comprueba los pares checkpoint/recibo y el linaje antes de recuperar; ver CORRECCION_R50_RECOVERY_V4.md. No repetir intentos si falta una evidencia critica.

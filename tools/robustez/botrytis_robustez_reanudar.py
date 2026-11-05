@@ -23,7 +23,7 @@ SHA = hashlib.sha256(SELF.read_bytes()).hexdigest()
 DEPENDENCIES = {
     'botrytis_robustez_base.py': '16322184a3aa12a432d6f81d216009a5cccbd8695ec51c47d4f48174b17f100d',
     'botrytis_r50_auditoria.py': '432881891c91bc6e20becc7fec97d245a657ce5c7e6f1677fb99c224d344149e',
-    'botrytis_r50_hpo_pc03.py': 'a6967e3073f5a9ce14e6fa389a59c5b9d8c410a6b2f99a3e49f83bf9d33d14e1',
+    'botrytis_r50_hpo_pc03.py': '6ea86a71eea01b5d03640594427b87fc3f12e6340c4ec2a3846f61a0346ff092',
     'botrytis_r50_oficial_pinned.py': 'e62e47fdc4cdbe6648d0830a8efac9701ab04ae82b77757d4a0880ec73381df7',
 }
 MODELS = {'PC-01': ['yolov8n', 'yolov8l'], 'PC-02': ['yolo26l', 'swin_tiny'],
@@ -219,10 +219,12 @@ def validate_existing_partials(cfg, spec, job):
 def verify_closed_hpo(study, cfg, spec, hpo, evidence_dir=None):
     from utils.architectures import trials_for
     counts = bt.study_counts(study)
-    if len(study.trials) != trials_for(spec, cfg) or counts['RUNNING'] or counts['WAITING'] or counts['FAIL']:
+    used = counts['COMPLETE'] + counts['PRUNED']
+    if used != trials_for(spec, cfg) or counts['RUNNING'] or counts['WAITING'] or (counts['FAIL'] and spec.slug!='rtdetr_r50'):
         raise bt.Stop('HPO no cerrado; no se relanza ni se inicia robustez: ' + str(counts))
     if hpo['status'] not in ('COMPLETE', 'PENDING_REVIEW', 'PUBLICATION_PENDING') or hpo['payload'].get('partial_budget'):
         raise bt.Stop('Cola HPO no cerrada: ' + hpo['status'])
+    recovered = official().recovered_failures(study,cfg,spec) if spec.slug=='rtdetr_r50' else []
     verified = (official().verify_trials(study, cfg, spec) if spec.slug == 'rtdetr_r50'
                 else bt.verify_trial_evidence(study, cfg, spec))
     curves = []
@@ -252,7 +254,8 @@ def verify_closed_hpo(study, cfg, spec, hpo, evidence_dir=None):
                     target=Path(evidence_dir)/'csv_discrepancia.json';bt.atomic_json(target,diagnostics)
                     bt.emit('EVIDENCIA_DISCREPANCIA_GUARDADA',path=str(target),error=str(exc))
                 raise
-    return dict(trials=verified, curves=curves, absence_of_overfitting_certified=False)
+    return dict(trials=verified, curves=curves, recovered_failures=recovered,
+                budget_used=used,total_records=len(study.trials),absence_of_overfitting_certified=False)
 
 
 def process_model(project, base, pc, model, index, out):

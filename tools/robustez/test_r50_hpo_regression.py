@@ -121,7 +121,7 @@ def test_partial_and_complete_fold_recovery_preserves_originals(tmp_path):
     best=fold0/'best.pt';torch.save(dict(format='SYNTHETIC_CONTROLLER_FIXTURE'),best);receipt(best,sp,c,dict(seed=42,hp=hp,context=dict(fold=0)))
     adapter=bt.audit.load_adapter();partial=source/'fold1/cp/e0003.pt';partial.parent.mkdir(parents=True)
     partial_sig=adapter.canonical(dict(experiment=fingerprint(c),hp=hp,seed=42,fold=1,epochs=60,patience=20,fixed=False))
-    torch.save(dict(format=adapter.FORMAT,signature=partial_sig,epoch=3),partial);receipt(partial,sp,c,dict(seed=42,hp=hp,context=dict(fold=1)))
+    torch.save(dict(format=adapter.FORMAT,signature=partial_sig,epoch=3,seed=42,hp=hp,fold=1,history=history().iloc[:3].to_dict('records'),model={},ema={},optimizer={},scheduler={},scaler={},gradients={},rng={},best_state={},best_metrics={},ema_updates=0,best_epoch=2,best_score=.6,last_opt_step=0,elapsed=0,stopper_epoch=2,stopper_fitness=.6,stopped=False),partial);receipt(partial,sp,c,dict(seed=42,hp=hp,context=dict(fold=1),epoch=3,adapter_sha256=bt.audit.ADAPTER_SHA))
     t.report(.1,0);study.tell(t,state=optuna.trial.TrialState.FAIL)
     before=bt.audit.frozen_inventory(source);bt.schedule_retries(study,c,sp,tmp_path)
     assert len(study.trials)==2

@@ -13,10 +13,11 @@ spec=importlib.util.spec_from_file_location('r50_audit_pinned',p)
 audit=importlib.util.module_from_spec(spec);sys.modules[spec.name]=audit;spec.loader.exec_module(audit)
 MODEL= audit.MODEL;PC=audit.PC;USER=audit.USER;BUDGET=15
 EXECUTOR_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
-# Same training/recovery implementation; only the read-only CSV verifier was
-# corrected. Accept the known predecessor solely with matching job/attempt and
+# Same pinned trainer and scientific protocol. Accept a known predecessor
+# solely with matching job/attempt and
 # a demonstrably dead local process (never just an old heartbeat).
-LEGACY_EXECUTOR_SHAS=('160ce95cb02e3ce2a4decf4a2698e5646032b05bbfcbb6b0887b0a8bfef806e7',)
+LEGACY_EXECUTOR_SHAS=('160ce95cb02e3ce2a4decf4a2698e5646032b05bbfcbb6b0887b0a8bfef806e7',
+                      'a6967e3073f5a9ce14e6fa389a59c5b9d8c410a6b2f99a3e49f83bf9d33d14e1')
 Stop=audit.Stop
 class RecoveryStop(BaseException):pass
 utc=audit.utc;read=audit.read;digest=audit.digest;canonical=audit.canonical
@@ -94,6 +95,154 @@ def checkpoint_candidates(folder):
         if path.is_file(): found.append((path, read(side)))
     return found
 
+
+def recovery_family(study,trial,cfg,spec):
+    """Follow only explicit identical-parameter retries, never arbitrary paths."""
+    by_number={t.number:t for t in study.trials};family=[];seen=set();hp=trial.user_attrs.get('hp')
+    while True:
+        if trial.number in seen:raise Stop('Ciclo en linaje de recuperacion')
+        seen.add(trial.number)
+        folder=allowed_trial_folder(cfg,spec,trial)
+        if not folder.is_dir():raise Stop('Carpeta de recuperacion ausente: '+str(folder))
+        if trial.user_attrs.get('hp')!=hp:raise Stop('HP diferentes en linaje de recuperacion')
+        family.append((trial,folder))
+        parent=trial.user_attrs.get('bt_retry_of')
+        if parent is None:break
+        previous=by_number.get(parent)
+        if (previous is None or previous.state.name!='FAIL' or previous.params!=trial.params
+                or trial.user_attrs.get('bt_recovery_source')!=previous.user_attrs.get('run_dir')):
+            raise Stop('Linaje de recuperacion no comprobable: trial '+str(trial.number))
+        trial=previous
+    return family
+
+
+def select_partial_checkpoint(folder,cfg,spec,hp,seed,fold,epochs,patience):
+    """Exclude only uncommitted unsigned files; signed corruption stays blocking."""
+    folder=Path(folder);pointer=read(folder/'resume.json') if (folder/'resume.json').is_file() else None
+    files=sorted((folder/'cp').glob('e*.pt'));valid=[];unpublished=[]
+    if pointer:
+        committed=folder/'cp'/Path(pointer.get('path','')).name
+        if not committed.is_file() or not committed.with_suffix('.pt.resume.json').is_file():
+            raise Stop('El puntero publicado carece de checkpoint/recibo: '+str(committed))
+        if digest(committed)!=pointer.get('sha256'):raise Stop('Puntero de checkpoint alterado: '+str(committed))
+    for cp in files:
+        match=re.fullmatch(r'e(\d+)\.pt',cp.name)
+        if not cp.is_file() or not match:raise Stop('Ruta de checkpoint inesperada: '+str(cp))
+        epoch=int(match[1]);side=cp.with_suffix('.pt.resume.json')
+        if not side.is_file():
+            unpublished.append(dict(path=str(cp),sha256=digest(cp),epoch=epoch,receipt_missing=str(side),
+                                    disposition='UNPUBLISHED_NOT_USED_OR_DELETED'))
+            continue
+        validate_checkpoint(cp,spec.slug,cfg,seed=seed,hp=hp,fold=fold)
+        meta=read(side);extra=meta.get('extra',{})
+        if extra.get('adapter_sha256')!=audit.ADAPTER_SHA or extra.get('epoch')!=epoch or not 1<=epoch<=epochs:
+            raise Stop('Contrato de estado/epoca incompatible: '+str(cp))
+        valid.append((epoch,cp))
+    if not valid:
+        if files or (folder/'results.csv').is_file() or any(folder.glob('*.pt')):
+            return dict(unrecoverable=True,folder=str(folder),unpublished=unpublished)
+        return None
+    epoch,selected=max(valid,key=lambda item:item[0])
+    # Hash/receipt checked before deserializing. Read only the selected state.
+    import torch
+    state=torch.load(selected,map_location='cpu',weights_only=False)
+    from utils.experiments import fingerprint
+    expected=canonical(dict(experiment=fingerprint(cfg),hp=dict(hp),seed=seed,fold=fold,epochs=epochs,patience=patience,fixed=False))
+    adapter=audit.load_adapter()
+    if (state.get('format')!=adapter.FORMAT or state.get('signature')!=expected or state.get('epoch')!=epoch
+            or state.get('seed')!=seed or state.get('hp')!=dict(hp) or state.get('fold')!=fold):
+        raise Stop('Payload del estado no corresponde a su contrato: '+str(selected))
+    required=('model','ema','optimizer','scheduler','scaler','gradients','rng','best_state','best_metrics')
+    if any(not isinstance(state.get(k),dict) for k in required):raise Stop('Estado incompleto de optimizador/modelo/RNG: '+str(selected))
+    if any(k not in state for k in ('ema_updates','best_epoch','best_score','last_opt_step','elapsed','stopper_epoch','stopper_fitness','stopped')):
+        raise Stop('Estado incompleto de reanudacion: '+str(selected))
+    import pandas as pd
+    h=pd.DataFrame(state.get('history',[]))
+    if len(h)!=epoch:raise Stop('Historial del checkpoint incompleto: '+str(selected))
+    inspect_history(h,str(selected))
+    if not 1<=int(state['best_epoch'])<=epoch or not math.isfinite(float(state['best_score'])):
+        raise Stop('Mejor epoca/score del checkpoint invalido: '+str(selected))
+    if not math.isclose(float(h.map50_95.max()),float(state['best_score']),abs_tol=1e-7):
+        raise Stop('Score del checkpoint discrepa de su historial: '+str(selected))
+    return dict(path=str(selected),folder=str(folder),epoch=epoch,sha256=digest(selected),
+                receipt_sha256=digest(selected.with_suffix('.pt.resume.json')),unpublished=unpublished)
+
+
+def recovery_plan(study,trial,cfg,spec):
+    """Merge verified per-fold progress across the explicit retry family."""
+    from utils.experiments import fingerprint
+    from utils.architectures import section_for
+    family=recovery_family(study,trial,cfg,spec);sec=section_for(spec,cfg);hp=trial.user_attrs['hp']
+    seed=int(cfg['reproducibility']['seed']);epochs=int(sec['max_epochs']);patience=int(sec['early_stopping_patience'])
+    plan=dict(trial=trial.number,family=[t.number for t,_ in family],folds=[],has_work=False)
+    for fold in range(3):
+        completed=[];partials=[];unrecoverable=[]
+        for source,folder in family:
+            out=folder/f'fold{fold}'
+            if not out.is_dir():continue
+            if (out/'completed_fold.json').is_file():
+                sig=fold_signature(fingerprint(cfg),spec.slug,hp,seed,fold,epochs,patience)
+                receipt,h=verify_fold(out,sig,fold);inspect_curve(out/'completed_history.csv')
+                validate_checkpoint(out/'best.pt',spec.slug,cfg,seed=seed,hp=hp,fold=fold)
+                completed.append(dict(kind='COMPLETE',fold=fold,source=str(out),source_trial=source.number,
+                    history_sha256=receipt['history_sha256'],best_sha256=digest(out/'best.pt')))
+        if completed:
+            if len({(r['history_sha256'],r['best_sha256']) for r in completed})!=1:
+                raise Stop('Folds completos contradictorios en linaje: '+str(fold))
+            plan['folds'].append(completed[0]);plan['has_work']=True;continue
+        for source,folder in family:
+            out=folder/f'fold{fold}'
+            if not out.is_dir():continue
+            selected=select_partial_checkpoint(out,cfg,spec,hp,seed,fold,epochs,patience)
+            if selected and selected.get('unrecoverable'):unrecoverable.append(selected)
+            elif selected:partials.append(dict(selected,source_trial=source.number,fold=fold,kind='PARTIAL'))
+        if partials:
+            latest=max(r['epoch'] for r in partials);chosen=[r for r in partials if r['epoch']==latest]
+            if len({r['sha256'] for r in chosen})!=1:raise Stop('Checkpoints de igual epoca contradictorios: '+str(fold))
+            plan['folds'].append(dict(chosen[0],unrecoverable_copies=unrecoverable));plan['has_work']=True
+        elif unrecoverable:
+            raise Stop('No hay estado de optimizador con recibo integro en el linaje del fold '+str(fold)+': '+str(unrecoverable))
+        else:plan['folds'].append(dict(kind='NEW',fold=fold))
+    return plan
+
+
+def retry_leaves(study):
+    trials=study.get_trials(deepcopy=False)
+    parents={t.user_attrs.get('bt_retry_of') for t in trials if t.user_attrs.get('bt_retry_of') is not None}
+    return [t for t in trials if t.state.name in ('FAIL','RUNNING') and t.number not in parents]
+
+
+def preview_recovery(study,cfg,spec,directory):
+    plans=[]
+    for trial in retry_leaves(study):
+        if trial.state.name=='RUNNING' and owner_alive(trial.user_attrs.get('process_owner',{})):
+            raise Stop('Trial sigue activo; no se recupera')
+        if not trial.user_attrs.get('hp') or not trial.user_attrs.get('run_dir') or not trial.params:continue
+        plans.append(recovery_plan(study,trial,cfg,spec))
+    by_number={t.number:t for t in study.trials}
+    for pending in study.trials:
+        if pending.state.name!='WAITING' or pending.user_attrs.get('bt_retry_of') is None:continue
+        previous=by_number.get(pending.user_attrs['bt_retry_of'])
+        if (previous is None or previous.state.name!='FAIL'
+                or pending.user_attrs.get('bt_recovery_source')!=previous.user_attrs.get('run_dir')
+                or pending.system_attrs.get('fixed_params')!=previous.params):
+            raise Stop('Retry WAITING sin vinculo y parametros comprobables')
+        plans.append(dict(recovery_plan(study,previous,cfg,spec),waiting_trial=pending.number))
+    atomic_json(Path(directory)/'recovery-preflight.json',dict(plans=plans,queue_modified=False,training=False))
+    emit('RECUPERACION_COMPROBADA_ANTES_DE_RECLAMAR',plans=plans)
+    return plans
+
+
+def recovered_failures(study,cfg,spec):
+    """FAIL remains FAIL; only a verified closed identical retry covers it."""
+    covered={}
+    for trial in study.trials:
+        if trial.state.name not in ('COMPLETE','PRUNED') or trial.user_attrs.get('bt_retry_of') is None:continue
+        for ancestor,_ in recovery_family(study,trial,cfg,spec)[1:]:covered[ancestor.number]=trial.number
+    failed={t.number for t in study.trials if t.state.name=='FAIL'}
+    if failed-set(covered):raise Stop('Trials fallidos sin recuperacion cerrada verificable: '+str(sorted(failed-set(covered))))
+    return [dict(failed_trial=n,recovered_by=covered[n],original_state_preserved='FAIL') for n in sorted(failed)]
+
 def schedule_retries(study, cfg, spec, audit_dir):
     """Public Optuna APIs: retain old FAIL, enqueue the identical params once.
 
@@ -128,25 +277,26 @@ def schedule_retries(study, cfg, spec, audit_dir):
         if not hp or not directory or not t.params: continue  # no completed work exists to recover
         if t.user_attrs.get('pc_id') not in (None, cfg['compute']['pc_id']): raise Stop('Trial fallido de otra PC')
         folder = allowed_trial_folder(cfg, spec, t)
-        if not folder.is_dir(): raise Stop(f'Trial {t.number}: run_dir original ausente: {folder}')
-        valid_folds = []; signed_partial = []
-        for fold in range(3):
-            fdir = folder / f'fold{fold}'
-            if (fdir / 'completed_fold.json').exists():
-                sig = fold_signature(exp, spec.slug, hp, int(cfg['reproducibility']['seed']), fold, int(sec['max_epochs']), int(sec['early_stopping_patience']))
-                verify_fold(fdir, sig, fold); valid_folds.append(fold)
-        for cp, meta in checkpoint_candidates(folder):
-            context = meta.get('extra', {}).get('context', {}); fold = context.get('fold')
-            if spec.is_detector:
-                match = re.search(r'^fold(\d+)$', cp.parent.parent.name)
-                fold = int(match.group(1)) if match else fold
-            if fold is None or fold in valid_folds: continue
-            validate_checkpoint(cp, spec.slug, cfg, seed=int(cfg['reproducibility']['seed']), hp=hp, fold=fold)
-            signed_partial.append(str(cp))
-        if valid_folds or signed_partial:
+        plan=recovery_plan(study,t,cfg,spec)
+        if plan['has_work']:
             study.enqueue_trial(dict(t.params), user_attrs=dict(bt_retry_of=t.number, bt_recovery_source=str(folder.resolve()),
-                                bt_recovered_folds=valid_folds, bt_executor_sha256=EXECUTOR_SHA256), skip_if_exists=False)
-            actions.append(dict(action='RETRY_IDENTICAL_PARAMS', trial=t.number, valid_folds=valid_folds, signed_partial=signed_partial))
+                                bt_recovered_folds=[r['fold'] for r in plan['folds'] if r['kind']=='COMPLETE'],
+                                bt_recovery_plan=plan,bt_executor_sha256=EXECUTOR_SHA256), skip_if_exists=False)
+            actions.append(dict(action='RETRY_IDENTICAL_PARAMS', trial=t.number, plan=plan))
+    # A callback failure may leave the queue's trial mirror RUNNING even after
+    # Optuna durably recorded FAIL. Reconcile only existing nonfinal mirror
+    # rows; do not change Optuna, historical values, timestamps or approvals.
+    from utils.config_loader import cfg_path
+    mirror=cfg_path(cfg,'paths.queue_dir')/'queue.sqlite'
+    if mirror.is_file():
+        with sqlite3.connect(mirror,timeout=30) as con:
+            con.execute('BEGIN IMMEDIATE')
+            for failed in study.get_trials(deepcopy=False):
+                if failed.state.name!='FAIL':continue
+                row=con.execute('SELECT status FROM trials WHERE study_name=? AND trial_number=?',(study.study_name,failed.number)).fetchone()
+                if row and row[0] in ('COMPLETE','PRUNED'):raise Stop('Estado Optuna/cola contradictorio para trial '+str(failed.number))
+                if row and row[0]!='FAILED':
+                    con.execute("UPDATE trials SET status='FAILED',updated_at=? WHERE study_name=? AND trial_number=?",(utc(),study.study_name,failed.number))
     if actions: atomic_json(Path(audit_dir) / ('recovery-' + uuid.uuid4().hex[:8] + '.json'), dict(utc=utc(), study=study.study_name, actions=actions))
     return actions
 
@@ -261,26 +411,33 @@ class R50Recovery:
         if source_name:
             previous=next((t for t in self.study.trials if t.number==trial.user_attrs.get('bt_retry_of')),None)
             if previous is None or previous.state.name!='FAIL' or previous.user_attrs.get('hp')!=dict(hp) or previous.user_attrs.get('run_dir')!=source_name:raise RecoveryStop('Retry de otra fuente/HP/estado')
-            source=allowed_trial_folder(cfg,spec,previous)
-            for fold in kw['folds']:
-                src=source/f'fold{fold}';dst=run_dir/f'fold{fold}'
-                if not src.is_dir():continue
-                if (src/'completed_fold.json').is_file():
-                    sig=fold_signature(fingerprint(cfg),MODEL,hp,kw['seed'],fold,kw['max_epochs'],kw['patience'])
-                    receipt,h=verify_fold(src,sig,fold);inspect_curve(src/'completed_history.csv')
-                    validate_checkpoint(src/'best.pt',MODEL,cfg,seed=kw['seed'],hp=hp,fold=fold)
+            plan=recovery_plan(self.study,previous,cfg,spec)
+            atomic_json(self.state_dir/('plan-trial-'+str(trial.number)+'.json'),plan)
+            trial.set_user_attr('bt_recovery_plan',plan)
+            for entry in plan['folds']:
+                fold=entry['fold'];dst=run_dir/f'fold{fold}'
+                if entry['kind']=='COMPLETE':
+                    src=Path(entry['source'])
                     copy_tree_safe(src,dst)
                     self.event('FOLD_CONSERVADO_SIN_ENTRENAR',trial=trial.number,source=str(src),fold=fold)
-                else:
-                    states=sorted((src/'cp').glob('e*.pt'))
-                    if states:
-                        for cp in states:validate_checkpoint(cp,MODEL,cfg,seed=kw['seed'],hp=hp,fold=fold)
-                        # Resume into a new trial folder. The original folder and
-                        # optimizer states remain byte-for-byte unchanged.
-                        copy_tree_safe(src,dst,skip=('data.yaml','train.txt','val.txt'))
-                        self.event('ESTADO_R50_RECUPERADO',trial=trial.number,fold=fold,checkpoint=str(states[-1]),original_preserved=True)
-                    elif any(src.rglob('*.pt')) or (src/'results.csv').exists():raise RecoveryStop('Trabajo parcial sin optimizador verificable: '+str(src))
-            for step,value in sorted(previous.intermediate_values.items()):trial.report(float(value),int(step))
+                elif entry['kind']=='PARTIAL':
+                    cp=Path(entry['path']);src=Path(entry['folder'])
+                    # Keep the original directory untouched. The new active view
+                    # contains only the selected genuine file and its genuine
+                    # receipt, so the pinned backend cannot select an orphan.
+                    copy_tree_safe(src,dst,skip=('cp','data.yaml','train.txt','val.txt','best.pt','best.pt.resume.json',
+                                                'adapter.json','resume.json','results.csv'))
+                    verified_copy(cp,dst/'cp'/cp.name)
+                    verified_copy(cp.with_suffix('.pt.resume.json'),dst/'cp'/(cp.name+'.resume.json'))
+                    self.event('ESTADO_R50_RECUPERADO',trial=trial.number,fold=fold,checkpoint=str(cp),epoch=entry['epoch'],
+                               unpublished_preserved=entry['unpublished'],original_preserved=True)
+            intermediates={}
+            for ancestor,_ in recovery_family(self.study,previous,cfg,spec):
+                for step,value in ancestor.intermediate_values.items():
+                    if step in intermediates and not math.isclose(intermediates[step],float(value),rel_tol=0,abs_tol=1e-12):
+                        raise RecoveryStop('Intermedios contradictorios en linaje')
+                    intermediates[step]=float(value)
+            for step,value in sorted(intermediates.items()):trial.report(value,int(step))
         self.state.save(self.study)  # sampler durable after draw, before any GPU work
         self.event('TRIAL_RTDETR_EN_EJECUCION',trial=trial.number,configuration=trial.user_attrs.get('config_id'),hp=dict(hp),folds=kw['folds'])
         return original(spec,hp,cfg,ctx,run_dir,**kw)
@@ -294,16 +451,20 @@ class R50Recovery:
 
 
 def inspect_curve(path):
+    import pandas as pd
+    return inspect_history(pd.read_csv(path),str(path))
+
+
+def inspect_history(h,source):
     import numpy as np
     import pandas as pd
-    h=pd.read_csv(path)
     columns=['epoch','optimization_loss_total','train_loss','val_loss','train/vfl_loss','train/bbox_loss','train/giou_loss',
         'val/vfl_loss','val/bbox_loss','val/giou_loss','map50_95','map50','precision','recall']
     for column in columns:
-        if column not in h:raise Stop('Falta columna garantizada por adaptador oficial: '+column+' en '+str(path))
+        if column not in h:raise Stop('Falta columna garantizada por adaptador oficial: '+column+' en '+str(source))
         values=pd.to_numeric(h[column],errors='coerce')
-        if h.empty or not np.isfinite(values).all() or (values<0).any():raise Stop('Historial vacio/no finito/negativo: '+str(path)+' '+column)
-    if h.epoch.tolist()!=list(range(1,len(h)+1)):raise Stop('Historial de epocas incompleto/duplicado: '+str(path))
+        if h.empty or not np.isfinite(values).all() or (values<0).any():raise Stop('Historial vacio/no finito/negativo: '+str(source)+' '+column)
+    if h.epoch.tolist()!=list(range(1,len(h)+1)):raise Stop('Historial de epocas incompleto/duplicado: '+str(source))
     if any((h[c]>1).any() for c in ('map50_95','map50','precision','recall')):raise Stop('Objetivos fuera de rango')
     if not (h.map50_95<=h.map50+1e-7).all():raise Stop('mAP50-95 > mAP50')
     for role in ('train','val'):
@@ -557,6 +718,7 @@ def run_hpo(project,store,config,cfg,queue,job,adapter,state_dir,attempt):
         emit('HPO_PUBLICADO_SIN_REENTRENAR');return existing
     if job.status=='PENDING_REVIEW':raise Stop('Bloque HPO parcial necesita su propia revision, se conserva')
     if job.status not in ('PENDING','FAILED','RUNNING'):raise Stop('Estado HPO bloqueado: '+job.status)
+    if existing is not None:preview_recovery(existing,cfg,spec,attempt)
     recover_owned_job(queue,job,state_dir);job=queue.get(job.job_id)
     # Existing originals live outside every new retry folder; native rolling
     # retention applies only to the newly generated/copy optimizer generations.

@@ -1,0 +1,19 @@
+# Recuperacion R50: checkpoint y recibo, copia activa y linaje de reintentos
+
+El registro de PC-03 acredita 3 trials COMPLETE (0,1,2). El intento siguiente (trial 4, reintento de trabajo interrumpido) fallo antes de llamar al entrenamiento por un .pt sin su recibo .pt.resume.json. Sin leer la carpeta local no se afirma que todos los estados sean recuperables ni que la causa concreta de la ausencia haya sido un apagon.
+
+El guardado del adaptador fijo escribe, en orden: checkpoint atomico, recibo atomico y puntero resume.json. Un archivo .pt reciente sin recibo puede no haber terminado de publicarse. La nueva seleccion exige un par genuino con SHA y contrato validos; no crea recibos. Si el puntero publicado apunta a un archivo o recibo ausente, o un estado con recibo tiene hash incompatible, bloquea. No se oculta corrupcion retrocediendo sobre un estado firmado alterado.
+
+Antes de reclamar otro intento GPU se inspeccionan los estados de los reintentos pendientes y fallidos. Se valida formato, firma de entrenamiento, semilla, HP, fold, epoca, adaptador, historial, modelo, EMA, optimizador, scheduler, scaler, gradientes y RNG. El original queda intacto. Si existen archivos sin recibo no publicados y otro estado anterior valido, se registra la exclusion y se conserva el archivo sin usarlo. La copia activa en un nuevo trial incluye solo el checkpoint verificado y su recibo original; el backend fijo no puede seleccionar el archivo sin recibo por orden de nombres. Resultados parciales y best.pt se regeneran en el nuevo destino a partir del estado guardado; no se sobrescriben los originales.
+
+Se sigue exclusivamente el linaje bt_retry_of/bt_recovery_source con HP y parametros identicos. Esto permite recuperar el progreso del trial interrumpido aun si un reintento posterior fallo antes de copiarlo. Se reutilizan folds completos y se elige por fold el estado verificable de mayor epoca; copias contradictorias se bloquean. Los intermedios de Optuna se preservan a traves del linaje. No se repiten trials COMPLETE ni PRUNED. El sampler/pruner sigue restaurandose con su estado original. No se aumenta el limite nativo de intentos.
+
+Los FAIL historicos siguen siendo FAIL; no se eliminan ni se marcan aprobados. El presupuesto original cuenta COMPLETE+PRUNED. La revision posterior solo admite esos FAIL si un reintento cerrado, vinculado y con parametros identicos demuestra su recuperacion; los fallos no resueltos bloquean robustez.
+
+Se conserva el adaptador oficial SHA e62e47fdc4cdbe6648d0830a8efac9701ab04ae82b77757d4a0880ec73381df7 y la auditoria SHA 432881891c91bc6e20becc7fec97d245a657ce5c7e6f1677fb99c224d344149e. Tambien se reconocen los propietarios de las dos versiones previas conocidas, con coincidencia de job/attempt y proceso muerto demostrado. Se reutilizan auditorias y aprobaciones validas. Baseline, datos, splits, hashes cientificos y configuraciones permanecen intactos. TEST cerrado.
+
+La ejecucion guarda recovery-preflight.json y un plan por trial en hpo_control/recovery. ESTADO_R50_RECUPERADO informa la epoca del checkpoint seleccionado y los archivos sin recibo conservados. R50_REANUDADO lo confirma al cargar el estado en el backend. Si no existe un par valido, el proceso se detiene antes de gastar otro intento y conserva la evidencia. No se garantiza recuperar el ultimo instante no publicado.
+
+Pruebas CPU con estados sinteticos y backend simulado; no se ejecutaron entrenamientos GPU reales ni se leyeron los discos Windows del usuario. Se prueban copia interrumpida sin recibo, par anterior valido, archivo comprometido sin recibo, hash alterado, historia/optimizador invalidos, reintentos vacios, linaje cambiado, preservacion de archivos, idempotencia y cierre con FAIL recuperados.
+
+Se reconcilia tambien el espejo de trials de la cola si un callback dejo RUNNING aunque Optuna ya registro FAIL. Solo se actualiza a FAILED; se preservan valores, tiempos y aprobaciones.
