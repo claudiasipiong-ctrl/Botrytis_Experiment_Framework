@@ -13,6 +13,10 @@ spec=importlib.util.spec_from_file_location('r50_audit_pinned',p)
 audit=importlib.util.module_from_spec(spec);sys.modules[spec.name]=audit;spec.loader.exec_module(audit)
 MODEL= audit.MODEL;PC=audit.PC;USER=audit.USER;BUDGET=15
 EXECUTOR_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+# Same training/recovery implementation; only the read-only CSV verifier was
+# corrected. Accept the known predecessor solely with matching job/attempt and
+# a demonstrably dead local process (never just an old heartbeat).
+LEGACY_EXECUTOR_SHAS=('160ce95cb02e3ce2a4decf4a2698e5646032b05bbfcbb6b0887b0a8bfef806e7',)
 Stop=audit.Stop
 class RecoveryStop(BaseException):pass
 utc=audit.utc;read=audit.read;digest=audit.digest;canonical=audit.canonical
@@ -307,6 +311,63 @@ def inspect_curve(path):
     return h
 
 
+def compare_training_histories(raw,history):
+    """Compare scalars numerically and the adapter's AP vector structurally.
+
+    pandas reads ap_per_iou as text because the producer writes a list inside
+    one cell. Never subtract those strings, drop the column, or rewrite a CSV.
+    """
+    import ast
+    import numpy as np
+    import pandas as pd
+    if len(raw)!=len(history):raise Stop('Historiales de distinta longitud')
+    if raw.columns.duplicated().any() or history.columns.duplicated().any():raise Stop('Columnas duplicadas en historial R50')
+    provenance={'architecture','config_id','run_id','outer_split','validation_role'}
+    columns=[c for c in raw if c in history and c not in provenance]
+    # A vector published on only one side is missing evidence, not a number.
+    if ('ap_per_iou' in raw)!=('ap_per_iou' in history):raise Stop('ap_per_iou ausente en uno de los historiales')
+    scalar=[c for c in columns if c!='ap_per_iou']
+    left=raw[scalar].copy();right=history[scalar].copy()
+    for col in scalar:
+        try:
+            left[col]=pd.to_numeric(left[col],errors='raise')
+            right[col]=pd.to_numeric(right[col],errors='raise')
+        except (TypeError,ValueError) as exc:
+            raise Stop('Columna escalar R50 no numerica: '+col) from exc
+        if not np.isfinite(left[col]).all() or not np.isfinite(right[col]).all():
+            raise Stop('Columna escalar R50 no finita: '+col)
+    audit.compare_histories(left,right,scalar)
+    vectors=0;unavailable=[]
+    def vector(value,epoch):
+        if value is None or (isinstance(value,(float,np.floating)) and np.isnan(value)):
+            return None
+        if isinstance(value,str):
+            try:value=ast.literal_eval(value)
+            except (ValueError,SyntaxError,TypeError,RecursionError) as exc:
+                raise Stop('ap_per_iou no es una lista valida en epoca '+str(epoch)) from exc
+        if value is None:return None
+        if not isinstance(value,(list,tuple,np.ndarray)) or len(value)!=10:
+            raise Stop('ap_per_iou requiere diez valores (IoU 0.50:0.95), epoca '+str(epoch))
+        if any(isinstance(x,(bool,np.bool_)) or not isinstance(x,(int,float,np.integer,np.floating)) for x in value):
+            raise Stop('ap_per_iou contiene valores no numericos, epoca '+str(epoch))
+        result=np.asarray(value,dtype=float)
+        if result.shape!=(10,) or not np.isfinite(result).all() or ((result<0)|(result>1)).any():
+            raise Stop('ap_per_iou no finito/fuera de rango, epoca '+str(epoch))
+        return result
+    if 'ap_per_iou' in columns:
+        for index,(a,b) in enumerate(zip(raw['ap_per_iou'],history['ap_per_iou'])):
+            epoch=raw['epoch'].iloc[index] if 'epoch' in raw else index+1
+            a=vector(a,epoch);b=vector(b,epoch)
+            if a is None and b is None:
+                unavailable.append(int(epoch));continue
+            if a is None or b is None:raise Stop('ap_per_iou ausente solo en un registro, epoca '+str(epoch))
+            if not np.allclose(a,b,rtol=2e-6,atol=1e-7,equal_nan=False):
+                raise Stop('Historiales discrepan en ap_per_iou, epoca '+str(epoch))
+            vectors+=1
+    return dict(scalar_columns=scalar,rows=len(raw),ap_vectors_compared=vectors,
+                ap_vector_unavailable_epochs=unavailable,originals_modified=False)
+
+
 def verify_trials(study,cfg,spec):
     from utils.experiments import fingerprint
     from utils.search_spaces import config_id
@@ -324,11 +385,12 @@ def verify_trials(study,cfg,spec):
             for cp,_ in checkpoints:validate_checkpoint(cp,MODEL,cfg,seed=seed,hp=hp)
             verified.append(dict(number=t.number,state='PRUNED'));continue
         if t.value is None or not math.isfinite(float(t.value)) or not 0<=float(t.value)<=1:raise Stop('Objetivo COMPLETE invalido')
-        scores=[];metadata=read(folder/'checkpoint_metadata.json')
+        scores=[];history_checks=[];metadata=read(folder/'checkpoint_metadata.json')
         for fold in range(3):
             out=folder/f'fold{fold}';sig=fold_signature(fingerprint(cfg),MODEL,hp,seed,fold,int(sec['max_epochs']),int(sec['early_stopping_patience']))
             receipt,h=verify_fold(out,sig,fold);history=inspect_curve(out/'completed_history.csv');scores.append(float(receipt['row']['score']))
-            raw=inspect_curve(out/'results.csv');audit.compare_histories(raw,history,[c for c in raw if c in history and c not in ('architecture','config_id','run_id','outer_split','validation_role')])
+            raw=inspect_curve(out/'results.csv');history_checks.append(compare_training_histories(raw,history))
+            emit('HISTORIAL_RTDETR_VERIFICADO',trial=t.number,fold=fold,rows=len(raw),ap_vectors_compared=history_checks[-1]['ap_vectors_compared'])
             be=int(receipt['row']['best_epoch'])
             n=int(receipt['row']['epochs_run'])
             if n>int(sec['max_epochs']) or (n<int(sec['max_epochs']) and n-be!=int(sec['early_stopping_patience'])):raise Stop('Parada de fold HPO no corresponde al protocolo')
@@ -340,7 +402,7 @@ def verify_trials(study,cfg,spec):
         if t.user_attrs.get('n_folds_done')!=3 or len(t.user_attrs.get('fold_scores',[]))!=3:raise Stop('COMPLETE sin tres folds documentados')
         if any(not math.isclose(a,float(b),abs_tol=1e-9) for a,b in zip(scores,t.user_attrs['fold_scores'])) or not math.isclose(sum(scores)/3,float(t.value),abs_tol=1e-9):raise Stop('Objetivo HPO no concuerda con folds')
         for cp,_ in checkpoint_candidates(folder):validate_checkpoint(cp,MODEL,cfg,seed=seed,hp=hp)
-        verified.append(dict(number=t.number,state='COMPLETE',value=t.value,scores=scores))
+        verified.append(dict(number=t.number,state='COMPLETE',value=t.value,scores=scores,history_checks=history_checks))
     return verified
 
 
@@ -464,7 +526,7 @@ def recover_owned_job(queue,job,state_dir):
     path=Path(state_dir)/'owner.json'
     if not path.is_file():raise Stop('Job requiere propietario verificable; falta '+str(path))
     owner=read(path)
-    if owner.get('job_id')!=job.job_id or owner.get('attempt')!=job.attempt or owner.get('executor_sha256')!=EXECUTOR_SHA256:raise Stop('Propietario de otra ejecucion; no se modifica la cola')
+    if owner.get('job_id')!=job.job_id or owner.get('attempt')!=job.attempt or owner.get('executor_sha256') not in (EXECUTOR_SHA256,*LEGACY_EXECUTOR_SHAS):raise Stop('Propietario de otra ejecucion; no se modifica la cola')
     if owner_alive(owner['process']):raise Stop('HPO sigue activo; no se duplica')
     if job.attempt>=3:raise Stop('Limite nativo de intentos; revisar error conservado')
     queue.finish(job.job_id,'PENDING',error='Reanudar intento propio muerto demostrado; conserva Optuna y checkpoints originales')

@@ -23,7 +23,7 @@ SHA = hashlib.sha256(SELF.read_bytes()).hexdigest()
 DEPENDENCIES = {
     'botrytis_robustez_base.py': '16322184a3aa12a432d6f81d216009a5cccbd8695ec51c47d4f48174b17f100d',
     'botrytis_r50_auditoria.py': '432881891c91bc6e20becc7fec97d245a657ce5c7e6f1677fb99c224d344149e',
-    'botrytis_r50_hpo_pc03.py': '160ce95cb02e3ce2a4decf4a2698e5646032b05bbfcbb6b0887b0a8bfef806e7',
+    'botrytis_r50_hpo_pc03.py': 'a6967e3073f5a9ce14e6fa389a59c5b9d8c410a6b2f99a3e49f83bf9d33d14e1',
     'botrytis_r50_oficial_pinned.py': 'e62e47fdc4cdbe6648d0830a8efac9701ab04ae82b77757d4a0880ec73381df7',
 }
 MODELS = {'PC-01': ['yolov8n', 'yolov8l'], 'PC-02': ['yolo26l', 'swin_tiny'],

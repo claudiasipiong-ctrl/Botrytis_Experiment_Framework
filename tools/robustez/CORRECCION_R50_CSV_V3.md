@@ -1,0 +1,13 @@
+# PC-03: AP por IoU serializada como lista en CSV
+
+El adaptador oficial produce ap_per_iou como una lista de diez numeros (IoU 0.50, 0.55, ..., 0.95). Al leer CSV, pandas representa esa celda como texto. El verificador anterior pasaba esa columna a numpy.allclose, que intentaba restar cadenas y fallaba antes de determinar el cierre del HPO.
+
+La correccion se limita al ayudante externo de verificacion/continuacion. Compara las columnas escalares como numeros finitos, interpreta ap_per_iou con ast.literal_eval (sin ejecutar contenido), exige exactamente diez valores numericos finitos entre 0 y 1 y compara cada componente con la tolerancia original. Si la lista no esta disponible en ambos registros se informa ND sin inventar valores; ausencia en solo un lado, listas alteradas, longitudes incorrectas, valores no finitos o perdida del historial bloquean el proceso. No se descarta la columna ni se modifican los CSV.
+
+La auditoria fijada sigue con SHA 432881891c91bc6e20becc7fec97d245a657ce5c7e6f1677fb99c224d344149e y el adaptador entrenado sigue con SHA e62e47fdc4cdbe6648d0830a8efac9701ab04ae82b77757d4a0880ec73381df7. Por tanto se reutiliza la auditoria anterior compatible sin repetir baseline ni QA completa. La identidad cientifica, objetivos y configuraciones no cambian.
+
+Para recuperar un job RUNNING/FAILED del ejecutor anterior se admite exclusivamente su SHA conocido 160ce95cb02e3ce2a4decf4a2698e5646032b05bbfcbb6b0887b0a8bfef806e7, ademas del SHA actual. Siguen siendo obligatorios la coincidencia del job/attempt y la demostracion de que el proceso local propietario murio. No se borra el recibo anterior, no se recupera por antiguedad y se rechaza un proceso vivo o un ejecutor desconocido.
+
+El comando PC-03 descarga en una carpeta nueva v3. Primero verifica si RT-DETR tiene su HPO completo: si lo tiene no lo repite; si esta interrumpido intenta recuperarlo con sus comprobaciones originales. Solo codigo de salida 0 habilita el siguiente ayudante de robustez. Se conserva el APROBAR presencial de HPO cuando la cola lo exige. Baselines, trials completos, pesos, Optuna y checkpoints quedan preservados. TEST permanece cerrado. PC-01/PC-02 no requieren cambios por esta correccion.
+
+Validacion: 49 pruebas CPU de comparacion y del controlador HPO, incluidos 15 trials x 3 folds del 07 nativo con backend simulado y listas AP dentro de los CSV de prueba, reejecucion sin duplicar, propietarios anteriores y casos corruptos. Otras 2 pruebas verifican la importacion del ejecutor de robustez y la conservacion del backend oficial. No se entrenaron modelos GPU ni se accedio a los discos Windows de PC-03.
