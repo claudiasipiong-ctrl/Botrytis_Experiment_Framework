@@ -1,0 +1,7 @@
+{
+  "tests_passed": 19,
+  "training_executed": false,
+  "windows_client_disks_inspected": false,
+  "tests": "CSV/JSON TEST filtering, SQLite WAL snapshot, complete ZIP fixture, content hashes, input filtering, final weights, long paths and idle-process refusal",
+  "sha256": "4df73954225dc0fe781bd01b451e958ceed6c16db9a5bad96917364a358ad150"
+}
