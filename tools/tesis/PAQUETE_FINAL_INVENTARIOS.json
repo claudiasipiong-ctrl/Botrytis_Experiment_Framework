@@ -1,0 +1,118 @@
+{
+  "PC-01": {
+    "selected_files": 9704,
+    "selected_GiB": 0.873,
+    "excluded_GiB": 83.375,
+    "model_counts": {
+      "yolov8n": 3003,
+      "resnet50": 2000,
+      "yolov8l": 2898
+    },
+    "partial_checkpoints": [],
+    "archive_collisions": [],
+    "missing_critical": [],
+    "weights": [
+      {
+        "path": "C:\\Users\\i21315\\bn\\botrytis_v4\\n_resnet50\\artifacts\\checkpoints\\resnet50\\final.pt",
+        "bytes": 94339379
+      },
+      {
+        "path": "C:\\Users\\i21315\\bn\\botrytis_v4\\n_yolov8l\\artifacts\\checkpoints\\yolov8l\\final.pt",
+        "bytes": 174982963
+      },
+      {
+        "path": "C:\\Users\\i21315\\bt-hoy-20261103\\registro\\botrytis_v4\\yolov8n-20261103-cb706f17\\artifacts\\checkpoints\\yolov8n\\final.pt",
+        "bytes": 24439079
+      },
+      {
+        "path": "C:\\Users\\i21315\\Documents\\s2_no_borrar\\Entrenamiento\\Botrytis_Experiment_Framework_git\\weights\\resnet50-11ad3fa6.pth",
+        "bytes": 102540417
+      },
+      {
+        "path": "C:\\Users\\i21315\\Documents\\s2_no_borrar\\Entrenamiento\\Botrytis_Experiment_Framework_git\\weights\\yolo26n.pt",
+        "bytes": 5544453
+      },
+      {
+        "path": "C:\\Users\\i21315\\Documents\\s2_no_borrar\\Entrenamiento\\Botrytis_Experiment_Framework_git\\weights\\yolov8l.pt",
+        "bytes": 87792836
+      },
+      {
+        "path": "C:\\Users\\i21315\\Documents\\s2_no_borrar\\Entrenamiento\\Botrytis_Experiment_Framework_git\\weights\\yolov8n.pt",
+        "bytes": 6549796
+      }
+    ],
+    "source_inventory": "Inventario_Tesis_PC-01_20261106T002505Z_6ce855.zip"
+  },
+  "PC-03": {
+    "selected_files": 4810,
+    "selected_GiB": 1.768,
+    "excluded_GiB": 220.917,
+    "model_counts": {
+      "vit_b16": 2329,
+      "rtdetr_r50": 939
+    },
+    "partial_checkpoints": [
+      "c:\\users\\i21313\\r50\\r\\rtdetr_r50\\hpo\\trial_006\\fold0\\cp\\e0052.pt"
+    ],
+    "archive_collisions": [],
+    "missing_critical": [],
+    "weights": [
+      {
+        "path": "C:\\Users\\I21313\\bt-hoy-20261103\\registro\\botrytis_v4\\vit_b16-20261103-cb706f17\\artifacts\\checkpoints\\vit_b16\\final.pt",
+        "bytes": 343237075
+      },
+      {
+        "path": "C:\\Users\\I21313\\r50\\r\\rtdetr_r50\\hpo\\trial_006\\fold0\\cp\\e0052.pt",
+        "bytes": 857217186
+      },
+      {
+        "path": "C:\\Users\\I21313\\r50\\weights\\rtdetr_r50vd_6x_coco_from_paddle.pth",
+        "bytes": 172373587
+      },
+      {
+        "path": "C:\\Users\\I21313\\Documents\\s2_no_borrar\\Entrenamiento\\Botrytis_Experiment_Framework_git\\weights\\vit_b16.bin",
+        "bytes": 346325485
+      }
+    ],
+    "source_inventory": "Inventario_Tesis_PC-03_20261106T002619Z_83019d.zip"
+  },
+  "PC-02": {
+    "selected_files": 6951,
+    "selected_GiB": 0.869,
+    "excluded_GiB": 110.98,
+    "model_counts": {
+      "swin_tiny": 2395,
+      "yolo26l": 2859
+    },
+    "partial_checkpoints": [],
+    "archive_collisions": [],
+    "missing_critical": [],
+    "weights": [
+      {
+        "path": "C:\\Users\\I21314\\bn\\botrytis_v4\\n_swin_tiny\\artifacts\\checkpoints\\swin_tiny\\final.pt",
+        "bytes": 110126655
+      },
+      {
+        "path": "C:\\Users\\I21314\\bt-hoy-20261103\\registro\\botrytis_v4\\yolo26l-20261103-cb706f17\\artifacts\\checkpoints\\yolo26l\\final.pt",
+        "bytes": 142093892
+      },
+      {
+        "path": "C:\\Users\\I21314\\bd\\dos_test_finales_v1\\fuentes\\resnet50\\artifacts\\checkpoints\\resnet50\\final.pt",
+        "bytes": 94339379
+      },
+      {
+        "path": "C:\\Users\\I21314\\Documents\\s2_no_borrar\\Entrenamiento\\Botrytis_Experiment_Framework_git\\weights\\swin_tiny.bin",
+        "bytes": 114336965
+      },
+      {
+        "path": "C:\\Users\\I21314\\Documents\\s2_no_borrar\\Entrenamiento\\Botrytis_Experiment_Framework_git\\weights\\yolo26l.pt",
+        "bytes": 53211173
+      },
+      {
+        "path": "C:\\Users\\I21314\\Documents\\s2_no_borrar\\Entrenamiento\\Botrytis_Experiment_Framework_git\\weights\\yolo26n.pt",
+        "bytes": 5544453
+      }
+    ],
+    "source_inventory": "Inventario_Tesis_PC-02_20261106T002522Z_93c2a4.zip"
+  }
+}

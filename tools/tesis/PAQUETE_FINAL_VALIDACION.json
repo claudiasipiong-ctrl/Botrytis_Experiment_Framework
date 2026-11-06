@@ -1,0 +1,13 @@
+{
+  "tests_passed": 13,
+  "tests_failed": 0,
+  "real_inventories_checked": 3,
+  "archive_collisions": 0,
+  "critical_final_files_missing": 0,
+  "test_reexecuted": false,
+  "source_hashes": {
+    "botrytis_paquete_tesis_final.py": "50e8e146abade5416b68d1001e98b2398177f451da2b9f1a87061bedb8994379",
+    "botrytis_documentos_apoyo_tesis.zip": "facc7812c035cd3f18f1496a862853ae5319de82fd380ad5fd9603e8962552af",
+    "test_paquete_tesis_final.py": "1a9814940af4dd4487bba1168eb245aedbce75b272e58327076a247b0c973008"
+  }
+}
