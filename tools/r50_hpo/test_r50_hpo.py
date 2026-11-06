@@ -258,3 +258,29 @@ def test_current_inputs_must_pass_before_approval(tmp_path,monkeypatch,condition
     else:
         with pytest.raises(bt.Stop):bt.fresh_critical_inputs({},tmp_path,tmp_path)
         assert not (tmp_path/'critical-inputs.json').exists()
+
+
+def test_history_metadata_not_subtracted_and_numeric_tolerance():
+    a=pd.DataFrame({'epoch':[1,2],'metric':[.4,.5],'optimizer':['AdamW','AdamW'],'note':['fold0','fold0']})
+    b=a.copy();b['metric']+=1e-9
+    bt.compare_trial_histories(a,b,list(a))
+    b['optimizer']='SGD'
+    with pytest.raises(bt.Stop):bt.compare_trial_histories(a,b,list(a))
+
+@pytest.mark.parametrize('bad',[float('nan'),float('inf'),'invalid',.9])
+def test_numeric_history_corruption_still_stops(bad):
+    a=pd.DataFrame({'epoch':[1,2],'metric':[.4,.5]});b=a.copy();b['metric']=[.4,bad]
+    with pytest.raises(bt.Stop):bt.compare_trial_histories(a,b,list(a))
+
+
+def test_original_executor_owned_job_can_resume_but_live_owner_cannot(tmp_path,monkeypatch):
+    job=SimpleNamespace(status='RUNNING',job_id='same-hpo-job',attempt=1)
+    old='160ce95cb02e3ce2a4decf4a2698e5646032b05bbfcbb6b0887b0a8bfef806e7'
+    bt.atomic_json(tmp_path/'owner.json',dict(job_id=job.job_id,attempt=1,executor_sha256=old,process={'pid':12}))
+    calls=[];q=SimpleNamespace(finish=lambda *a,**kw:calls.append((a,kw)))
+    monkeypatch.setattr(bt,'owner_alive',lambda p:True)
+    with pytest.raises(bt.Stop):bt.recover_owned_job(q,job,tmp_path)
+    assert not calls
+    monkeypatch.setattr(bt,'owner_alive',lambda p:False)
+    bt.recover_owned_job(q,job,tmp_path)
+    assert len(calls)==1 and calls[0][0][1]=='PENDING'

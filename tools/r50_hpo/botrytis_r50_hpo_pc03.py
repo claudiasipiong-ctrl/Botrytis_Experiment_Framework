@@ -13,6 +13,7 @@ spec=importlib.util.spec_from_file_location('r50_audit_pinned',p)
 audit=importlib.util.module_from_spec(spec);sys.modules[spec.name]=audit;spec.loader.exec_module(audit)
 MODEL= audit.MODEL;PC=audit.PC;USER=audit.USER;BUDGET=15
 EXECUTOR_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+COMPATIBLE_EXECUTORS={EXECUTOR_SHA256,'160ce95cb02e3ce2a4decf4a2698e5646032b05bbfcbb6b0887b0a8bfef806e7'}
 Stop=audit.Stop
 class RecoveryStop(BaseException):pass
 utc=audit.utc;read=audit.read;digest=audit.digest;canonical=audit.canonical
@@ -307,6 +308,21 @@ def inspect_curve(path):
     return h
 
 
+def compare_trial_histories(a,b,columns):
+    """Compare metrics numerically and metadata exactly, without changing CSVs."""
+    import numpy as np
+    import pandas as pd
+    if len(a)!=len(b):raise Stop('Historiales de distinta longitud')
+    for col in columns:
+        if col not in a or col not in b:raise Stop('Columna original ausente: '+col)
+        left=pd.to_numeric(a[col],errors='coerce');right=pd.to_numeric(b[col],errors='coerce')
+        numeric=(pd.api.types.is_numeric_dtype(a[col]) or pd.api.types.is_numeric_dtype(b[col]) or left.notna().any() or right.notna().any())
+        if numeric:
+            if not np.isfinite(left).all() or not np.isfinite(right).all() or not np.allclose(left,right,rtol=2e-6,atol=1e-7,equal_nan=False):raise Stop('Historiales numericos discrepan en '+col)
+        elif a[col].isna().any() or b[col].isna().any() or not a[col].astype(str).reset_index(drop=True).equals(b[col].astype(str).reset_index(drop=True)):
+            raise Stop('Metadatos de historiales discrepan en '+col)
+
+
 def verify_trials(study,cfg,spec):
     from utils.experiments import fingerprint
     from utils.search_spaces import config_id
@@ -328,7 +344,7 @@ def verify_trials(study,cfg,spec):
         for fold in range(3):
             out=folder/f'fold{fold}';sig=fold_signature(fingerprint(cfg),MODEL,hp,seed,fold,int(sec['max_epochs']),int(sec['early_stopping_patience']))
             receipt,h=verify_fold(out,sig,fold);history=inspect_curve(out/'completed_history.csv');scores.append(float(receipt['row']['score']))
-            raw=inspect_curve(out/'results.csv');audit.compare_histories(raw,history,[c for c in raw if c in history and c not in ('architecture','config_id','run_id','outer_split','validation_role')])
+            raw=inspect_curve(out/'results.csv');compare_trial_histories(raw,history,[c for c in raw if c in history and c not in ('architecture','config_id','run_id','outer_split','validation_role')])
             be=int(receipt['row']['best_epoch'])
             n=int(receipt['row']['epochs_run'])
             if n>int(sec['max_epochs']) or (n<int(sec['max_epochs']) and n-be!=int(sec['early_stopping_patience'])):raise Stop('Parada de fold HPO no corresponde al protocolo')
@@ -464,7 +480,7 @@ def recover_owned_job(queue,job,state_dir):
     path=Path(state_dir)/'owner.json'
     if not path.is_file():raise Stop('Job requiere propietario verificable; falta '+str(path))
     owner=read(path)
-    if owner.get('job_id')!=job.job_id or owner.get('attempt')!=job.attempt or owner.get('executor_sha256')!=EXECUTOR_SHA256:raise Stop('Propietario de otra ejecucion; no se modifica la cola')
+    if owner.get('job_id')!=job.job_id or owner.get('attempt')!=job.attempt or owner.get('executor_sha256') not in COMPATIBLE_EXECUTORS:raise Stop('Propietario de otra ejecucion; no se modifica la cola')
     if owner_alive(owner['process']):raise Stop('HPO sigue activo; no se duplica')
     if job.attempt>=3:raise Stop('Limite nativo de intentos; revisar error conservado')
     queue.finish(job.job_id,'PENDING',error='Reanudar intento propio muerto demostrado; conserva Optuna y checkpoints originales')
