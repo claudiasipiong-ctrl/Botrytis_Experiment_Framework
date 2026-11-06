@@ -88,7 +88,7 @@ def save_comparison(work):
     for name,slug,t in PAIRS:
         p=work/name/'resultado.json'
         if p.is_file():
-            v=read(p);rows.append(dict(system=name,detector='yolo26l',classifier=slug,det_conf=.325,classifier_threshold=t,**v['positive'],
+            v=read(p);rows.append(dict(system=name,detector='yolo26l',classifier=slug,det_conf=.325,classifier_threshold=t,**v['positive'],**v.get('theoretical_cost',{}),
                                        detection_tp=v['summary']['tp'],detection_fp=v['summary']['fp'],detection_fn=v['summary']['fn']))
     if rows:
         with (work/'comparacion_TEST.csv').open('w',newline='',encoding='utf-8-sig') as f:
