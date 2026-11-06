@@ -1,0 +1,9 @@
+{
+  "tests_passed": 9,
+  "platform": "Linux CPU synthetic",
+  "Windows_GPU_executed": false,
+  "native_import_names_checked": true,
+  "native_source_unchanged": true,
+  "test_data_used": false,
+  "script_sha256": "4eb03d6c41e5ce954dfd09b15f684b01ddf4fde712d7aa5c378a940a73fe2f35"
+}
