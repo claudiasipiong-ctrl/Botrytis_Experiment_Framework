@@ -284,3 +284,25 @@ def test_original_executor_owned_job_can_resume_but_live_owner_cannot(tmp_path,m
     monkeypatch.setattr(bt,'owner_alive',lambda p:False)
     bt.recover_owned_job(q,job,tmp_path)
     assert len(calls)==1 and calls[0][0][1]=='PENDING'
+
+@pytest.mark.parametrize('damage',['none','live','attempt','sha','hostname','no_flag'])
+def test_observed_attempt3_recovery_is_scoped_and_backed_up(tmp_path,monkeypatch,damage):
+    owner=dict(job_id='botrytis_v4/r50vd_01/hpo:rtdetr_r50',attempt=3,executor_sha256='6ea86a71eea01b5d03640594427b87fc3f12e6340c4ec2a3846f61a0346ff092',process=dict(hostname='I21313',pid=21072,created=1793890437.2571075))
+    if damage=='sha':owner['executor_sha256']='unknown'
+    if damage=='hostname':owner['process']['hostname']='another'
+    bt.atomic_json(tmp_path/'owner.json',owner)
+    db=tmp_path/'queue.sqlite'
+    import sqlite3
+    con=sqlite3.connect(db);con.execute('CREATE TABLE evidence (value)');con.execute('INSERT INTO evidence VALUES (3)');con.commit();con.close()
+    job=SimpleNamespace(status='RUNNING',job_id=owner['job_id'],attempt=4 if damage=='attempt' else 3)
+    calls=[];q=SimpleNamespace(path=db,finish=lambda *a,**kw:calls.append((a,kw)))
+    monkeypatch.setattr(bt,'owner_alive',lambda p:damage=='live')
+    if damage=='none':
+        bt.recover_owned_job(q,job,tmp_path,allow_observed=True)
+        assert len(calls)==1
+        snapshots=list((tmp_path/'recovery').glob('*/queue.before.sqlite'));assert len(snapshots)==1
+        con=sqlite3.connect(snapshots[0]);assert con.execute('SELECT value FROM evidence').fetchone()==(3,);con.close()
+        assert bt.read(tmp_path/'owner.json')==owner
+    else:
+        with pytest.raises(bt.Stop):bt.recover_owned_job(q,job,tmp_path,allow_observed=damage!='no_flag')
+        assert not calls

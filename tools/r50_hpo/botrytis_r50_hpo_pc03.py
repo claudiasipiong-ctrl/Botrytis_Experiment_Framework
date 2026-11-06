@@ -475,19 +475,29 @@ def check_git(root, audit):
     return git(root, 'rev-parse', 'HEAD'), compute_code_hash(root)
 
 
-def recover_owned_job(queue,job,state_dir):
+def recover_owned_job(queue,job,state_dir,allow_observed=False):
     if job.status not in ('RUNNING','FAILED'):return
     path=Path(state_dir)/'owner.json'
     if not path.is_file():raise Stop('Job requiere propietario verificable; falta '+str(path))
     owner=read(path)
-    if owner.get('job_id')!=job.job_id or owner.get('attempt')!=job.attempt or owner.get('executor_sha256') not in COMPATIBLE_EXECUTORS:raise Stop('Propietario de otra ejecucion; no se modifica la cola')
+    observed=dict(job_id='botrytis_v4/r50vd_01/hpo:rtdetr_r50',attempt=3,
+        executor_sha256='6ea86a71eea01b5d03640594427b87fc3f12e6340c4ec2a3846f61a0346ff092',
+        process=dict(hostname='I21313',pid=21072,created=1793890437.2571075))
+    scoped=allow_observed and owner==observed and job.status=='RUNNING' and job.attempt==3 and job.job_id==observed['job_id']
+    if owner.get('job_id')!=job.job_id or owner.get('attempt')!=job.attempt or (owner.get('executor_sha256') not in COMPATIBLE_EXECUTORS and not scoped):raise Stop('Propietario de otra ejecucion; no se modifica la cola')
     if owner_alive(owner['process']):raise Stop('HPO sigue activo; no se duplica')
-    if job.attempt>=3:raise Stop('Limite nativo de intentos; revisar error conservado')
+    if job.attempt>=3 and not scoped:raise Stop('Limite nativo de intentos; revisar error conservado')
+    if scoped:
+        evidence=Path(state_dir)/'recovery'/('observed-attempt3-'+uuid.uuid4().hex[:8]);evidence.mkdir(parents=True)
+        verified_copy(path,evidence/'owner.before.json');snapshot_sqlite(queue.path,evidence/'queue.before.sqlite')
+        atomic_json(evidence/'decision.json',dict(action='RECOVER_EXACT_DEAD_PC03_ATTEMPT3_ONCE',owner=owner,
+            authorization='Solicitud explicita de reanudar RT-DETR; comando --reanudar-intento3-pc03',utc=utc(),trial_budget=BUDGET,next_attempt=4))
+        emit('INTENTO3_OBSOLETO_VERIFICADO',evidence=str(evidence),next_attempt=4,trial_budget=BUDGET)
     queue.finish(job.job_id,'PENDING',error='Reanudar intento propio muerto demostrado; conserva Optuna y checkpoints originales')
     emit('HPO_REANUDABLE',previous=job.status,attempt=job.attempt)
 
 
-def run_hpo(project,store,config,cfg,queue,job,adapter,state_dir,attempt):
+def run_hpo(project,store,config,cfg,queue,job,adapter,state_dir,attempt,allow_observed=False):
     from utils.architectures import get_arch
     from utils.config_loader import cfg_path
     from utils.optuna_storage import study_db_path,load_study,budget_used
@@ -511,7 +521,7 @@ def run_hpo(project,store,config,cfg,queue,job,adapter,state_dir,attempt):
         emit('HPO_PUBLICADO_SIN_REENTRENAR');return existing
     if job.status=='PENDING_REVIEW':raise Stop('Bloque HPO parcial necesita su propia revision, se conserva')
     if job.status not in ('PENDING','FAILED','RUNNING'):raise Stop('Estado HPO bloqueado: '+job.status)
-    recover_owned_job(queue,job,state_dir);job=queue.get(job.job_id)
+    recover_owned_job(queue,job,state_dir,allow_observed=allow_observed);job=queue.get(job.job_id)
     # Existing originals live outside every new retry folder; native rolling
     # retention applies only to the newly generated/copy optimizer generations.
     remaining=BUDGET-(budget_used(existing) if existing is not None else 0)
@@ -535,7 +545,7 @@ def run_hpo(project,store,config,cfg,queue,job,adapter,state_dir,attempt):
 
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--aprobar-original-hpo',action='store_true');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--aprobar-original-hpo',action='store_true');parser.add_argument('--reanudar-intento3-pc03',action='store_true');args=parser.parse_args()
     if not args.aprobar_original_hpo:raise Stop('Para autorizar la transicion solicitada ejecutar con --aprobar-original-hpo')
     if os.name!='nt':raise Stop('Ejecutor operativo exclusivo de Windows PC-03; tests separados sin GPU')
     project=Path.home()/'Documents/s2_no_borrar/Entrenamiento/Botrytis_Experiment_Framework_git';py=project/'.venv/Scripts/python.exe'
@@ -563,7 +573,7 @@ def main():
             jobs=audit.read_jobs(cfg);queue=StudyQueue.from_cfg(cfg)
             snapshot_sqlite(queue.path,attempt/'queue-before.sqlite')
             approve_baseline(queue,queue.get(jobs['baseline']['job_id']),report,attempt,baseline,args.aprobar_original_hpo)
-            study=run_hpo(project,store,config,cfg,queue,queue.get(jobs['hpo']['job_id']),adapter,state_dir,attempt)
+            study=run_hpo(project,store,config,cfg,queue,queue.get(jobs['hpo']['job_id']),adapter,state_dir,attempt,allow_observed=args.reanudar_intento3_pc03)
             state=queue.get(jobs['hpo']['job_id']).status
             summary=dict(status='HPO_TERMINADO',queue_status=state,trials_complete=sum(t.state.name=='COMPLETE' for t in study.trials),
                 trials_pruned=sum(t.state.name=='PRUNED' for t in study.trials),trials_failed=sum(t.state.name=='FAIL' for t in study.trials),
