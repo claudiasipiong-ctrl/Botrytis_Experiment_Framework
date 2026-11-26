@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PowerShell</title>
+<style>body{margin:2rem auto;max-width:88rem;padding:0 1rem;background:#edf2f4}pre{padding:1rem;overflow:auto;background:#14222c;color:#f1f5f7;border-radius:.5rem}pre+pre{margin-top:2rem}</style></head><body>
+<pre><code>&amp; {
+    $ErrorActionPreference = &#x27;Stop&#x27;
+    $expected = &#x27;604786EA87BE635BCFB299F21862968F19468A55219C896F9F41ADAAE38BB408&#x27;
+    $entry = &#x27;Botrytis_Experiment_Framework/scripts/Invoke-SuiteIntegrada.ps1&#x27;
+    $downloadValue = (Get-ItemProperty -LiteralPath &#x27;HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders&#x27; -Name &#x27;{374DE290-123F-4565-9164-39C4925E467B}&#x27; -ErrorAction SilentlyContinue).&#x27;{374DE290-123F-4565-9164-39C4925E467B}&#x27;
+    $downloads = if ($downloadValue) { [Environment]::ExpandEnvironmentVariables($downloadValue) } else { Join-Path $env:USERPROFILE &#x27;Downloads&#x27; }
+    $archive = Get-ChildItem -LiteralPath $downloads -Filter &#x27;Botrytis_Suite_Integrada_Movil_ADB*.zip&#x27; -File |
+        Where-Object { (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash -eq $expected } |
+        Select-Object -First 1
+    if (-not $archive) { throw &#x27;ZIP Botrytis_Suite_Integrada_Movil_ADB verificado no encontrado en Descargas.&#x27; }
+    $base = Join-Path $env:USERPROFILE &#x27;Documents/s2_no_borrar/HybridSuite/install&#x27;
+    New-Item -ItemType Directory -Path $base -Force | Out-Null
+    $lock = [IO.File]::Open((Join-Path $base &#x27;launcher.lock&#x27;), &#x27;OpenOrCreate&#x27;, &#x27;ReadWrite&#x27;, &#x27;None&#x27;)
+    try {
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $version = Join-Path $base $expected.Substring(0, 16)
+        $valid = Test-Path -LiteralPath (Join-Path $version $entry) -PathType Leaf
+        if ($valid) {
+            $package = [IO.Compression.ZipFile]::OpenRead($archive.FullName)
+            $sha = [Security.Cryptography.SHA256]::Create()
+            try {
+                foreach ($file in $package.Entries) {
+                    if (-not $file.Name) { continue }
+                    $installed = Join-Path $version $file.FullName
+                    if (-not (Test-Path -LiteralPath $installed -PathType Leaf)) { $valid = $false; break }
+                    $stream = $file.Open()
+                    try { $hash = [BitConverter]::ToString($sha.ComputeHash($stream)).Replace(&#x27;-&#x27;, &#x27;&#x27;) } finally { $stream.Dispose() }
+                    if ((Get-FileHash -LiteralPath $installed -Algorithm SHA256).Hash -ne $hash) { $valid = $false; break }
+                }
+            } finally { $sha.Dispose(); $package.Dispose() }
+        }
+        if (-not $valid) {
+            $staging = Join-Path $base (&#x27;staging-&#x27; + [Guid]::NewGuid().ToString(&#x27;N&#x27;))
+            try {
+                Expand-Archive -LiteralPath $archive.FullName -DestinationPath $staging
+                if (Test-Path -LiteralPath $version) {
+                    Move-Item -LiteralPath $version -Destination (Join-Path $base (&#x27;preserved-&#x27; + [Guid]::NewGuid().ToString(&#x27;N&#x27;)))
+                }
+                Move-Item -LiteralPath $staging -Destination $version
+            } finally {
+                if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Recurse -Force }
+            }
+        }
+        $launch = [ScriptBlock]::Create([IO.File]::ReadAllText((Join-Path $version $entry)))
+        &amp; $launch -Mode &#x27;Today&#x27; -Downloads $downloads -ProjectRoot (Join-Path $version &#x27;Botrytis_Experiment_Framework&#x27;)
+    } finally { $lock.Dispose() }
+}</code></pre>
+<pre><code>&amp; {
+    $ErrorActionPreference = &#x27;Stop&#x27;
+    $expected = &#x27;604786EA87BE635BCFB299F21862968F19468A55219C896F9F41ADAAE38BB408&#x27;
+    $entry = &#x27;Botrytis_Experiment_Framework/scripts/Invoke-SuiteIntegrada.ps1&#x27;
+    $downloadValue = (Get-ItemProperty -LiteralPath &#x27;HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders&#x27; -Name &#x27;{374DE290-123F-4565-9164-39C4925E467B}&#x27; -ErrorAction SilentlyContinue).&#x27;{374DE290-123F-4565-9164-39C4925E467B}&#x27;
+    $downloads = if ($downloadValue) { [Environment]::ExpandEnvironmentVariables($downloadValue) } else { Join-Path $env:USERPROFILE &#x27;Downloads&#x27; }
+    $archive = Get-ChildItem -LiteralPath $downloads -Filter &#x27;Botrytis_Suite_Integrada_Movil_ADB*.zip&#x27; -File |
+        Where-Object { (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash -eq $expected } |
+        Select-Object -First 1
+    if (-not $archive) { throw &#x27;ZIP Botrytis_Suite_Integrada_Movil_ADB verificado no encontrado en Descargas.&#x27; }
+    $base = Join-Path $env:USERPROFILE &#x27;Documents/s2_no_borrar/HybridSuite/install&#x27;
+    New-Item -ItemType Directory -Path $base -Force | Out-Null
+    $lock = [IO.File]::Open((Join-Path $base &#x27;launcher.lock&#x27;), &#x27;OpenOrCreate&#x27;, &#x27;ReadWrite&#x27;, &#x27;None&#x27;)
+    try {
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $version = Join-Path $base $expected.Substring(0, 16)
+        $valid = Test-Path -LiteralPath (Join-Path $version $entry) -PathType Leaf
+        if ($valid) {
+            $package = [IO.Compression.ZipFile]::OpenRead($archive.FullName)
+            $sha = [Security.Cryptography.SHA256]::Create()
+            try {
+                foreach ($file in $package.Entries) {
+                    if (-not $file.Name) { continue }
+                    $installed = Join-Path $version $file.FullName
+                    if (-not (Test-Path -LiteralPath $installed -PathType Leaf)) { $valid = $false; break }
+                    $stream = $file.Open()
+                    try { $hash = [BitConverter]::ToString($sha.ComputeHash($stream)).Replace(&#x27;-&#x27;, &#x27;&#x27;) } finally { $stream.Dispose() }
+                    if ((Get-FileHash -LiteralPath $installed -Algorithm SHA256).Hash -ne $hash) { $valid = $false; break }
+                }
+            } finally { $sha.Dispose(); $package.Dispose() }
+        }
+        if (-not $valid) {
+            $staging = Join-Path $base (&#x27;staging-&#x27; + [Guid]::NewGuid().ToString(&#x27;N&#x27;))
+            try {
+                Expand-Archive -LiteralPath $archive.FullName -DestinationPath $staging
+                if (Test-Path -LiteralPath $version) {
+                    Move-Item -LiteralPath $version -Destination (Join-Path $base (&#x27;preserved-&#x27; + [Guid]::NewGuid().ToString(&#x27;N&#x27;)))
+                }
+                Move-Item -LiteralPath $staging -Destination $version
+            } finally {
+                if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Recurse -Force }
+            }
+        }
+        $launch = [ScriptBlock]::Create([IO.File]::ReadAllText((Join-Path $version $entry)))
+        &amp; $launch -Mode &#x27;Tomorrow&#x27; -Downloads $downloads -ProjectRoot (Join-Path $version &#x27;Botrytis_Experiment_Framework&#x27;)
+    } finally { $lock.Dispose() }
+}</code></pre>
+</body></html>
